@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Beat Runner - Neon Rhythm Game</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">    <title>Beat Runner - Neon Rhythm Game</title>
 
     <link rel="icon" type="image/png" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
@@ -34,16 +35,20 @@
         }
 
         /* HUD - Score Display */
-        #hud {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: none;
-            gap: 40px;
-            z-index: 100;
-            pointer-events: none;
-        }
+        /* Find #hud and replace the 'top' property */
+#hud {
+    position: fixed;
+    /* Use safe area plus a little padding */
+    top: max(20px, env(safe-area-inset-top) + 15px);
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    gap: 40px;
+    z-index: 100;
+    pointer-events: none;
+    width: 100%; /* Ensure it spans width for centering */
+    justify-content: center; /* Better centering */
+}
 
         .hud-item {
             text-align: center;
@@ -234,32 +239,25 @@
 
         /* Mobile Controls */
         #mobile-controls {
-            position: fixed;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            display: none;
-            justify-content: space-between;
-            padding: 0 20px;
-            z-index: 100;
-            pointer-events: none;
-        }
-
+    position: fixed;
+    /* Lift controls up above the home indicator */
+    bottom: max(20px, env(safe-area-inset-bottom) + 30px);
+    left: 0;
+    right: 0;
+    display: none;
+    justify-content: space-between;
+    padding: 0 30px; /* Increased side padding */
+    z-index: 100;
+    pointer-events: none;
+}
         .mobile-btn {
-            width: 80px;
-            height: 80px;
-            border: 2px solid rgba(255, 0, 255, 0.5);
-            border-radius: 50%;
-            background: rgba(255, 0, 255, 0.1);
-            color: #ff00ff;
-            font-size: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            pointer-events: auto;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+    width: 120px; /* Bigger touch target */
+    height: 120px;
+    border: 2px solid rgba(255, 0, 255, 0.3); /* Subtler border */
+    border-radius: 50%;
+    background: rgba(255, 0, 255, 0.05); /* Fainter background */
+    /* ... rest of existing styles ... */
+}
 
         .mobile-btn:active {
             background: rgba(255, 0, 255, 0.4);
