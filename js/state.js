@@ -19,5 +19,6 @@ const GameState = {
     isJumping: false,
     jumpVelocity: 0,
     jumpQueued: false,
-    isMagnetActive: false
+    isMagnetActive: false,
+    hasShield: false
 };

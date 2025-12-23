@@ -12,10 +12,12 @@ function startGame() {
     GameState.speed = CONFIG.INITIAL_SPEED;
     GameState.gameStartTime = performance.now();
     GameState.isMagnetActive = false;
+    GameState.hasShield = false;
     
     PlayerController.reset();
     BeatManager.reset();
     MagnetManager.reset();
+    ShieldManager.reset();
     
     startScreen.style.display = 'none';
     hud.style.display = 'flex';
@@ -74,6 +76,7 @@ function restartGame() {
     // Reset all managers
     ObstacleManager.reset();
     CollectibleManager.reset();
+    ShieldManager.reset();
     
     // Reset floor positions
     floorTiles.forEach((tile, i) => {
@@ -98,6 +101,7 @@ function goToMainMenu() {
     // Reset all managers
     ObstacleManager.reset();
     CollectibleManager.reset();
+    ShieldManager.reset();
     MagnetManager.reset();
     
     // Reset floor positions

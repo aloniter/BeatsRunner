@@ -23,6 +23,10 @@ function updateGame(delta, elapsed) {
     MagnetManager.update(delta, elapsed);
     MagnetManager.checkCollection();
     
+    // Update shield power-up
+    ShieldManager.update(delta, elapsed);
+    ShieldManager.checkCollection();
+    
     // Update collectibles
     CollectibleManager.update(delta, elapsed);
     CollectibleManager.checkCollection();

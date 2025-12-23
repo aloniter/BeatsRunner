@@ -212,6 +212,43 @@ function createPlayer() {
     magnetAura.position.y = 0.05;
     magnetAura.visible = false;
     group.add(magnetAura);
+
+    // Shield aura (hidden by default)
+    shieldAura = new THREE.Group();
+    shieldAura.visible = false;
+    
+    const shieldGeo = new THREE.SphereGeometry(0.8, 18, 18);
+    const shieldMat = new THREE.MeshBasicMaterial({
+        color: 0x66ccff,
+        transparent: true,
+        opacity: 0.28,
+        side: THREE.BackSide
+    });
+    const shieldShell = new THREE.Mesh(shieldGeo, shieldMat);
+    shieldAura.add(shieldShell);
+    
+    const shieldPlateGeo = new THREE.CircleGeometry(0.55, 24);
+    const shieldPlateMat = new THREE.MeshBasicMaterial({
+        color: CONFIG.COLORS.CYAN,
+        transparent: true,
+        opacity: 0.12
+    });
+    const shieldPlate = new THREE.Mesh(shieldPlateGeo, shieldPlateMat);
+    shieldPlate.position.z = 0.6;
+    shieldAura.add(shieldPlate);
+    
+    const shieldOutlineGeo = new THREE.RingGeometry(0.6, 0.66, 6);
+    const shieldOutlineMat = new THREE.MeshBasicMaterial({
+        color: CONFIG.COLORS.WHITE,
+        transparent: true,
+        opacity: 0.5,
+        side: THREE.DoubleSide
+    });
+    const shieldOutline = new THREE.Mesh(shieldOutlineGeo, shieldOutlineMat);
+    shieldOutline.position.z = 0.61;
+    shieldAura.add(shieldOutline);
+    
+    group.add(shieldAura);
     
     // Point light
     const playerLight = new THREE.PointLight(CONFIG.COLORS.CYAN, 1.5, 8);
