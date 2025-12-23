@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Beat Runner - Neon Rhythm Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <canvas id="game-canvas"></canvas>
+    
+    <!-- HUD -->
+    <div id="hud">
+        <div class="hud-item">
+            <div class="hud-label">Distance</div>
+            <div class="hud-value" id="distance-value">0</div>
+        </div>
+        <div class="hud-item">
+            <div class="hud-label">Orbs</div>
+            <div class="hud-value" id="orbs-value">0</div>
+        </div>
+        <div class="hud-item is-hidden">
+            <div class="hud-label">Score</div>
+            <div class="hud-value" id="score-value">0</div>
+        </div>
+    </div>
+    <button class="pause-btn" id="pause-btn" aria-label="Pause">Ⅱ</button>
+
+    <!-- Mobile Controls -->
+    <div id="mobile-controls">
+        <div class="mobile-btn" id="left-btn">◀</div>
+        <div class="mobile-btn mobile-btn-jump" id="jump-btn">▲</div>
+        <div class="mobile-btn" id="right-btn">▶</div>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen">
+        <h1>Beat Runner</h1>
+        <div class="subtitle">Neon Rhythm Experience</div>
+        <div class="credit">By Alon Iter</div>
+        <div class="menu-coins" aria-label="Coins">
+            <span class="coin-icon" aria-hidden="true"></span>
+            <span class="coin-label">Coins</span>
+            <span class="coin-value" id="menu-coins-value">0</span>
+        </div>
+        <div class="menu-top-distance" aria-label="Top Distance">
+            <span class="top-distance-label">Top Distance</span>
+            <span class="top-distance-value" id="menu-top-distance-value">0</span>
+            <span class="top-distance-unit">m</span>
+        </div>
+        <button class="store-btn-lite" id="store-btn" aria-label="Open Store">
+            <span class="store-icon" aria-hidden="true">🛍</span>
+            STORE
+        </button>
+        <button class="btn" id="start-btn">Start Game</button>
+        <div class="controls-info">
+            <div><span>←</span> <span>→</span> to Move | <span>↑</span> / <span>Space</span> to Jump</div>
+            <div>or <span>Swipe</span> / <span>Tap</span> on Mobile</div>
+        </div>
+    </div>
+
+    <div class="store-overlay" id="store-overlay" aria-hidden="true">
+        <div class="store-panel">
+            <div class="store-panel-header">
+                <div class="store-title-main">STORE</div>
+                <button class="store-close" id="store-close" aria-label="Close Store">✕</button>
+            </div>
+            <div class="store-tabs" id="store-tabs"></div>
+            <div class="store-section-title" id="store-section-title">ITEMS</div>
+            <div class="store-grid" id="store-grid"></div>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameover-screen">
+        <h2>Game Over</h2>
+        <div class="final-score">Distance: <span id="final-distance">0</span>m</div>
+        <div class="final-score">Top Distance: <span id="final-top-distance">0</span>m</div>
+        <div class="final-score">Orbs Collected: <span id="final-orbs">0</span></div>
+        <div class="final-score is-hidden">Final Score: <span id="final-score">0</span></div>
+        <div class="btn-group">
+            <button class="btn" id="restart-btn">Play Again</button>
+            <button class="btn btn-secondary" id="mainmenu-btn">Main Menu</button>
+        </div>
+    </div>
+
+    <!-- Beat Indicator -->
+    <div id="beat-indicator"></div>
+
+    <!-- Screen Flash -->
+    <div id="screen-flash"></div>
+
+    <!-- Background Music -->
+    <audio id="bg-music" loop>
+        <source src="Lights on.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Three.js Library -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script defer src="js/config.js"></script>
+    <script defer src="js/state.js"></script>
+    <script defer src="js/globals.js"></script>
+    <script defer src="js/coins.js"></script>
+    <script defer src="js/top-distance.js"></script>
+    <script defer src="js/skins.js"></script>
+    <script defer src="js/scene.js"></script>
+    <script defer src="js/gameplay.js"></script>
+    <script defer src="js/audio.js"></script>
+    <script defer src="js/controls.js"></script>
+    <script defer src="js/gameflow.js"></script>
+    <script defer src="js/loop.js"></script>
+    <script defer src="js/main.js"></script>
+
+</body>
+</html>
