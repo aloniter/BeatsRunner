@@ -6,6 +6,7 @@ let player, playerCore, playerGlow, playerRing;
 let discoBallGroup, discoBallCore, discoBallTiles = [], discoBallSparkles;
 let obstacles = [];
 let collectibles = [];
+let magnetPickups = [];
 let floorTiles = [];
 let sidePillars = [];
 let particleSystem;
@@ -13,6 +14,8 @@ let animationFrameId;
 let lastTime = 0;
 let audioContext, gainNode;
 let bgMusic;
+let magnetAura;
+let magnetTimeoutId;
 
 // DOM Elements
 const canvas = document.getElementById('game-canvas');

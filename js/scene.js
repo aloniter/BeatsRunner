@@ -198,6 +198,20 @@ function createPlayer() {
     playerRing = new THREE.Mesh(ringGeo, ringMat);
     playerRing.rotation.x = Math.PI / 2;
     group.add(playerRing);
+
+    // Magnet aura (hidden by default)
+    const auraGeo = new THREE.RingGeometry(0.85, 1.55, 32);
+    const auraMat = new THREE.MeshBasicMaterial({
+        color: CONFIG.COLORS.CYAN,
+        transparent: true,
+        opacity: 0.25,
+        side: THREE.DoubleSide
+    });
+    magnetAura = new THREE.Mesh(auraGeo, auraMat);
+    magnetAura.rotation.x = -Math.PI / 2;
+    magnetAura.position.y = 0.05;
+    magnetAura.visible = false;
+    group.add(magnetAura);
     
     // Point light
     const playerLight = new THREE.PointLight(CONFIG.COLORS.CYAN, 1.5, 8);

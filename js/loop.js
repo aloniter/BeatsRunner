@@ -19,6 +19,10 @@ function updateGame(delta, elapsed) {
     // Update obstacles
     ObstacleManager.update(delta);
     
+    // Update magnet power-up
+    MagnetManager.update(delta, elapsed);
+    MagnetManager.checkCollection();
+    
     // Update collectibles
     CollectibleManager.update(delta, elapsed);
     CollectibleManager.checkCollection();

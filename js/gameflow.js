@@ -11,9 +11,11 @@ function startGame() {
     GameState.currentLane = 1;
     GameState.speed = CONFIG.INITIAL_SPEED;
     GameState.gameStartTime = performance.now();
+    GameState.isMagnetActive = false;
     
     PlayerController.reset();
     BeatManager.reset();
+    MagnetManager.reset();
     
     startScreen.style.display = 'none';
     hud.style.display = 'flex';
@@ -96,6 +98,7 @@ function goToMainMenu() {
     // Reset all managers
     ObstacleManager.reset();
     CollectibleManager.reset();
+    MagnetManager.reset();
     
     // Reset floor positions
     floorTiles.forEach((tile, i) => {

@@ -18,5 +18,6 @@ const GameState = {
     gameStartTime: 0,
     isJumping: false,
     jumpVelocity: 0,
-    jumpQueued: false
+    jumpQueued: false,
+    isMagnetActive: false
 };
