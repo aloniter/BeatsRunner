@@ -5,6 +5,7 @@ function init() {
     loadOrbs();
     loadTopDistance();
     loadDiscoBallState();
+    loadFireBallState();
 
     // Create scene
     scene = new THREE.Scene();
@@ -249,10 +250,14 @@ function createPlayer() {
     discoSkin.visible = false;
     group.add(discoSkin);
 
+    const fireSkin = createFireBallSkin();
+    fireSkin.visible = false;
+    group.add(fireSkin);
+
     group.position.set(0, CONFIG.GROUND_Y, 0);
     scene.add(group);
     player = group;
-    applyDiscoBallSkin();
+    applySkins();
 }
 
 // ========================================

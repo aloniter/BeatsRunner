@@ -2,12 +2,17 @@ const DISCO_PRICE = 50;
 const DISCO_OWNED_KEY = 'beat-runner-disco-owned';
 const DISCO_EQUIPPED_KEY = 'beat-runner-disco-equipped';
 
+const FIREBALL_PRICE = 75;
+const FIREBALL_OWNED_KEY = 'beat-runner-fireball-owned';
+const FIREBALL_EQUIPPED_KEY = 'beat-runner-fireball-equipped';
+
 const STORE_CATEGORIES = [
     {
         id: 'skins',
         label: 'Skins',
         items: [
-            { id: 'disco-ball', name: 'Disco Ball', price: DISCO_PRICE, preview: 'disco' }
+            { id: 'disco-ball', name: 'Disco Ball', price: DISCO_PRICE, preview: 'disco' },
+            { id: 'fire-ball', name: 'Fire Ball', price: FIREBALL_PRICE, preview: 'fire', description: 'Feel the heat. A ball of pure rhythmic power.' }
         ]
     }
 ];
@@ -28,6 +33,20 @@ function loadDiscoBallState() {
 function saveDiscoBallState() {
     localStorage.setItem(DISCO_OWNED_KEY, String(GameState.discoBallOwned));
     localStorage.setItem(DISCO_EQUIPPED_KEY, String(GameState.discoBallEquipped));
+}
+
+function loadFireBallState() {
+    GameState.fireBallOwned = localStorage.getItem(FIREBALL_OWNED_KEY) === 'true';
+    GameState.fireBallEquipped = localStorage.getItem(FIREBALL_EQUIPPED_KEY) === 'true';
+    if (!GameState.fireBallOwned) {
+        GameState.fireBallEquipped = false;
+    }
+    refreshStoreUI();
+}
+
+function saveFireBallState() {
+    localStorage.setItem(FIREBALL_OWNED_KEY, String(GameState.fireBallOwned));
+    localStorage.setItem(FIREBALL_EQUIPPED_KEY, String(GameState.fireBallEquipped));
 }
 
 // Disco color palette: purple, cyan, pink, blue, gold
@@ -193,17 +212,160 @@ function buildDiscoBall(radius = 1, assignGlobals = false) {
     return { group, core, tiles, innerGlow, outerGlow, beams };
 }
 
+// Fire Ball color palette: orange, red, yellow for flame effect
+const FIRE_COLORS = [
+    { hex: 0xff4400, name: 'orange' },    // Deep orange
+    { hex: 0xff0000, name: 'red' },       // Hot red
+    { hex: 0xffaa00, name: 'yellow' },    // Golden yellow
+    { hex: 0xff2200, name: 'crimson' },   // Crimson
+    { hex: 0xff6600, name: 'flame' }      // Flame orange
+];
+
+function buildFireBall(radius = 1, assignGlobals = false) {
+    const group = new THREE.Group();
+
+    // Fiery core with hot center
+    const coreGeo = new THREE.SphereGeometry(radius, 20, 14);
+    const coreMat = new THREE.MeshStandardMaterial({
+        color: 0xff6600,
+        metalness: 0.3,
+        roughness: 0.4,
+        emissive: 0xff4400,
+        emissiveIntensity: 1.5
+    });
+    const core = new THREE.Mesh(coreGeo, coreMat);
+    group.add(core);
+
+    // Inner glow - hot orange
+    const innerGlowGeo = new THREE.SphereGeometry(radius * 1.15, 16, 12);
+    const innerGlowMat = new THREE.MeshBasicMaterial({
+        color: 0xff4400,
+        transparent: true,
+        opacity: 0.4,
+        blending: THREE.AdditiveBlending
+    });
+    const innerGlow = new THREE.Mesh(innerGlowGeo, innerGlowMat);
+    group.add(innerGlow);
+
+    // Outer glow - warm yellow/orange haze
+    const outerGlowGeo = new THREE.SphereGeometry(radius * 1.35, 16, 12);
+    const outerGlowMat = new THREE.MeshBasicMaterial({
+        color: 0xffaa00,
+        transparent: true,
+        opacity: 0.2,
+        blending: THREE.AdditiveBlending
+    });
+    const outerGlow = new THREE.Mesh(outerGlowGeo, outerGlowMat);
+    group.add(outerGlow);
+
+    // Flame particles rising upward
+    const flameCount = 50;
+    const flameGeo = new THREE.BufferGeometry();
+    const flamePositions = new Float32Array(flameCount * 3);
+    const flameSizes = new Float32Array(flameCount);
+    const flamePhases = new Float32Array(flameCount);
+
+    for (let i = 0; i < flameCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const r = radius * (0.3 + Math.random() * 0.7);
+        flamePositions[i * 3] = Math.cos(angle) * r;
+        flamePositions[i * 3 + 1] = Math.random() * radius * 1.5;
+        flamePositions[i * 3 + 2] = Math.sin(angle) * r;
+        flameSizes[i] = 0.08 + Math.random() * 0.12;
+        flamePhases[i] = Math.random() * Math.PI * 2;
+    }
+
+    flameGeo.setAttribute('position', new THREE.BufferAttribute(flamePositions, 3));
+    flameGeo.setAttribute('size', new THREE.BufferAttribute(flameSizes, 1));
+    flameGeo.userData.phases = flamePhases;
+    flameGeo.userData.basePositions = flamePositions.slice();
+
+    const flameMat = new THREE.PointsMaterial({
+        color: 0xffaa00,
+        size: 0.12,
+        transparent: true,
+        opacity: 0.9,
+        blending: THREE.AdditiveBlending,
+        sizeAttenuation: true
+    });
+    const flames = new THREE.Points(flameGeo, flameMat);
+    group.add(flames);
+
+    // Ember particles - smaller, more scattered
+    const emberCount = 30;
+    const emberGeo = new THREE.BufferGeometry();
+    const emberPositions = new Float32Array(emberCount * 3);
+    const emberPhases = new Float32Array(emberCount);
+
+    for (let i = 0; i < emberCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const r = radius * (0.8 + Math.random() * 0.8);
+        emberPositions[i * 3] = Math.cos(angle) * r;
+        emberPositions[i * 3 + 1] = (Math.random() - 0.3) * radius * 2;
+        emberPositions[i * 3 + 2] = Math.sin(angle) * r;
+        emberPhases[i] = Math.random() * Math.PI * 2;
+    }
+
+    emberGeo.setAttribute('position', new THREE.BufferAttribute(emberPositions, 3));
+    emberGeo.userData.phases = emberPhases;
+    emberGeo.userData.basePositions = emberPositions.slice();
+
+    const emberMat = new THREE.PointsMaterial({
+        color: 0xff2200,
+        size: 0.06,
+        transparent: true,
+        opacity: 0.8,
+        blending: THREE.AdditiveBlending,
+        sizeAttenuation: true
+    });
+    const embers = new THREE.Points(emberGeo, emberMat);
+    group.add(embers);
+
+    if (assignGlobals) {
+        fireBallGroup = group;
+        fireBallCore = core;
+        fireBallFlames = flames;
+        fireBallEmbers = embers;
+        fireBallInnerGlow = innerGlow;
+        fireBallOuterGlow = outerGlow;
+    }
+
+    return { group, core, flames, embers, innerGlow, outerGlow };
+}
+
 function createDiscoBallSkin() {
     return buildDiscoBall(0.45, true).group;
+}
+
+function createFireBallSkin() {
+    return buildFireBall(0.45, true).group;
 }
 
 function applyDiscoBallSkin() {
     if (!player || !discoBallGroup) return;
     const equipped = GameState.discoBallOwned && GameState.discoBallEquipped;
     discoBallGroup.visible = equipped;
-    if (playerCore) playerCore.visible = !equipped;
-    if (playerGlow) playerGlow.visible = !equipped;
-    if (playerRing) playerRing.visible = !equipped;
+    // Only show default if neither skin is equipped
+    const anyEquipped = equipped || (GameState.fireBallOwned && GameState.fireBallEquipped);
+    if (playerCore) playerCore.visible = !anyEquipped;
+    if (playerGlow) playerGlow.visible = !anyEquipped;
+    if (playerRing) playerRing.visible = !anyEquipped;
+}
+
+function applyFireBallSkin() {
+    if (!player || !fireBallGroup) return;
+    const equipped = GameState.fireBallOwned && GameState.fireBallEquipped;
+    fireBallGroup.visible = equipped;
+    // Only show default if neither skin is equipped
+    const anyEquipped = equipped || (GameState.discoBallOwned && GameState.discoBallEquipped);
+    if (playerCore) playerCore.visible = !anyEquipped;
+    if (playerGlow) playerGlow.visible = !anyEquipped;
+    if (playerRing) playerRing.visible = !anyEquipped;
+}
+
+function applySkins() {
+    applyDiscoBallSkin();
+    applyFireBallSkin();
 }
 
 function purchaseDiscoBall() {
@@ -219,28 +381,75 @@ function purchaseDiscoBall() {
 
 function toggleDiscoBallEquip() {
     if (!GameState.discoBallOwned) return;
+    // Unequip fire ball if equipping disco ball
+    if (!GameState.discoBallEquipped && GameState.fireBallEquipped) {
+        GameState.fireBallEquipped = false;
+        saveFireBallState();
+    }
     GameState.discoBallEquipped = !GameState.discoBallEquipped;
     saveDiscoBallState();
-    applyDiscoBallSkin();
+    applySkins();
+    refreshStoreUI();
+}
+
+function purchaseFireBall() {
+    if (GameState.fireBallOwned) return;
+    if (GameState.totalOrbs < FIREBALL_PRICE) return;
+    if (!spendOrbs(FIREBALL_PRICE)) return;
+    GameState.fireBallOwned = true;
+    GameState.fireBallEquipped = true;
+    // Unequip disco ball when purchasing and equipping fire ball
+    if (GameState.discoBallEquipped) {
+        GameState.discoBallEquipped = false;
+        saveDiscoBallState();
+    }
+    saveFireBallState();
+    applySkins();
+    refreshStoreUI();
+}
+
+function toggleFireBallEquip() {
+    if (!GameState.fireBallOwned) return;
+    // Unequip disco ball if equipping fire ball
+    if (!GameState.fireBallEquipped && GameState.discoBallEquipped) {
+        GameState.discoBallEquipped = false;
+        saveDiscoBallState();
+    }
+    GameState.fireBallEquipped = !GameState.fireBallEquipped;
+    saveFireBallState();
+    applySkins();
     refreshStoreUI();
 }
 
 function refreshStoreUI() {
     storeItemElements.forEach((elements, itemId) => {
-        if (itemId !== 'disco-ball') return;
         const { status, price, actionBtn } = elements;
-        if (!GameState.discoBallOwned) {
-            actionBtn.disabled = GameState.totalOrbs < DISCO_PRICE;
-            actionBtn.textContent = 'Buy';
-            status.textContent = GameState.totalOrbs < DISCO_PRICE ? 'Not enough orbs' : '';
-            price.innerHTML = '<span class="orb-icon"></span> ' + DISCO_PRICE + ' Orbs';
-            return;
-        }
 
-        status.textContent = GameState.discoBallEquipped ? 'Equipped' : 'Owned';
-        price.textContent = GameState.discoBallEquipped ? 'Equipped' : 'Owned';
-        actionBtn.disabled = false;
-        actionBtn.textContent = GameState.discoBallEquipped ? 'Equipped' : 'Equip';
+        if (itemId === 'disco-ball') {
+            if (!GameState.discoBallOwned) {
+                actionBtn.disabled = GameState.totalOrbs < DISCO_PRICE;
+                actionBtn.textContent = 'Buy';
+                status.textContent = GameState.totalOrbs < DISCO_PRICE ? 'Not enough orbs' : '';
+                price.innerHTML = '<span class="orb-icon"></span> ' + DISCO_PRICE + ' Orbs';
+                return;
+            }
+            status.textContent = GameState.discoBallEquipped ? 'Equipped' : 'Owned';
+            price.textContent = GameState.discoBallEquipped ? 'Equipped' : 'Owned';
+            actionBtn.disabled = GameState.discoBallEquipped;
+            actionBtn.textContent = GameState.discoBallEquipped ? 'Equipped' : 'Equip';
+        } else if (itemId === 'fire-ball') {
+            if (!GameState.fireBallOwned) {
+                actionBtn.disabled = GameState.totalOrbs < FIREBALL_PRICE;
+                actionBtn.textContent = 'Buy';
+                status.textContent = GameState.totalOrbs < FIREBALL_PRICE ? 'Not enough orbs' : '';
+                price.innerHTML = '<span class="orb-icon"></span> ' + FIREBALL_PRICE + ' Orbs';
+                return;
+            }
+            status.textContent = GameState.fireBallEquipped ? 'Equipped' : 'Owned';
+            price.textContent = GameState.fireBallEquipped ? 'Equipped' : 'Owned';
+            actionBtn.disabled = GameState.fireBallEquipped;
+            actionBtn.textContent = GameState.fireBallEquipped ? 'Equipped' : 'Equip';
+        }
     });
 }
 
@@ -274,7 +483,42 @@ function setupDiscoPreview(canvas, itemId) {
 
     previewScenes.set(itemId, {
         renderer, scene, camera, group, core, tiles, innerGlow, outerGlow, beams, canvas,
-        colorIndex: 0, colorTransition: 0
+        colorIndex: 0, colorTransition: 0, type: 'disco'
+    });
+    resizeDiscoPreview();
+}
+
+function setupFirePreview(canvas, itemId) {
+    if (!canvas) return;
+    const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'low-power'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 20);
+    camera.position.set(0, 0.1, 2.2);
+    camera.lookAt(0, 0, 0);
+
+    const { group, core, flames, embers, innerGlow, outerGlow } = buildFireBall(0.45, false);
+    group.scale.set(0.85, 0.85, 0.85);
+    scene.add(group);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambient);
+    const orangeLight = new THREE.PointLight(0xff6600, 1.6, 6);
+    orangeLight.position.set(-1, 1.2, 2);
+    scene.add(orangeLight);
+    const redLight = new THREE.PointLight(0xff2200, 1.4, 6);
+    redLight.position.set(1, -1, 2);
+    scene.add(redLight);
+
+    previewScenes.set(itemId, {
+        renderer, scene, camera, group, core, flames, embers, innerGlow, outerGlow, canvas,
+        colorIndex: 0, colorTransition: 0, type: 'fire'
     });
     resizeDiscoPreview();
 }
@@ -289,55 +533,145 @@ function resizeDiscoPreview() {
 
 function renderDiscoPreview(delta, elapsed) {
     previewScenes.forEach((preview) => {
-        // Rotation
-        preview.group.rotation.y += delta * 0.55;
-
-        // Pulse effect
-        const pulse = 1 + Math.sin(elapsed * 2.2) * 0.025;
-        preview.group.scale.set(0.85 * pulse, 0.85 * pulse, 0.85 * pulse);
-
-        // Color cycling (change every 2 seconds)
-        preview.colorTransition += delta;
-        if (preview.colorTransition >= 2.0) {
-            preview.colorTransition = 0;
-            preview.colorIndex = (preview.colorIndex + 1) % DISCO_COLORS.length;
+        if (preview.type === 'fire') {
+            renderFirePreviewItem(preview, delta, elapsed);
+        } else {
+            renderDiscoPreviewItem(preview, delta, elapsed);
         }
-
-        // Smooth color interpolation
-        const currentColor = DISCO_COLORS[preview.colorIndex];
-        const nextColor = DISCO_COLORS[(preview.colorIndex + 1) % DISCO_COLORS.length];
-        const t = Math.min(preview.colorTransition / 0.5, 1); // 0.5s transition time
-        const lerpedColor = new THREE.Color(currentColor.hex).lerp(
-            new THREE.Color(nextColor.hex),
-            t
-        );
-
-        // Apply colors and intensity
-        const beatPhase = Math.abs(Math.sin(elapsed * 2.2));
-        if (preview.core && preview.core.material) {
-            preview.core.material.emissive.copy(lerpedColor);
-            preview.core.material.emissiveIntensity = 1.2 + beatPhase * 0.5;
-        }
-        if (preview.tiles && preview.tiles.material) {
-            preview.tiles.material.emissive.copy(lerpedColor);
-            preview.tiles.material.emissiveIntensity = 0.9 + beatPhase * 0.4;
-        }
-        if (preview.innerGlow && preview.innerGlow.material) {
-            preview.innerGlow.material.color.copy(lerpedColor);
-            preview.innerGlow.material.opacity = 0.35 + beatPhase * 0.15;
-        }
-        if (preview.outerGlow && preview.outerGlow.material) {
-            preview.outerGlow.material.color.copy(lerpedColor);
-            preview.outerGlow.material.opacity = 0.18 + beatPhase * 0.1;
-        }
-        if (preview.beams && preview.beams.material) {
-            preview.beams.material.color.copy(lerpedColor);
-            // Rotate beams
-            preview.beams.rotation.y = elapsed * 1.2;
-        }
-
         preview.renderer.render(preview.scene, preview.camera);
     });
+}
+
+function renderDiscoPreviewItem(preview, delta, elapsed) {
+    // Rotation
+    preview.group.rotation.y += delta * 0.55;
+
+    // Pulse effect
+    const pulse = 1 + Math.sin(elapsed * 2.2) * 0.025;
+    preview.group.scale.set(0.85 * pulse, 0.85 * pulse, 0.85 * pulse);
+
+    // Color cycling (change every 2 seconds)
+    preview.colorTransition += delta;
+    if (preview.colorTransition >= 2.0) {
+        preview.colorTransition = 0;
+        preview.colorIndex = (preview.colorIndex + 1) % DISCO_COLORS.length;
+    }
+
+    // Smooth color interpolation
+    const currentColor = DISCO_COLORS[preview.colorIndex];
+    const nextColor = DISCO_COLORS[(preview.colorIndex + 1) % DISCO_COLORS.length];
+    const t = Math.min(preview.colorTransition / 0.5, 1); // 0.5s transition time
+    const lerpedColor = new THREE.Color(currentColor.hex).lerp(
+        new THREE.Color(nextColor.hex),
+        t
+    );
+
+    // Apply colors and intensity
+    const beatPhase = Math.abs(Math.sin(elapsed * 2.2));
+    if (preview.core && preview.core.material) {
+        preview.core.material.emissive.copy(lerpedColor);
+        preview.core.material.emissiveIntensity = 1.2 + beatPhase * 0.5;
+    }
+    if (preview.tiles && preview.tiles.material) {
+        preview.tiles.material.emissive.copy(lerpedColor);
+        preview.tiles.material.emissiveIntensity = 0.9 + beatPhase * 0.4;
+    }
+    if (preview.innerGlow && preview.innerGlow.material) {
+        preview.innerGlow.material.color.copy(lerpedColor);
+        preview.innerGlow.material.opacity = 0.35 + beatPhase * 0.15;
+    }
+    if (preview.outerGlow && preview.outerGlow.material) {
+        preview.outerGlow.material.color.copy(lerpedColor);
+        preview.outerGlow.material.opacity = 0.18 + beatPhase * 0.1;
+    }
+    if (preview.beams && preview.beams.material) {
+        preview.beams.material.color.copy(lerpedColor);
+        // Rotate beams
+        preview.beams.rotation.y = elapsed * 1.2;
+    }
+}
+
+function renderFirePreviewItem(preview, delta, elapsed) {
+    // Slow rotation
+    preview.group.rotation.y += delta * 0.4;
+
+    // Fire pulse effect - more intense and erratic
+    const pulse = 1 + Math.sin(elapsed * 3.5) * 0.04 + Math.sin(elapsed * 7) * 0.02;
+    preview.group.scale.set(0.85 * pulse, 0.85 * pulse, 0.85 * pulse);
+
+    // Color cycling through fire colors
+    preview.colorTransition += delta;
+    if (preview.colorTransition >= 1.5) {
+        preview.colorTransition = 0;
+        preview.colorIndex = (preview.colorIndex + 1) % FIRE_COLORS.length;
+    }
+
+    const currentColor = FIRE_COLORS[preview.colorIndex];
+    const nextColor = FIRE_COLORS[(preview.colorIndex + 1) % FIRE_COLORS.length];
+    const t = Math.min(preview.colorTransition / 0.4, 1);
+    const lerpedColor = new THREE.Color(currentColor.hex).lerp(
+        new THREE.Color(nextColor.hex),
+        t
+    );
+
+    // Intensity flicker for fire effect
+    const flicker = 0.8 + Math.random() * 0.2;
+    const beatPhase = Math.abs(Math.sin(elapsed * 3.5));
+
+    if (preview.core && preview.core.material) {
+        preview.core.material.emissive.copy(lerpedColor);
+        preview.core.material.emissiveIntensity = (1.5 + beatPhase * 0.5) * flicker;
+    }
+    if (preview.innerGlow && preview.innerGlow.material) {
+        preview.innerGlow.material.color.copy(lerpedColor);
+        preview.innerGlow.material.opacity = (0.4 + beatPhase * 0.2) * flicker;
+    }
+    if (preview.outerGlow && preview.outerGlow.material) {
+        preview.outerGlow.material.color.lerp(new THREE.Color(0xffaa00), 0.3);
+        preview.outerGlow.material.opacity = (0.2 + beatPhase * 0.1) * flicker;
+    }
+
+    // Animate flame particles
+    if (preview.flames && preview.flames.geometry) {
+        const positions = preview.flames.geometry.attributes.position.array;
+        const basePositions = preview.flames.geometry.userData.basePositions;
+        const phases = preview.flames.geometry.userData.phases;
+
+        if (basePositions && phases) {
+            for (let i = 0; i < positions.length / 3; i++) {
+                const phase = phases[i];
+                // Flames rise and flicker
+                positions[i * 3 + 1] = basePositions[i * 3 + 1] +
+                    Math.sin(elapsed * 4 + phase) * 0.15 +
+                    (elapsed * 0.5 + phase) % 0.8;
+                // Slight horizontal wobble
+                positions[i * 3] = basePositions[i * 3] + Math.sin(elapsed * 3 + phase) * 0.05;
+                positions[i * 3 + 2] = basePositions[i * 3 + 2] + Math.cos(elapsed * 3 + phase) * 0.05;
+            }
+            preview.flames.geometry.attributes.position.needsUpdate = true;
+        }
+        preview.flames.material.color.copy(lerpedColor);
+    }
+
+    // Animate ember particles
+    if (preview.embers && preview.embers.geometry) {
+        const positions = preview.embers.geometry.attributes.position.array;
+        const basePositions = preview.embers.geometry.userData.basePositions;
+        const phases = preview.embers.geometry.userData.phases;
+
+        if (basePositions && phases) {
+            for (let i = 0; i < positions.length / 3; i++) {
+                const phase = phases[i];
+                // Embers float and drift
+                positions[i * 3 + 1] = basePositions[i * 3 + 1] +
+                    Math.sin(elapsed * 2 + phase) * 0.2 +
+                    (elapsed * 0.3 + phase) % 1.2;
+                positions[i * 3] = basePositions[i * 3] + Math.sin(elapsed * 1.5 + phase) * 0.1;
+                positions[i * 3 + 2] = basePositions[i * 3 + 2] + Math.cos(elapsed * 1.5 + phase) * 0.1;
+            }
+            preview.embers.geometry.attributes.position.needsUpdate = true;
+        }
+    }
 }
 
 function renderStoreTabs() {
@@ -410,6 +744,14 @@ function renderStoreItems() {
         card.appendChild(info);
         storeGrid.appendChild(card);
 
+        // Add description if available
+        if (item.description) {
+            const desc = document.createElement('div');
+            desc.className = 'store-description';
+            desc.textContent = item.description;
+            info.insertBefore(desc, actions);
+        }
+
         storeItemElements.set(item.id, { status, price, actionBtn });
 
         if (item.id === 'disco-ball') {
@@ -421,6 +763,15 @@ function renderStoreItems() {
                 }
             });
             setupDiscoPreview(canvas, item.id);
+        } else if (item.id === 'fire-ball') {
+            actionBtn.addEventListener('click', () => {
+                if (!GameState.fireBallOwned) {
+                    purchaseFireBall();
+                } else {
+                    toggleFireBallEquip();
+                }
+            });
+            setupFirePreview(canvas, item.id);
         }
     });
 }

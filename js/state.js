@@ -11,6 +11,8 @@ const GameState = {
     topDistance: 0,
     discoBallOwned: false,
     discoBallEquipped: false,
+    fireBallOwned: false,
+    fireBallEquipped: false,
     currentLane: 1, // Start in center
     speed: CONFIG.INITIAL_SPEED,
     lastBeatTime: 0,
