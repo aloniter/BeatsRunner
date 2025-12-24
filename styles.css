@@ -357,11 +357,15 @@
 
 .store-panel {
     width: min(720px, 92vw);
+    max-height: 85vh;
     background: rgba(5, 0, 15, 0.85);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 18px;
     padding: 22px;
     box-shadow: 0 0 60px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
 }
 
 .store-panel-header {
@@ -379,13 +383,29 @@
 }
 
 .store-close {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.2);
     color: #fff;
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     border-radius: 8px;
     cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.store-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(0, 255, 255, 0.5);
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.3);
+}
+
+.store-close:active {
+    transform: scale(0.95);
 }
 
 .store-section-title {
@@ -393,12 +413,15 @@
     letter-spacing: 3px;
     font-size: 12px;
     margin-bottom: 10px;
+    flex-shrink: 0;
 }
 
 .store-tabs {
     display: flex;
     gap: 8px;
     margin-bottom: 14px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
 }
 
 .store-tab {
@@ -421,18 +444,46 @@
 
 .store-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
     gap: 14px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+    margin-right: -4px;
+}
+
+.store-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.store-grid::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 3px;
+}
+
+.store-grid::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.store-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 255, 255, 0.5);
 }
 
 .store-card {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 12px;
-    align-items: center;
     background: rgba(5, 0, 15, 0.6);
     border: 1px solid rgba(0, 255, 255, 0.2);
     border-radius: 12px;
     padding: 14px;
+    transition: all 0.2s ease;
+}
+
+.store-card:hover {
+    border-color: rgba(0, 255, 255, 0.4);
+    box-shadow: 0 0 16px rgba(0, 255, 255, 0.2);
 }
 
 .store-preview {
@@ -456,6 +507,8 @@
     flex-direction: column;
     gap: 6px;
     text-align: left;
+    flex: 1;
+    min-height: 0;
 }
 
 .store-title {
@@ -505,8 +558,94 @@
 }
 
 @media (max-width: 768px) {
+    .store-overlay {
+        padding: 16px;
+    }
+
+    .store-panel {
+        padding: 18px;
+        max-height: 90vh;
+    }
+
+    .store-panel-header {
+        margin-bottom: 14px;
+    }
+
+    .store-title-main {
+        font-size: 14px;
+        letter-spacing: 4px;
+    }
+
+    .store-close {
+        width: 44px;
+        height: 44px;
+        font-size: 22px;
+    }
+
+    .store-grid {
+        gap: 12px;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .store-card {
+        padding: 12px;
+        gap: 10px;
+    }
+
     .store-preview {
-        height: 130px;
+        height: 110px;
+    }
+
+    .store-preview canvas {
+        width: 100px;
+        height: 100px;
+    }
+
+    .store-title {
+        font-size: 15px;
+    }
+
+    .store-price {
+        font-size: 13px;
+    }
+
+    .store-description {
+        font-size: 11px;
+    }
+
+    .store-btn {
+        min-width: 100%;
+        padding: 9px 14px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .store-overlay {
+        padding: 12px;
+    }
+
+    .store-panel {
+        padding: 14px;
+    }
+
+    .store-preview {
+        height: 100px;
+    }
+
+    .store-preview canvas {
+        width: 90px;
+        height: 90px;
+    }
+
+    .store-title {
+        font-size: 14px;
+    }
+}
+
+@media (min-width: 769px) {
+    .store-grid {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
 }
 
