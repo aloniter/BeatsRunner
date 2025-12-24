@@ -5,6 +5,7 @@ const DISCO_EQUIPPED_KEY = 'beat-runner-disco-equipped';
 const FIREBALL_PRICE = 75;
 const FIREBALL_OWNED_KEY = 'beat-runner-fireball-owned';
 const FIREBALL_EQUIPPED_KEY = 'beat-runner-fireball-equipped';
+const EQUIPPED_SKIN_KEY = 'beat-runner-equipped-skin';
 
 const STORE_CATEGORIES = [
     {
@@ -27,7 +28,7 @@ function loadDiscoBallState() {
     if (!GameState.discoBallOwned) {
         GameState.discoBallEquipped = false;
     }
-    refreshStoreUI();
+    normalizeEquippedSkins();
 }
 
 function saveDiscoBallState() {
@@ -41,12 +42,36 @@ function loadFireBallState() {
     if (!GameState.fireBallOwned) {
         GameState.fireBallEquipped = false;
     }
-    refreshStoreUI();
+    normalizeEquippedSkins();
 }
 
 function saveFireBallState() {
     localStorage.setItem(FIREBALL_OWNED_KEY, String(GameState.fireBallOwned));
     localStorage.setItem(FIREBALL_EQUIPPED_KEY, String(GameState.fireBallEquipped));
+}
+
+function normalizeEquippedSkins() {
+    const preferred = localStorage.getItem(EQUIPPED_SKIN_KEY);
+    if (GameState.discoBallEquipped && GameState.fireBallEquipped) {
+        if (preferred === 'fire') {
+            GameState.discoBallEquipped = false;
+            saveDiscoBallState();
+        } else {
+            GameState.fireBallEquipped = false;
+            saveFireBallState();
+        }
+    }
+
+    if (GameState.discoBallEquipped) {
+        localStorage.setItem(EQUIPPED_SKIN_KEY, 'disco');
+    } else if (GameState.fireBallEquipped) {
+        localStorage.setItem(EQUIPPED_SKIN_KEY, 'fire');
+    } else {
+        localStorage.setItem(EQUIPPED_SKIN_KEY, 'none');
+    }
+
+    applySkins();
+    refreshStoreUI();
 }
 
 // Disco color palette: purple, cyan, pink, blue, gold
@@ -374,20 +399,22 @@ function purchaseDiscoBall() {
     if (!spendOrbs(DISCO_PRICE)) return;
     GameState.discoBallOwned = true;
     GameState.discoBallEquipped = true;
+    GameState.fireBallEquipped = false;
     saveDiscoBallState();
+    saveFireBallState();
+    localStorage.setItem(EQUIPPED_SKIN_KEY, 'disco');
     applyDiscoBallSkin();
     refreshStoreUI();
 }
 
 function toggleDiscoBallEquip() {
     if (!GameState.discoBallOwned) return;
-    // Unequip fire ball if equipping disco ball
-    if (!GameState.discoBallEquipped && GameState.fireBallEquipped) {
-        GameState.fireBallEquipped = false;
-        saveFireBallState();
-    }
-    GameState.discoBallEquipped = !GameState.discoBallEquipped;
+    const willEquip = !GameState.discoBallEquipped;
+    GameState.discoBallEquipped = willEquip;
+    GameState.fireBallEquipped = false;
     saveDiscoBallState();
+    saveFireBallState();
+    localStorage.setItem(EQUIPPED_SKIN_KEY, willEquip ? 'disco' : 'none');
     applySkins();
     refreshStoreUI();
 }
@@ -398,25 +425,22 @@ function purchaseFireBall() {
     if (!spendOrbs(FIREBALL_PRICE)) return;
     GameState.fireBallOwned = true;
     GameState.fireBallEquipped = true;
-    // Unequip disco ball when purchasing and equipping fire ball
-    if (GameState.discoBallEquipped) {
-        GameState.discoBallEquipped = false;
-        saveDiscoBallState();
-    }
+    GameState.discoBallEquipped = false;
     saveFireBallState();
+    saveDiscoBallState();
+    localStorage.setItem(EQUIPPED_SKIN_KEY, 'fire');
     applySkins();
     refreshStoreUI();
 }
 
 function toggleFireBallEquip() {
     if (!GameState.fireBallOwned) return;
-    // Unequip disco ball if equipping fire ball
-    if (!GameState.fireBallEquipped && GameState.discoBallEquipped) {
-        GameState.discoBallEquipped = false;
-        saveDiscoBallState();
-    }
-    GameState.fireBallEquipped = !GameState.fireBallEquipped;
+    const willEquip = !GameState.fireBallEquipped;
+    GameState.fireBallEquipped = willEquip;
+    GameState.discoBallEquipped = false;
     saveFireBallState();
+    saveDiscoBallState();
+    localStorage.setItem(EQUIPPED_SKIN_KEY, willEquip ? 'fire' : 'none');
     applySkins();
     refreshStoreUI();
 }

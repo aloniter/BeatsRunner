@@ -891,6 +891,48 @@
     }
 }
 
+@media (max-width: 520px) {
+    .store-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .store-card {
+        flex-direction: row;
+        align-items: center;
+        padding: 10px;
+        gap: 12px;
+    }
+
+    .store-preview {
+        width: 88px;
+        height: 88px;
+        flex: 0 0 88px;
+    }
+
+    .store-preview canvas {
+        width: 70px;
+        height: 70px;
+    }
+
+    .store-info {
+        gap: 4px;
+    }
+
+    .store-title {
+        font-size: 14px;
+    }
+
+    .store-description {
+        font-size: 10px;
+        min-height: 0;
+    }
+
+    .store-actions {
+        margin-top: 2px;
+    }
+}
+
 @media (min-width: 769px) {
     .store-grid {
         grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
