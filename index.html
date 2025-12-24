@@ -62,6 +62,40 @@
             <div><span>←</span> <span>→</span> to Move | <span>↑</span> / <span>Space</span> to Jump</div>
             <div>or <span>Swipe</span> / <span>Tap</span> on Mobile</div>
         </div>
+        <div class="dev-tools" id="dev-tools" aria-label="Developer Tools">
+            <div class="dev-tools-title">Dev Tools</div>
+            <div class="dev-tools-row">
+                <div class="dev-tools-label">Orbs</div>
+                <div class="dev-tools-actions">
+                    <button class="dev-tools-btn" data-dev-action="orbs-add" data-amount="10">+10</button>
+                    <button class="dev-tools-btn" data-dev-action="orbs-remove" data-amount="10">-10</button>
+                    <button class="dev-tools-btn" data-dev-action="orbs-reset">Reset</button>
+                    <input class="dev-tools-input" id="dev-orbs-input" type="number" min="0" step="10" value="50">
+                    <button class="dev-tools-btn" data-dev-action="orbs-set">Set</button>
+                </div>
+            </div>
+            <div class="dev-tools-row">
+                <div class="dev-tools-label">Top Distance</div>
+                <div class="dev-tools-actions">
+                    <input class="dev-tools-input" id="dev-distance-input" type="number" min="0" step="10" value="250">
+                    <button class="dev-tools-btn" data-dev-action="top-distance-set">Set</button>
+                    <button class="dev-tools-btn" data-dev-action="top-distance-reset">Reset</button>
+                </div>
+            </div>
+            <div class="dev-tools-row">
+                <div class="dev-tools-label">Start With</div>
+                <div class="dev-tools-actions">
+                    <label class="dev-tools-toggle">
+                        <input type="checkbox" id="dev-start-shield">
+                        Shield
+                    </label>
+                    <label class="dev-tools-toggle">
+                        <input type="checkbox" id="dev-start-magnet">
+                        Magnet
+                    </label>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="store-overlay" id="store-overlay" aria-hidden="true">

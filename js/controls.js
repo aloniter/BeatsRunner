@@ -127,6 +127,8 @@ function setupControls() {
     document.getElementById('restart-btn').addEventListener('click', restartGame);
     document.getElementById('mainmenu-btn').addEventListener('click', goToMainMenu);
     pauseBtn.addEventListener('click', togglePause);
+    
+    setupDevTools();
 }
 
 // ========================================
@@ -158,4 +160,61 @@ function onOrientationChange() {
     setTimeout(() => {
         onWindowResize();
     }, 100);
+}
+
+// ========================================
+// DEV TOOLS (MAIN MENU)
+// ========================================
+function setupDevTools() {
+    const panel = document.getElementById('dev-tools');
+    if (!panel) return;
+    
+    const orbsInput = document.getElementById('dev-orbs-input');
+    const distanceInput = document.getElementById('dev-distance-input');
+    const startShieldToggle = document.getElementById('dev-start-shield');
+    const startMagnetToggle = document.getElementById('dev-start-magnet');
+    
+    if (startShieldToggle) {
+        startShieldToggle.addEventListener('change', () => {
+            DevSettings.startWithShield = startShieldToggle.checked;
+        });
+    }
+    
+    if (startMagnetToggle) {
+        startMagnetToggle.addEventListener('change', () => {
+            DevSettings.startWithMagnet = startMagnetToggle.checked;
+        });
+    }
+    
+    panel.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!target || !target.dataset) return;
+        
+        const action = target.dataset.devAction;
+        if (!action) return;
+        
+        if (action === 'orbs-add') {
+            const amount = Number(target.dataset.amount) || 0;
+            addOrbs(amount);
+        } else if (action === 'orbs-remove') {
+            const amount = Number(target.dataset.amount) || 0;
+            spendOrbs(amount);
+        } else if (action === 'orbs-reset') {
+            resetOrbs();
+        } else if (action === 'orbs-set') {
+            const value = Number(orbsInput?.value) || 0;
+            GameState.totalOrbs = Math.max(0, Math.floor(value));
+            saveOrbs();
+            if (menuOrbsValue) menuOrbsValue.textContent = GameState.totalOrbs;
+            if (typeof refreshStoreUI === 'function') refreshStoreUI();
+        } else if (action === 'top-distance-set') {
+            const value = Number(distanceInput?.value) || 0;
+            GameState.topDistance = Math.max(0, Math.floor(value));
+            saveTopDistance();
+            if (menuTopDistanceValue) menuTopDistanceValue.textContent = GameState.topDistance;
+            if (finalTopDistance) finalTopDistance.textContent = GameState.topDistance;
+        } else if (action === 'top-distance-reset') {
+            resetTopDistance();
+        }
+    });
 }

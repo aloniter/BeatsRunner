@@ -50,3 +50,9 @@ const storeSectionTitle = document.getElementById('store-section-title');
 const finalDistance = document.getElementById('final-distance');
 const finalOrbs = document.getElementById('final-orbs');
 const finalScore = document.getElementById('final-score');
+
+// Dev tool settings (main menu only)
+const DevSettings = {
+    startWithShield: false,
+    startWithMagnet: false
+};

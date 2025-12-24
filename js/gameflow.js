@@ -19,6 +19,13 @@ function startGame() {
     MagnetManager.reset();
     ShieldManager.reset();
     
+    if (DevSettings.startWithShield) {
+        ShieldManager.activate();
+    }
+    if (DevSettings.startWithMagnet) {
+        MagnetManager.activate();
+    }
+    
     startScreen.style.display = 'none';
     hud.style.display = 'flex';
     beatIndicator.style.display = 'block';
