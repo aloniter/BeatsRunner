@@ -10,6 +10,10 @@ function updateGame(delta, elapsed) {
     PlayerController.update(delta, elapsed);
     if (discoBallGroup && discoBallGroup.visible) {
         discoBallGroup.rotation.y += delta * 0.9;
+        // Rotate light beams independently for dynamic effect
+        if (discoBallBeams) {
+            discoBallBeams.rotation.y += delta * 1.5;
+        }
     }
     
     // Update distance/score

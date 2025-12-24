@@ -4,6 +4,8 @@
 let scene, camera, renderer;
 let player, playerCore, playerGlow, playerRing;
 let discoBallGroup, discoBallCore, discoBallTiles = [], discoBallSparkles;
+let discoBallInnerGlow, discoBallOuterGlow, discoBallBeams;
+let discoBallColorIndex = 0, discoBallColorTransition = 0;
 let obstacles = [];
 let collectibles = [];
 let magnetPickups = [];
