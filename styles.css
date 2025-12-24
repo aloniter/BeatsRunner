@@ -602,87 +602,99 @@
 
 @media (max-width: 768px) {
     .store-overlay {
-        padding: calc(16px + var(--safe-area-inset-top)) calc(12px + var(--safe-area-inset-right)) calc(16px + var(--safe-area-inset-bottom)) calc(12px + var(--safe-area-inset-left));
-        align-items: flex-start;
-        padding-top: calc(max(16px, var(--safe-area-inset-top)) + 20px);
+        padding: var(--safe-area-inset-top) var(--safe-area-inset-right) var(--safe-area-inset-bottom) var(--safe-area-inset-left);
+        align-items: stretch;
+        justify-content: stretch;
     }
 
     .store-panel {
-        padding: 16px;
-        max-height: calc(100vh - var(--safe-area-inset-top) - var(--safe-area-inset-bottom) - 40px);
+        padding: 16px 12px;
+        max-height: 100%;
+        height: 100%;
         width: 100%;
         max-width: 100%;
-        border-radius: 16px;
+        border-radius: 0;
+        border: none;
+        box-shadow: none;
     }
 
     .store-panel-header {
-        margin-bottom: 12px;
-        padding-bottom: 10px;
+        margin-bottom: 14px;
+        padding-bottom: 12px;
+        padding-top: 4px;
     }
 
     .store-title-main {
-        font-size: 15px;
-        letter-spacing: 4px;
+        font-size: 16px;
+        letter-spacing: 5px;
     }
 
     .store-close {
-        width: 44px;
-        height: 44px;
-        font-size: 18px;
-        min-width: 44px;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+        min-width: 40px;
     }
 
     .store-tabs {
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }
 
     .store-section-title {
-        margin-bottom: 10px;
+        display: none;
     }
 
     .store-grid {
-        gap: 12px;
+        gap: 10px;
         grid-template-columns: repeat(2, 1fr);
+        padding-right: 2px;
     }
 
     .store-card {
-        padding: 10px;
-        gap: 8px;
-        border-radius: 12px;
+        padding: 8px;
+        gap: 6px;
+        border-radius: 10px;
+    }
+
+    .store-info {
+        gap: 3px;
     }
 
     .store-preview {
-        height: 85px;
+        height: 70px;
         border-radius: 8px;
     }
 
     .store-preview canvas {
-        width: 75px;
-        height: 75px;
+        width: 60px;
+        height: 60px;
     }
 
     .store-title {
-        font-size: 14px;
+        font-size: 13px;
+        letter-spacing: 0.3px;
     }
 
     .store-price {
-        font-size: 12px;
+        font-size: 11px;
     }
 
     .store-description {
-        font-size: 10px;
-        min-height: 26px;
-        line-height: 1.3;
+        font-size: 9px;
+        min-height: 24px;
+        line-height: 1.35;
+        margin: 0;
     }
 
     .store-status {
-        font-size: 10px;
+        font-size: 9px;
+        min-height: 12px;
     }
 
     .store-btn {
         width: 100%;
-        padding: 10px 12px;
-        font-size: 11px;
+        padding: 8px 10px;
+        font-size: 10px;
         letter-spacing: 1.5px;
     }
 }
@@ -691,60 +703,69 @@
 @media (max-width: 768px) and (display-mode: standalone) {
     .store-overlay {
         background: radial-gradient(ellipse at center, rgba(10, 0, 25, 0.99) 0%, rgba(0, 0, 0, 1) 100%);
-        align-items: center;
-        padding-top: calc(var(--safe-area-inset-top) + 24px);
     }
 
     .store-panel {
-        max-height: calc(100vh - var(--safe-area-inset-top) - var(--safe-area-inset-bottom) - 48px);
         background: rgba(8, 2, 20, 0.98);
     }
 }
 
 @media (max-width: 380px) {
-    .store-overlay {
-        padding: calc(12px + var(--safe-area-inset-top)) calc(8px + var(--safe-area-inset-right)) calc(12px + var(--safe-area-inset-bottom)) calc(8px + var(--safe-area-inset-left));
-    }
-
     .store-panel {
-        padding: 12px;
-        border-radius: 14px;
+        padding: 14px 10px;
     }
 
     .store-title-main {
-        font-size: 14px;
-        letter-spacing: 3px;
+        font-size: 15px;
+        letter-spacing: 4px;
+    }
+
+    .store-close {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
     }
 
     .store-grid {
-        gap: 10px;
+        gap: 8px;
     }
 
     .store-card {
-        padding: 8px;
+        padding: 7px;
+        gap: 5px;
     }
 
     .store-preview {
-        height: 75px;
-    }
-
-    .store-preview canvas {
-        width: 65px;
         height: 65px;
     }
 
+    .store-preview canvas {
+        width: 55px;
+        height: 55px;
+    }
+
     .store-title {
-        font-size: 13px;
+        font-size: 12px;
     }
 
     .store-description {
-        font-size: 9px;
-        min-height: 24px;
+        font-size: 8px;
+        min-height: 22px;
+        line-height: 1.3;
+    }
+
+    .store-price {
+        font-size: 10px;
+    }
+
+    .store-status {
+        font-size: 8px;
     }
 
     .store-btn {
-        padding: 9px 10px;
-        font-size: 10px;
+        padding: 7px 8px;
+        font-size: 9px;
+        letter-spacing: 1px;
     }
 }
 
