@@ -30,28 +30,40 @@ function saveDiscoBallState() {
     localStorage.setItem(DISCO_EQUIPPED_KEY, String(GameState.discoBallEquipped));
 }
 
+// Disco color palette: purple, cyan, pink, blue, gold
+const DISCO_COLORS = [
+    { hex: 0xbb00ff, name: 'purple' },   // Rich purple
+    { hex: 0x00ffff, name: 'cyan' },     // Vibrant cyan
+    { hex: 0xff00aa, name: 'pink' },     // Hot pink
+    { hex: 0x0088ff, name: 'blue' },     // Electric blue
+    { hex: 0xffaa00, name: 'gold' }      // Golden
+];
+
 function buildDiscoBall(radius = 1, assignGlobals = false) {
     const group = new THREE.Group();
+
+    // Enhanced core with stronger emissive
     const coreGeo = new THREE.SphereGeometry(radius, 20, 14);
     const coreMat = new THREE.MeshStandardMaterial({
-        color: 0xf5f7ff,
+        color: 0xffffff,
         metalness: 0.95,
-        roughness: 0.08,
+        roughness: 0.05,
         emissive: 0xffffff,
-        emissiveIntensity: 0.7
+        emissiveIntensity: 1.2  // Increased from 0.7
     });
     const core = new THREE.Mesh(coreGeo, coreMat);
     group.add(core);
 
+    // Enhanced tiles with dynamic color capability
     const tileSize = radius * 0.24;
     const tileDepth = radius * 0.08;
     const tileGeo = new THREE.BoxGeometry(tileSize, tileSize, tileDepth);
     const tileMat = new THREE.MeshStandardMaterial({
         color: 0xffffff,
         metalness: 1,
-        roughness: 0.04,
+        roughness: 0.03,  // Reduced for more shine
         emissive: 0xffffff,
-        emissiveIntensity: 0.5
+        emissiveIntensity: 0.9  // Increased from 0.5
     });
 
     const latSteps = 8;
@@ -93,32 +105,73 @@ function buildDiscoBall(radius = 1, assignGlobals = false) {
     tiles.instanceMatrix.needsUpdate = true;
     group.add(tiles);
 
-    const glowGeo = new THREE.SphereGeometry(radius * 1.15, 16, 12);
-    const glowMat = new THREE.MeshBasicMaterial({
+    // Multi-layered glow for bloom effect
+    const innerGlowGeo = new THREE.SphereGeometry(radius * 1.12, 16, 12);
+    const innerGlowMat = new THREE.MeshBasicMaterial({
         color: 0xffffff,
         transparent: true,
-        opacity: 0.28
+        opacity: 0.35,  // Increased from 0.28
+        blending: THREE.AdditiveBlending
     });
-    const glow = new THREE.Mesh(glowGeo, glowMat);
-    group.add(glow);
+    const innerGlow = new THREE.Mesh(innerGlowGeo, innerGlowMat);
+    group.add(innerGlow);
 
+    // Outer glow layer for enhanced bloom
+    const outerGlowGeo = new THREE.SphereGeometry(radius * 1.25, 16, 12);
+    const outerGlowMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.18,
+        blending: THREE.AdditiveBlending
+    });
+    const outerGlow = new THREE.Mesh(outerGlowGeo, outerGlowMat);
+    group.add(outerGlow);
+
+    // Light beams projecting outward (8 beams)
+    const beamCount = 8;
+    const beamGeo = new THREE.CylinderGeometry(0.02, 0.08, radius * 3, 4);
+    const beamMat = new THREE.MeshBasicMaterial({
+        color: 0xffffff,
+        transparent: true,
+        opacity: 0.4,
+        blending: THREE.AdditiveBlending
+    });
+    const beams = new THREE.InstancedMesh(beamGeo, beamMat, beamCount);
+
+    for (let b = 0; b < beamCount; b++) {
+        const angle = (b / beamCount) * Math.PI * 2;
+        const beamMatrix = new THREE.Matrix4();
+        const beamPos = new THREE.Vector3(
+            Math.cos(angle) * radius * 1.5,
+            0,
+            Math.sin(angle) * radius * 1.5
+        );
+        const beamQuat = new THREE.Quaternion();
+        beamQuat.setFromAxisAngle(new THREE.Vector3(0, 0, 1), angle + Math.PI / 2);
+        beamMatrix.compose(beamPos, beamQuat, new THREE.Vector3(1, 1, 1));
+        beams.setMatrixAt(b, beamMatrix);
+    }
+    beams.instanceMatrix.needsUpdate = true;
+    group.add(beams);
+
+    // Enhanced sparkles with more particles
     const sparkleGeo = new THREE.BufferGeometry();
-    const sparkleCount = 30;
+    const sparkleCount = 40;  // Increased from 30
     const sparklePositions = new Float32Array(sparkleCount * 3);
     for (let s = 0; s < sparkleCount; s++) {
         const angle = Math.random() * Math.PI * 2;
         const height = (Math.random() - 0.5) * 2;
-        const radiusOffset = radius + 0.2 + Math.random() * 0.25;
+        const radiusOffset = radius + 0.2 + Math.random() * 0.35;
         sparklePositions[s * 3] = Math.cos(angle) * radiusOffset;
-        sparklePositions[s * 3 + 1] = height * 0.6;
+        sparklePositions[s * 3 + 1] = height * 0.7;
         sparklePositions[s * 3 + 2] = Math.sin(angle) * radiusOffset;
     }
     sparkleGeo.setAttribute('position', new THREE.BufferAttribute(sparklePositions, 3));
     const sparkleMat = new THREE.PointsMaterial({
         color: 0xffffff,
-        size: 0.07,
+        size: 0.09,  // Increased from 0.07
         transparent: true,
-        opacity: 0.8,
+        opacity: 0.9,  // Increased from 0.8
         blending: THREE.AdditiveBlending
     });
     const sparkles = new THREE.Points(sparkleGeo, sparkleMat);
@@ -129,9 +182,15 @@ function buildDiscoBall(radius = 1, assignGlobals = false) {
         discoBallCore = core;
         discoBallTiles = tiles;
         discoBallSparkles = sparkles;
+        discoBallInnerGlow = innerGlow;
+        discoBallOuterGlow = outerGlow;
+        discoBallBeams = beams;
+        // Initialize color state
+        discoBallColorIndex = 0;
+        discoBallColorTransition = 0;
     }
 
-    return { group, core, tiles };
+    return { group, core, tiles, innerGlow, outerGlow, beams };
 }
 
 function createDiscoBallSkin() {
@@ -200,7 +259,7 @@ function setupDiscoPreview(canvas, itemId) {
     camera.position.set(0, 0.1, 2.2);
     camera.lookAt(0, 0, 0);
 
-    const { group, core, tiles } = buildDiscoBall(0.45, false);
+    const { group, core, tiles, innerGlow, outerGlow, beams } = buildDiscoBall(0.45, false);
     group.scale.set(0.85, 0.85, 0.85);
     scene.add(group);
 
@@ -213,7 +272,10 @@ function setupDiscoPreview(canvas, itemId) {
     cyanLight.position.set(1, -1, 2);
     scene.add(cyanLight);
 
-    previewScenes.set(itemId, { renderer, scene, camera, group, core, tiles, canvas });
+    previewScenes.set(itemId, {
+        renderer, scene, camera, group, core, tiles, innerGlow, outerGlow, beams, canvas,
+        colorIndex: 0, colorTransition: 0
+    });
     resizeDiscoPreview();
 }
 
@@ -227,15 +289,53 @@ function resizeDiscoPreview() {
 
 function renderDiscoPreview(delta, elapsed) {
     previewScenes.forEach((preview) => {
+        // Rotation
         preview.group.rotation.y += delta * 0.55;
-        const pulse = 1 + Math.sin(elapsed * 2.2) * 0.02;
+
+        // Pulse effect
+        const pulse = 1 + Math.sin(elapsed * 2.2) * 0.025;
         preview.group.scale.set(0.85 * pulse, 0.85 * pulse, 0.85 * pulse);
+
+        // Color cycling (change every 2 seconds)
+        preview.colorTransition += delta;
+        if (preview.colorTransition >= 2.0) {
+            preview.colorTransition = 0;
+            preview.colorIndex = (preview.colorIndex + 1) % DISCO_COLORS.length;
+        }
+
+        // Smooth color interpolation
+        const currentColor = DISCO_COLORS[preview.colorIndex];
+        const nextColor = DISCO_COLORS[(preview.colorIndex + 1) % DISCO_COLORS.length];
+        const t = Math.min(preview.colorTransition / 0.5, 1); // 0.5s transition time
+        const lerpedColor = new THREE.Color(currentColor.hex).lerp(
+            new THREE.Color(nextColor.hex),
+            t
+        );
+
+        // Apply colors and intensity
+        const beatPhase = Math.abs(Math.sin(elapsed * 2.2));
         if (preview.core && preview.core.material) {
-            preview.core.material.emissiveIntensity = 0.7 + Math.abs(Math.sin(elapsed * 2.2)) * 0.35;
+            preview.core.material.emissive.copy(lerpedColor);
+            preview.core.material.emissiveIntensity = 1.2 + beatPhase * 0.5;
         }
         if (preview.tiles && preview.tiles.material) {
-            preview.tiles.material.emissiveIntensity = 0.5 + Math.abs(Math.sin(elapsed * 2.2)) * 0.25;
+            preview.tiles.material.emissive.copy(lerpedColor);
+            preview.tiles.material.emissiveIntensity = 0.9 + beatPhase * 0.4;
         }
+        if (preview.innerGlow && preview.innerGlow.material) {
+            preview.innerGlow.material.color.copy(lerpedColor);
+            preview.innerGlow.material.opacity = 0.35 + beatPhase * 0.15;
+        }
+        if (preview.outerGlow && preview.outerGlow.material) {
+            preview.outerGlow.material.color.copy(lerpedColor);
+            preview.outerGlow.material.opacity = 0.18 + beatPhase * 0.1;
+        }
+        if (preview.beams && preview.beams.material) {
+            preview.beams.material.color.copy(lerpedColor);
+            // Rotate beams
+            preview.beams.rotation.y = elapsed * 1.2;
+        }
+
         preview.renderer.render(preview.scene, preview.camera);
     });
 }
