@@ -167,6 +167,18 @@ function onOrientationChange() {
 // ========================================
 function setupDevTools() {
     const panel = document.getElementById('dev-tools');
+    const toggle = document.getElementById('dev-tools-toggle');
+    const wrapper = document.getElementById('dev-tools-panel');
+    if (toggle && panel) {
+        toggle.addEventListener('click', () => {
+            const isOpen = panel.classList.toggle('is-open');
+            panel.setAttribute('aria-hidden', String(!isOpen));
+            toggle.setAttribute('aria-expanded', String(isOpen));
+            if (wrapper) {
+                wrapper.classList.toggle('is-open', isOpen);
+            }
+        });
+    }
     if (!panel) return;
     
     const orbsInput = document.getElementById('dev-orbs-input');
