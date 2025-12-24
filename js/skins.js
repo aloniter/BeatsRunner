@@ -11,7 +11,7 @@ const STORE_CATEGORIES = [
         id: 'skins',
         label: 'Skins',
         items: [
-            { id: 'disco-ball', name: 'Disco Ball', price: DISCO_PRICE, preview: 'disco' },
+            { id: 'disco-ball', name: 'Disco Ball', price: DISCO_PRICE, preview: 'disco', description: 'Light up the rhythm. Pure party energy.' },
             { id: 'fire-ball', name: 'Fire Ball', price: FIREBALL_PRICE, preview: 'fire', description: 'Feel the heat. A ball of pure rhythmic power.' }
         ]
     }
@@ -722,6 +722,11 @@ function renderStoreItems() {
         title.className = 'store-title';
         title.textContent = item.name;
 
+        // Description - always included for consistent card height
+        const desc = document.createElement('div');
+        desc.className = 'store-description';
+        desc.textContent = item.description || '';
+
         const price = document.createElement('div');
         price.className = 'store-price';
         price.innerHTML = '<span class="orb-icon"></span> ' + item.price + ' Orbs';
@@ -735,7 +740,10 @@ function renderStoreItems() {
         actionBtn.className = 'btn btn-secondary store-btn';
         actionBtn.textContent = 'Buy';
         actions.appendChild(actionBtn);
+
+        // Build card in consistent order: title, description, price, status, actions
         info.appendChild(title);
+        info.appendChild(desc);
         info.appendChild(price);
         info.appendChild(status);
         info.appendChild(actions);
@@ -743,14 +751,6 @@ function renderStoreItems() {
         card.appendChild(preview);
         card.appendChild(info);
         storeGrid.appendChild(card);
-
-        // Add description if available
-        if (item.description) {
-            const desc = document.createElement('div');
-            desc.className = 'store-description';
-            desc.textContent = item.description;
-            info.insertBefore(desc, actions);
-        }
 
         storeItemElements.set(item.id, { status, price, actionBtn });
 
