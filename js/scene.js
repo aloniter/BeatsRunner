@@ -2,7 +2,7 @@
 // INITIALIZATION
 // ========================================
 function init() {
-    loadCoins();
+    loadOrbs();
     loadTopDistance();
     loadDiscoBallState();
 

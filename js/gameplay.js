@@ -731,38 +731,56 @@ const CollectibleManager = {
     
     createOrb() {
         const group = new THREE.Group();
-        
-        // Core
-        const coreGeo = new THREE.IcosahedronGeometry(0.28, 1);
+
+        // Color variations: cyan, purple, pink
+        const orbColors = [
+            CONFIG.COLORS.CYAN,    // Cyan (default)
+            0xbb00ff,              // Purple
+            0xff00aa               // Pink
+        ];
+        const chosenColor = orbColors[Math.floor(Math.random() * orbColors.length)];
+
+        // Core - smooth sphere (no hard edges)
+        const coreGeo = new THREE.SphereGeometry(0.28, 16, 16);
         const coreMat = new THREE.MeshStandardMaterial({
-            color: CONFIG.COLORS.CYAN,
-            emissive: CONFIG.COLORS.CYAN,
-            emissiveIntensity: 1,
-            metalness: 0.9,
-            roughness: 0.1
+            color: chosenColor,
+            emissive: chosenColor,
+            emissiveIntensity: 1.2,
+            metalness: 0,      // No metallic reflections
+            roughness: 0.3,    // Soft, energy-like appearance
+            transparent: true,
+            opacity: 0.95
         });
         const core = new THREE.Mesh(coreGeo, coreMat);
         group.add(core);
-        
-        // Outer glow
+
+        // Outer glow - soft energy aura
         const glowGeo = new THREE.SphereGeometry(0.45, 12, 12);
         const glowMat = new THREE.MeshBasicMaterial({
-            color: CONFIG.COLORS.CYAN,
+            color: chosenColor,
             transparent: true,
-            opacity: 0.25,
+            opacity: 0.3,
             side: THREE.BackSide
         });
-        group.add(new THREE.Mesh(glowGeo, glowMat));
-        
-        // Ring
+        const glow = new THREE.Mesh(glowGeo, glowMat);
+        group.add(glow);
+
+        // Ring - energy shimmer
         const ringGeo = new THREE.TorusGeometry(0.35, 0.025, 6, 20);
         const ringMat = new THREE.MeshBasicMaterial({
             color: CONFIG.COLORS.WHITE,
             transparent: true,
-            opacity: 0.5
+            opacity: 0.4
         });
-        group.add(new THREE.Mesh(ringGeo, ringMat));
-        
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        group.add(ring);
+
+        // Store references for animation
+        group.userData.core = core;
+        group.userData.glow = glow;
+        group.userData.ring = ring;
+        group.userData.baseEmissive = 1.2;
+
         return group;
     },
     
@@ -774,16 +792,32 @@ const CollectibleManager = {
         
         for (let i = collectibles.length - 1; i >= 0; i--) {
             const orb = collectibles[i];
-            
+
             // Move toward player
             orb.position.z -= moveAmount;
-            
+
             // Rotation
             orb.rotation.y += delta * 3;
             orb.rotation.x += delta * 2;
-            
+
             // Bobbing
             orb.position.y = orb.userData.baseY + Math.sin(elapsed * 5 + orb.userData.phase) * 0.15;
+
+            // Beat-synchronized pulsing (subtle shimmer)
+            if (orb.userData.core) {
+                const beatPulse = 1 + Math.sin(elapsed * 8 + orb.userData.phase) * 0.15;
+                orb.userData.core.material.emissiveIntensity = orb.userData.baseEmissive * beatPulse;
+
+                // Glow pulsing
+                if (orb.userData.glow) {
+                    orb.userData.glow.material.opacity = 0.25 + Math.sin(elapsed * 6 + orb.userData.phase) * 0.08;
+                }
+
+                // Ring shimmer
+                if (orb.userData.ring) {
+                    orb.userData.ring.material.opacity = 0.3 + Math.sin(elapsed * 7 + orb.userData.phase) * 0.15;
+                }
+            }
             
             if (magnetActive) {
                 const dx = playerX - orb.position.x;
@@ -821,10 +855,10 @@ const CollectibleManager = {
             if (dist < collectRadius) {
                 GameState.orbs++;
                 GameState.score += 100;
-                addCoin(1);
+                addOrbs(1);
                 scene.remove(orb);
                 collectibles.splice(i, 1);
-                
+
                 playCollectSound();
                 flashScreen(0.08, '#00ffff');
             }
