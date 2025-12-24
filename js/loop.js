@@ -10,6 +10,65 @@ function updateGame(delta, elapsed) {
     PlayerController.update(delta, elapsed);
     if (discoBallGroup && discoBallGroup.visible) {
         discoBallGroup.rotation.y += delta * 0.9;
+        // Rotate light beams independently for dynamic effect
+        if (discoBallBeams) {
+            discoBallBeams.rotation.y += delta * 1.5;
+        }
+    }
+
+    // Animate Fire Ball skin
+    if (fireBallGroup && fireBallGroup.visible) {
+        fireBallGroup.rotation.y += delta * 0.6;
+
+        // Animate flames
+        if (fireBallFlames && fireBallFlames.geometry) {
+            const positions = fireBallFlames.geometry.attributes.position.array;
+            const basePositions = fireBallFlames.geometry.userData.basePositions;
+            const phases = fireBallFlames.geometry.userData.phases;
+
+            if (basePositions && phases) {
+                for (let i = 0; i < positions.length / 3; i++) {
+                    const phase = phases[i];
+                    // Flames rise and flicker
+                    positions[i * 3 + 1] = basePositions[i * 3 + 1] +
+                        Math.sin(elapsed * 5 + phase) * 0.12 +
+                        (elapsed * 0.8 + phase) % 0.6;
+                    // Horizontal wobble
+                    positions[i * 3] = basePositions[i * 3] + Math.sin(elapsed * 4 + phase) * 0.04;
+                    positions[i * 3 + 2] = basePositions[i * 3 + 2] + Math.cos(elapsed * 4 + phase) * 0.04;
+                }
+                fireBallFlames.geometry.attributes.position.needsUpdate = true;
+            }
+        }
+
+        // Animate embers
+        if (fireBallEmbers && fireBallEmbers.geometry) {
+            const positions = fireBallEmbers.geometry.attributes.position.array;
+            const basePositions = fireBallEmbers.geometry.userData.basePositions;
+            const phases = fireBallEmbers.geometry.userData.phases;
+
+            if (basePositions && phases) {
+                for (let i = 0; i < positions.length / 3; i++) {
+                    const phase = phases[i];
+                    // Embers float upward
+                    positions[i * 3 + 1] = basePositions[i * 3 + 1] +
+                        Math.sin(elapsed * 2.5 + phase) * 0.15 +
+                        (elapsed * 0.4 + phase) % 1.0;
+                    positions[i * 3] = basePositions[i * 3] + Math.sin(elapsed * 2 + phase) * 0.08;
+                    positions[i * 3 + 2] = basePositions[i * 3 + 2] + Math.cos(elapsed * 2 + phase) * 0.08;
+                }
+                fireBallEmbers.geometry.attributes.position.needsUpdate = true;
+            }
+        }
+
+        // Pulse the fire ball intensity with beat
+        const beatPulse = Math.abs(Math.sin(elapsed * 3));
+        if (fireBallCore && fireBallCore.material) {
+            fireBallCore.material.emissiveIntensity = 1.5 + beatPulse * 0.5;
+        }
+        if (fireBallInnerGlow && fireBallInnerGlow.material) {
+            fireBallInnerGlow.material.opacity = 0.4 + beatPulse * 0.15;
+        }
     }
     
     // Update distance/score

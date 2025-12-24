@@ -2,9 +2,10 @@
 // INITIALIZATION
 // ========================================
 function init() {
-    loadCoins();
+    loadOrbs();
     loadTopDistance();
     loadDiscoBallState();
+    loadFireBallState();
 
     // Create scene
     scene = new THREE.Scene();
@@ -71,15 +72,6 @@ function createLights() {
     // Hemisphere light for better ambient
     const hemi = new THREE.HemisphereLight(0x0066ff, 0xff00ff, 0.3);
     scene.add(hemi);
-    
-    // Point lights for neon effect
-    const pinkLight = new THREE.PointLight(CONFIG.COLORS.PINK, 1.5, 40);
-    pinkLight.position.set(-8, 4, 15);
-    scene.add(pinkLight);
-    
-    const cyanLight = new THREE.PointLight(CONFIG.COLORS.CYAN, 1.5, 40);
-    cyanLight.position.set(8, 4, 15);
-    scene.add(cyanLight);
 }
 
 // ========================================
@@ -258,10 +250,14 @@ function createPlayer() {
     discoSkin.visible = false;
     group.add(discoSkin);
 
+    const fireSkin = createFireBallSkin();
+    fireSkin.visible = false;
+    group.add(fireSkin);
+
     group.position.set(0, CONFIG.GROUND_Y, 0);
     scene.add(group);
     player = group;
-    applyDiscoBallSkin();
+    applySkins();
 }
 
 // ========================================
