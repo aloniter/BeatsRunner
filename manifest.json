@@ -1,0 +1,18 @@
+{
+  "name": "Beat Runner",
+  "short_name": "Beat Runner",
+  "description": "Neon Rhythm Experience - An endless runner game with beats",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#ff00ff",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
