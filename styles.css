@@ -230,7 +230,7 @@
     font-weight: 500;
 }
 
-.menu-coins {
+.menu-orbs {
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -244,22 +244,34 @@
     box-shadow: 0 0 18px rgba(0, 255, 255, 0.18);
 }
 
-.coin-icon {
+.orb-icon {
     width: 18px;
     height: 18px;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #fff2a6 0%, #ffd24d 40%, #ffb000 100%);
-    box-shadow: 0 0 10px rgba(255, 208, 77, 0.8);
+    background: radial-gradient(circle at 30% 30%, #ffffff 0%, #00ffff 50%, #0088ff 100%);
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.9), 0 0 6px rgba(0, 136, 255, 0.6);
     display: inline-block;
+    animation: orbPulse 2s ease-in-out infinite;
 }
 
-.coin-label {
+@keyframes orbPulse {
+    0%, 100% {
+        opacity: 0.9;
+        box-shadow: 0 0 12px rgba(0, 255, 255, 0.9), 0 0 6px rgba(0, 136, 255, 0.6);
+    }
+    50% {
+        opacity: 1;
+        box-shadow: 0 0 16px rgba(0, 255, 255, 1), 0 0 8px rgba(0, 136, 255, 0.8);
+    }
+}
+
+.orb-label {
     font-size: 12px;
     text-transform: uppercase;
     color: rgba(255, 255, 255, 0.75);
 }
 
-.coin-value {
+.orb-value {
     font-size: 18px;
     font-weight: 700;
     color: #00ffff;

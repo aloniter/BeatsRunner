@@ -208,8 +208,8 @@ function applyDiscoBallSkin() {
 
 function purchaseDiscoBall() {
     if (GameState.discoBallOwned) return;
-    if (GameState.coins < DISCO_PRICE) return;
-    if (!spendCoins(DISCO_PRICE)) return;
+    if (GameState.totalOrbs < DISCO_PRICE) return;
+    if (!spendOrbs(DISCO_PRICE)) return;
     GameState.discoBallOwned = true;
     GameState.discoBallEquipped = true;
     saveDiscoBallState();
@@ -230,10 +230,10 @@ function refreshStoreUI() {
         if (itemId !== 'disco-ball') return;
         const { status, price, actionBtn } = elements;
         if (!GameState.discoBallOwned) {
-            actionBtn.disabled = GameState.coins < DISCO_PRICE;
+            actionBtn.disabled = GameState.totalOrbs < DISCO_PRICE;
             actionBtn.textContent = 'Buy';
-            status.textContent = GameState.coins < DISCO_PRICE ? 'Not enough coins' : '';
-            price.innerHTML = '<span class="coin-icon"></span> ' + DISCO_PRICE + ' Coins';
+            status.textContent = GameState.totalOrbs < DISCO_PRICE ? 'Not enough orbs' : '';
+            price.innerHTML = '<span class="orb-icon"></span> ' + DISCO_PRICE + ' Orbs';
             return;
         }
 
@@ -390,7 +390,7 @@ function renderStoreItems() {
 
         const price = document.createElement('div');
         price.className = 'store-price';
-        price.innerHTML = '<span class="coin-icon"></span> ' + item.price + ' Coins';
+        price.innerHTML = '<span class="orb-icon"></span> ' + item.price + ' Orbs';
 
         const status = document.createElement('div');
         status.className = 'store-status';
