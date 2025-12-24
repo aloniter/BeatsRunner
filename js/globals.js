@@ -6,6 +6,8 @@ let player, playerCore, playerGlow, playerRing;
 let discoBallGroup, discoBallCore, discoBallTiles = [], discoBallSparkles;
 let discoBallInnerGlow, discoBallOuterGlow, discoBallBeams;
 let discoBallColorIndex = 0, discoBallColorTransition = 0;
+let fireBallGroup, fireBallCore, fireBallFlames, fireBallEmbers;
+let fireBallInnerGlow, fireBallOuterGlow;
 let obstacles = [];
 let collectibles = [];
 let magnetPickups = [];
