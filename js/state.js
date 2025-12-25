@@ -22,5 +22,9 @@ const GameState = {
     jumpVelocity: 0,
     jumpQueued: false,
     isMagnetActive: false,
-    hasShield: false
+    hasShield: false,
+    // Bonus Mode (distance 1000-1150)
+    isBonusMode: false,
+    bonusModeProgress: 0,  // 0 to 1 progress through bonus zone
+    bonusModeTransition: 0 // 0 to 1 for smooth visual transitions
 };

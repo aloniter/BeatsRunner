@@ -85,10 +85,13 @@ function updateGame(delta, elapsed) {
     // Update shield power-up
     ShieldManager.update(delta, elapsed);
     ShieldManager.checkCollection();
-    
+
     // Update collectibles
     CollectibleManager.update(delta, elapsed);
     CollectibleManager.checkCollection();
+
+    // Update bonus mode (rainbow track effect)
+    BonusModeManager.update(delta, elapsed);
     
     // Check collision
     if (ObstacleManager.checkCollision()) {

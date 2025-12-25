@@ -13,11 +13,15 @@ function startGame() {
     GameState.gameStartTime = performance.now();
     GameState.isMagnetActive = false;
     GameState.hasShield = false;
-    
+    GameState.isBonusMode = false;
+    GameState.bonusModeProgress = 0;
+    GameState.bonusModeTransition = 0;
+
     PlayerController.reset();
     BeatManager.reset();
     MagnetManager.reset();
     ShieldManager.reset();
+    BonusModeManager.reset();
     
     if (DevSettings.startWithShield) {
         ShieldManager.activate();
@@ -84,6 +88,7 @@ function restartGame() {
     ObstacleManager.reset();
     CollectibleManager.reset();
     ShieldManager.reset();
+    BonusModeManager.reset();
     
     // Reset floor positions
     floorTiles.forEach((tile, i) => {
@@ -110,6 +115,7 @@ function goToMainMenu() {
     CollectibleManager.reset();
     ShieldManager.reset();
     MagnetManager.reset();
+    BonusModeManager.reset();
     
     // Reset floor positions
     floorTiles.forEach((tile, i) => {

@@ -1051,3 +1051,226 @@ const BeatManager = {
 };
 
 // ========================================
+// BONUS MODE - Rainbow Track (Distance 1000-1150)
+// ========================================
+const BonusModeManager = {
+    BONUS_START: 1000,
+    BONUS_END: 1150,
+    TRANSITION_DURATION: 0.5, // seconds for fade in/out
+
+    // Rainbow colors for the gradient
+    RAINBOW_COLORS: [
+        new THREE.Color(0xff0000), // Red
+        new THREE.Color(0xff8800), // Orange
+        new THREE.Color(0xffff00), // Yellow
+        new THREE.Color(0x00ff00), // Green
+        new THREE.Color(0x00ffff), // Cyan
+        new THREE.Color(0x0088ff), // Blue
+        new THREE.Color(0xff00ff)  // Magenta
+    ],
+
+    // Store original materials for restoration
+    originalMaterials: [],
+    rainbowMaterials: [],
+    edgeGlowMaterials: [],
+    isInitialized: false,
+
+    update(delta, elapsed) {
+        const distance = GameState.distance;
+        const wasInBonusMode = GameState.isBonusMode;
+
+        // Check if we're in bonus zone
+        const inBonusZone = distance >= this.BONUS_START && distance <= this.BONUS_END;
+        GameState.isBonusMode = inBonusZone;
+
+        // Calculate progress through bonus zone (0 to 1)
+        if (inBonusZone) {
+            GameState.bonusModeProgress = (distance - this.BONUS_START) / (this.BONUS_END - this.BONUS_START);
+        }
+
+        // Handle transition (smooth fade in/out)
+        if (inBonusZone) {
+            // Fade in
+            GameState.bonusModeTransition = Math.min(1, GameState.bonusModeTransition + delta / this.TRANSITION_DURATION);
+        } else {
+            // Fade out
+            GameState.bonusModeTransition = Math.max(0, GameState.bonusModeTransition - delta / this.TRANSITION_DURATION);
+        }
+
+        // Initialize rainbow materials if needed
+        if (!this.isInitialized && floorTiles.length > 0) {
+            this.initRainbowMaterials();
+        }
+
+        // Update visual effects
+        if (GameState.bonusModeTransition > 0) {
+            this.updateRainbowEffect(elapsed);
+            this.updateTrackCurve();
+        } else if (wasInBonusMode && !inBonusZone) {
+            // Just exited bonus mode, reset track
+            this.resetTrack();
+        }
+
+        // Disable obstacle spawning during bonus mode
+        if (inBonusZone) {
+            ObstacleManager.lastSpawnZ = CONFIG.SPAWN_DISTANCE + 50;
+        }
+    },
+
+    initRainbowMaterials() {
+        if (this.isInitialized || floorTiles.length === 0) return;
+
+        // Store original materials and create rainbow versions
+        floorTiles.forEach((tile, tileIndex) => {
+            const floorMesh = tile.children[0]; // Main floor plane
+            if (floorMesh && floorMesh.material) {
+                // Store original
+                this.originalMaterials[tileIndex] = {
+                    floor: floorMesh.material.clone(),
+                    dividers: [],
+                    edges: []
+                };
+
+                // Create rainbow material for floor
+                const rainbowMat = new THREE.MeshStandardMaterial({
+                    color: 0xffffff,
+                    emissive: 0xffffff,
+                    emissiveIntensity: 0.6,
+                    metalness: 0.8,
+                    roughness: 0.2,
+                    transparent: true,
+                    opacity: 1
+                });
+                this.rainbowMaterials[tileIndex] = rainbowMat;
+
+                // Create edge glow materials (soft white glow)
+                tile.children.forEach((child, childIndex) => {
+                    if (childIndex >= 3 && childIndex <= 4) { // Edge lines
+                        this.originalMaterials[tileIndex].edges.push(child.material.clone());
+                    } else if (childIndex >= 1 && childIndex <= 2) { // Lane dividers
+                        this.originalMaterials[tileIndex].dividers.push(child.material.clone());
+                    }
+                });
+            }
+        });
+
+        this.isInitialized = true;
+    },
+
+    updateRainbowEffect(elapsed) {
+        const transition = GameState.bonusModeTransition;
+        const animSpeed = 1.5; // Rainbow animation speed
+
+        floorTiles.forEach((tile, tileIndex) => {
+            const floorMesh = tile.children[0];
+            if (!floorMesh || !floorMesh.material) return;
+
+            // Calculate rainbow color based on tile position and time
+            // Rainbow flows forward (toward player) by using negative tileZ
+            const tileZ = tile.position.z;
+            const rawPhase = (-tileZ * 0.015 + elapsed * animSpeed);
+            const colorPhase = ((rawPhase % 1) + 1) % 1; // Ensure positive modulo
+            const rainbowColor = this.getRainbowColor(colorPhase);
+
+            // Blend between original and rainbow based on transition
+            const originalMat = this.originalMaterials[tileIndex]?.floor;
+            if (originalMat) {
+                // Interpolate emissive color
+                const blendedEmissive = new THREE.Color(originalMat.emissive).lerp(rainbowColor, transition);
+                floorMesh.material.emissive.copy(blendedEmissive);
+
+                // Increase emissive intensity during bonus mode
+                const baseIntensity = originalMat.emissiveIntensity || 0.2;
+                floorMesh.material.emissiveIntensity = baseIntensity + (0.8 - baseIntensity) * transition;
+
+                // Blend base color toward white
+                const blendedColor = new THREE.Color(originalMat.color).lerp(new THREE.Color(0x222233), transition);
+                floorMesh.material.color.copy(blendedColor);
+            }
+
+            // Update lane dividers - fade them out to create unified track look
+            tile.children.forEach((child, childIndex) => {
+                if (childIndex >= 1 && childIndex <= 2) { // Lane dividers
+                    child.material.opacity = 0.7 * (1 - transition * 0.8); // Fade out
+                } else if (childIndex >= 3 && childIndex <= 4) { // Edge lines - make them glow
+                    const edgeRawPhase = (-tileZ * 0.02 + elapsed * animSpeed * 1.3);
+                    const edgePhase = ((edgeRawPhase % 1) + 1) % 1;
+                    const edgeColor = this.getRainbowColor(edgePhase);
+                    child.material.color.copy(new THREE.Color(CONFIG.COLORS.CYAN).lerp(edgeColor, transition));
+                    child.material.opacity = 0.85 + transition * 0.15; // Brighten edges
+                } else if (childIndex >= 5) { // Grid lines
+                    child.material.opacity = 0.25 * (1 - transition * 0.7); // Fade grid
+                }
+            });
+        });
+    },
+
+    updateTrackCurve() {
+        const transition = GameState.bonusModeTransition;
+
+        // Create a smooth curved ramp shape (hill/bump effect)
+        floorTiles.forEach(tile => {
+            const tileZ = tile.position.z;
+
+            // Only curve tiles that are visible
+            if (tileZ > -10 && tileZ < 160) {
+                // Normalize tile position to 0-1 range
+                const curvePos = Math.max(0, Math.min(1, (tileZ + 10) / 120));
+
+                // Create smooth wave curve - gentle hill that rises and falls
+                const curveHeight = Math.sin(curvePos * Math.PI) * 2.5 * transition;
+
+                // Apply Y position for ramp effect
+                tile.position.y = curveHeight;
+            }
+        });
+    },
+
+    getRainbowColor(phase) {
+        // Get interpolated rainbow color from phase (0 to 1)
+        const numColors = this.RAINBOW_COLORS.length;
+        const scaledPhase = phase * numColors;
+        const index = Math.floor(scaledPhase) % numColors;
+        const nextIndex = (index + 1) % numColors;
+        const t = scaledPhase - Math.floor(scaledPhase);
+
+        return new THREE.Color().copy(this.RAINBOW_COLORS[index]).lerp(this.RAINBOW_COLORS[nextIndex], t);
+    },
+
+    resetTrack() {
+        // Restore original materials and positions
+        floorTiles.forEach((tile, tileIndex) => {
+            // Reset Y position (used for curve effect)
+            tile.position.y = 0;
+
+            const floorMesh = tile.children[0];
+            const originalMat = this.originalMaterials[tileIndex]?.floor;
+            if (floorMesh && originalMat) {
+                floorMesh.material.color.copy(originalMat.color);
+                floorMesh.material.emissive.copy(originalMat.emissive);
+                floorMesh.material.emissiveIntensity = originalMat.emissiveIntensity;
+            }
+
+            // Restore lane dividers and edges
+            tile.children.forEach((child, childIndex) => {
+                if (childIndex >= 1 && childIndex <= 2) {
+                    child.material.opacity = 0.7;
+                } else if (childIndex >= 3 && childIndex <= 4) {
+                    child.material.color.setHex(CONFIG.COLORS.CYAN);
+                    child.material.opacity = 0.85;
+                } else if (childIndex >= 5) {
+                    child.material.opacity = 0.25;
+                }
+            });
+        });
+    },
+
+    reset() {
+        GameState.isBonusMode = false;
+        GameState.bonusModeProgress = 0;
+        GameState.bonusModeTransition = 0;
+        this.resetTrack();
+    }
+};
+
+// ========================================
