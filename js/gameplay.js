@@ -753,6 +753,7 @@ const ShieldManager = {
 // ========================================
 const CollectibleManager = {
     spawn(x, z) {
+        if (GameState.isBonusActive) return;
         const orb = this.createOrb();
         orb.position.set(x, 1.7, z);
         orb.userData.baseY = 1.7;
@@ -812,6 +813,12 @@ const CollectibleManager = {
     },
     
     update(delta, elapsed) {
+        if (GameState.isBonusActive) {
+            if (collectibles.length > 0) {
+                this.reset();
+            }
+            return;
+        }
         const moveAmount = GameState.speed * delta;
         const magnetActive = GameState.isMagnetActive && player;
         const playerX = magnetActive ? player.position.x : 0;
@@ -867,6 +874,7 @@ const CollectibleManager = {
     },
     
     checkCollection() {
+        if (GameState.isBonusActive) return;
         if (!player) return;
         
         const playerX = player.position.x;
@@ -957,6 +965,12 @@ const BonusOrbManager = {
     },
 
     update(delta, elapsed) {
+        if (GameState.isBonusActive) {
+            if (this.bonusOrbs.length > 0) {
+                this.reset();
+            }
+            return;
+        }
         const moveAmount = GameState.speed * delta;
         const bonusStart = CONFIG.BONUS_START_DISTANCE;
         const bonusEnd = CONFIG.BONUS_END_DISTANCE;
@@ -1146,6 +1160,7 @@ const BonusOrbManager = {
     },
 
     checkCollection() {
+        if (GameState.isBonusActive) return;
         const playerX = player.position.x;
         const playerY = player.position.y;
         const playerZ = player.position.z;

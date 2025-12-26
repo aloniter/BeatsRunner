@@ -64,6 +64,8 @@ function enterBonusMode() {
     GameState.isBonusActive = true;
     GameState.bonusTriggered = true;
     ObstacleManager.clearForBonus();
+    CollectibleManager.reset();
+    BonusOrbManager.reset();
     SpeedBoostManager.reset();
 }
 
