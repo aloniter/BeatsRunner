@@ -57,6 +57,9 @@ function startGame() {
 
 function enterBonusMode() {
     if (GameState.isBonusActive) return;
+    if (GameState.distance < CONFIG.BONUS_START_DISTANCE) {
+        GameState.distance = CONFIG.BONUS_START_DISTANCE;
+    }
     GameState.isBonusActive = true;
     GameState.bonusTriggered = true;
     ObstacleManager.clearForBonus();

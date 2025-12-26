@@ -57,5 +57,6 @@ const finalScore = document.getElementById('final-score');
 const DevSettings = {
     startWithShield: false,
     startWithMagnet: false,
-    forceBonus: false
+    forceBonus: false,
+    godMode: false
 };

@@ -907,9 +907,9 @@ const BonusOrbManager = {
     bonusOrbs: [],
     nextPatternZ: 0,
     patternIndex: 0,
-    patternSpacingMin: 7,
-    patternSpacingMax: 9,
-    endBuffer: 10,
+    patternSpacingMin: 5,
+    patternSpacingMax: 6.5,
+    endBuffer: 6,
 
     spawn(x, y, z, isAerial = false) {
         const group = new THREE.Group();
@@ -918,12 +918,12 @@ const BonusOrbManager = {
         group.userData.isAerial = isAerial;
         group.userData.phase = Math.random() * Math.PI * 2;
 
-        // Rainbow gradient core (cycles through colors)
+        // Bright, consistent orb visuals for clarity on rainbow floor
         const coreGeo = new THREE.SphereGeometry(0.36, 16, 16);
         const coreMat = new THREE.MeshStandardMaterial({
-            color: 0xff00ff,  // Will be animated
-            emissive: 0xff00ff,
-            emissiveIntensity: 1.5,
+            color: 0xffffff,
+            emissive: CONFIG.COLORS.CYAN,
+            emissiveIntensity: 1.6,
             metalness: 0,
             roughness: 0.3
         });
@@ -933,7 +933,7 @@ const BonusOrbManager = {
         // Brighter outer glow
         const glowGeo = new THREE.SphereGeometry(0.55, 12, 12);
         const glowMat = new THREE.MeshBasicMaterial({
-            color: 0xff00ff,  // Will be animated
+            color: CONFIG.COLORS.CYAN,
             transparent: true,
             opacity: 0.5,
             side: THREE.BackSide
@@ -941,10 +941,10 @@ const BonusOrbManager = {
         const glow = new THREE.Mesh(glowGeo, glowMat);
         group.add(glow);
 
-        // Rainbow-colored ring
+        // Consistent ring
         const ringGeo = new THREE.TorusGeometry(0.45, 0.03, 8, 24);
         const ringMat = new THREE.MeshBasicMaterial({
-            color: 0xffff00,  // Will be animated
+            color: CONFIG.COLORS.WHITE,
             transparent: true,
             opacity: 0.6
         });
@@ -983,14 +983,10 @@ const BonusOrbManager = {
             // Move toward player
             orb.position.z -= moveAmount;
 
-            // Animate rainbow colors
-            const hue = (elapsed * 0.5 + i * 0.1) % 1.0;
-            const rainbowColor = new THREE.Color().setHSL(hue, 1.0, 0.6);
-            orb.children[0].material.color.copy(rainbowColor);
-            orb.children[0].material.emissive.copy(rainbowColor);
-            orb.children[1].material.color.copy(rainbowColor);
-            const ringHue = (hue + 0.3) % 1.0;
-            orb.children[2].material.color.setHSL(ringHue, 1.0, 0.5);
+            // Subtle pulse for visibility without changing color
+            const pulse = 1 + Math.sin(elapsed * 4 + i) * 0.06;
+            orb.children[0].material.emissiveIntensity = 1.4 * pulse;
+            orb.children[1].material.opacity = 0.45 + Math.sin(elapsed * 3 + i) * 0.1;
 
             // Rotate (faster than normal orbs)
             orb.rotation.y += delta * 5;
@@ -1022,37 +1018,38 @@ const BonusOrbManager = {
 
     spawnPattern(zBase) {
         const baseY = 1.7;
-        const jumpY = 3.0;
+        const jumpY = 3.1;
+        const jumpYHigh = 3.4;
         const patterns = [
             () => ([
                 { lane: 0, y: baseY, z: 0 },
-                { lane: 1, y: baseY, z: 3 },
-                { lane: 2, y: baseY, z: 6 },
-                { lane: 1, y: baseY, z: 9 }
+                { lane: 1, y: baseY, z: 2.8 },
+                { lane: 2, y: baseY, z: 5.6 },
+                { lane: 1, y: jumpY, z: 8.4, isAerial: true }
             ]),
             () => ([
                 { lane: 0, y: baseY, z: 0 },
-                { lane: 2, y: baseY, z: 0 },
-                { lane: 0, y: baseY, z: 4 },
-                { lane: 2, y: baseY, z: 4 }
+                { lane: 2, y: baseY, z: 1.6 },
+                { lane: 0, y: baseY, z: 4.6 },
+                { lane: 2, y: jumpY, z: 6.6, isAerial: true }
             ]),
             () => ([
-                { lane: 1, y: jumpY, z: 0, isAerial: true },
+                { lane: 1, y: jumpYHigh, z: 0, isAerial: true },
                 { lane: 0, y: baseY, z: 3 },
                 { lane: 2, y: baseY, z: 6 }
             ]),
             () => ([
-                { lane: 0, y: jumpY, z: 0, isAerial: true },
+                { lane: 0, y: jumpYHigh, z: 0, isAerial: true },
                 { lane: 1, y: baseY, z: 3 },
-                { lane: 2, y: jumpY, z: 6, isAerial: true }
+                { lane: 2, y: jumpYHigh, z: 6, isAerial: true }
             ]),
             (seed) => {
                 const sideLane = seed % 2 === 0 ? 0 : 2;
                 const otherLane = sideLane === 0 ? 2 : 0;
                 return [
                     { lane: sideLane, y: baseY, z: 0 },
-                    { lane: sideLane, y: jumpY, z: 2.5, isAerial: true },
-                    { lane: 1, y: baseY, z: 5.5 },
+                    { lane: sideLane, y: jumpYHigh, z: 2.5, isAerial: true },
+                    { lane: 1, y: baseY, z: 5.2 },
                     { lane: otherLane, y: baseY, z: 8 }
                 ];
             },
@@ -1062,7 +1059,27 @@ const BonusOrbManager = {
                 return [
                     { lane: lanes[0], y: baseY, z: 0 },
                     { lane: lanes[1], y: baseY, z: 3 },
-                    { lane: lanes[2], y: jumpY, z: 6, isAerial: true }
+                    { lane: lanes[2], y: jumpY, z: 6.5, isAerial: true }
+                ];
+            },
+            (seed) => {
+                const sideLane = seed % 2 === 0 ? 0 : 2;
+                return [
+                    { lane: 1, y: baseY, z: 0 },
+                    { lane: sideLane, y: jumpYHigh, z: 3.2, isAerial: true },
+                    { lane: 1, y: baseY, z: 6.4 },
+                    { lane: sideLane, y: jumpYHigh, z: 9.2, isAerial: true }
+                ];
+            },
+            (seed) => {
+                const firstLane = seed % 2 === 0 ? 0 : 2;
+                const secondLane = firstLane === 0 ? 1 : 1;
+                return [
+                    { lane: firstLane, y: baseY, z: 0 },
+                    { lane: 1, y: jumpY, z: 2.2, isAerial: true },
+                    { lane: secondLane, y: baseY, z: 4.6 },
+                    { lane: 2, y: jumpYHigh, z: 7.2, isAerial: true },
+                    { lane: 0, y: baseY, z: 9.4 }
                 ];
             }
         ];
@@ -1102,16 +1119,13 @@ const BonusOrbManager = {
             }
 
             if (collected) {
-                // Award points (bonus for aerial orbs)
-                const points = orb.userData.isAerial ? 200 : 100;
                 GameState.orbs++;
-                GameState.score += points;
+                GameState.score += 100;
                 addOrbs(1);
 
                 // Visual/audio feedback
                 playCollectSound();
-                const flashColor = orb.userData.isAerial ? '#ffff00' : '#ff00ff';
-                flashScreen(0.1, flashColor);
+                flashScreen(0.1, '#00ffff');
 
                 // Remove orb
                 scene.remove(orb);

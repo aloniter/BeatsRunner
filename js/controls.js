@@ -186,6 +186,7 @@ function setupDevTools() {
     const startShieldToggle = document.getElementById('dev-start-shield');
     const startMagnetToggle = document.getElementById('dev-start-magnet');
     const forceBonusToggle = document.getElementById('dev-force-bonus');
+    const godModeToggle = document.getElementById('dev-god-mode');
     
     if (startShieldToggle) {
         startShieldToggle.addEventListener('change', () => {
@@ -215,6 +216,12 @@ function setupDevTools() {
                     GameState.bonusTriggered = false;
                 }
             }
+        });
+    }
+
+    if (godModeToggle) {
+        godModeToggle.addEventListener('change', () => {
+            DevSettings.godMode = godModeToggle.checked;
         });
     }
     

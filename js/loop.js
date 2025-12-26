@@ -72,6 +72,12 @@ function updateGame(delta, elapsed) {
     }
     
     // Update distance/score
+    if (DevSettings.godMode) {
+        const boostSpeed = Math.min(CONFIG.MAX_SPEED, CONFIG.INITIAL_SPEED + 15);
+        if (GameState.speed < boostSpeed) {
+            GameState.speed = boostSpeed;
+        }
+    }
     GameState.distance += GameState.speed * delta * 0.5;
     GameState.score = GameState.orbs * 100 + Math.floor(GameState.distance);
 
@@ -121,7 +127,7 @@ function updateGame(delta, elapsed) {
     ExitBoosterManager.update(delta, elapsed);
 
     // Check collision
-    if (!GameState.isBonusActive && ObstacleManager.checkCollision()) {
+    if (!GameState.isBonusActive && !DevSettings.godMode && ObstacleManager.checkCollision()) {
         gameOver();
         return;
     }
