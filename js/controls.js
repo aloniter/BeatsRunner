@@ -182,7 +182,6 @@ function setupDevTools() {
     if (!panel) return;
     
     const orbsInput = document.getElementById('dev-orbs-input');
-    const distanceInput = document.getElementById('dev-distance-input');
     const startShieldToggle = document.getElementById('dev-start-shield');
     const startMagnetToggle = document.getElementById('dev-start-magnet');
     const forceBonusToggle = document.getElementById('dev-force-bonus');
@@ -246,14 +245,6 @@ function setupDevTools() {
             saveOrbs();
             if (menuOrbsValue) menuOrbsValue.textContent = GameState.totalOrbs;
             if (typeof refreshStoreUI === 'function') refreshStoreUI();
-        } else if (action === 'top-distance-set') {
-            const value = Number(distanceInput?.value) || 0;
-            GameState.topDistance = Math.max(0, Math.floor(value));
-            saveTopDistance();
-            if (menuTopDistanceValue) menuTopDistanceValue.textContent = GameState.topDistance;
-            if (finalTopDistance) finalTopDistance.textContent = GameState.topDistance;
-        } else if (action === 'top-distance-reset') {
-            resetTopDistance();
         }
     });
 }

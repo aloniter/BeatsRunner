@@ -911,20 +911,73 @@ const CollectibleManager = {
 // ========================================
 // BONUS ORB MANAGER - Rainbow Bonus Collectibles
 // ========================================
+class BonusOrb {
+    constructor(x, z, direction, heightIndex, heightLanes) {
+        this.group = BonusOrbManager.createOrbMesh();
+        this.group.position.set(x, heightLanes[heightIndex], z);
+        this.direction = direction;
+        this.heightIndex = heightIndex;
+        this.heightDir = 1;
+        this.heightLanes = heightLanes;
+        this.speedX = 4.6;
+        this.speedY = 2.8;
+        this.phase = Math.random() * Math.PI * 2;
+    }
+
+    update(delta, elapsed, moveAmount, minX, maxX) {
+        // Move toward player
+        this.group.position.z -= moveAmount;
+
+        // Horizontal zigzag
+        this.group.position.x += this.direction * this.speedX * delta;
+        if (this.group.position.x >= maxX) {
+            this.group.position.x = maxX;
+            this.direction = -1;
+        } else if (this.group.position.x <= minX) {
+            this.group.position.x = minX;
+            this.direction = 1;
+        }
+
+        // Vertical lane shifts (low/mid/high)
+        const targetY = this.heightLanes[this.heightIndex];
+        const dy = targetY - this.group.position.y;
+        const stepY = Math.sign(dy) * this.speedY * delta;
+        if (Math.abs(dy) <= Math.abs(stepY)) {
+            this.group.position.y = targetY;
+            this.heightIndex += this.heightDir;
+            if (this.heightIndex <= 0 || this.heightIndex >= this.heightLanes.length - 1) {
+                this.heightDir *= -1;
+            }
+        } else {
+            this.group.position.y += stepY;
+        }
+
+        // Subtle pulse for visibility without changing color
+        const pulse = 1 + Math.sin(elapsed * 4 + this.phase) * 0.06;
+        this.group.children[0].material.emissiveIntensity = 1.4 * pulse;
+        this.group.children[1].material.opacity = 0.45 + Math.sin(elapsed * 3 + this.phase) * 0.1;
+
+        // Rotate (faster than normal orbs)
+        this.group.rotation.y += delta * 5;
+        this.group.rotation.x += delta * 3;
+    }
+}
+
 const BonusOrbManager = {
     bonusOrbs: [],
-    nextPatternZ: 0,
-    patternIndex: 0,
-    patternSpacingMin: 2.5,    // Dense spawning for МНОГО больше orbs
-    patternSpacingMax: 3.5,
-    endBuffer: 15,              // Stop spawning at 1135 to leave room for exit boosters
+    nextSpawnZ: 0,
+    waveSize: 6,
+    waveCount: 0,
+    horizontalDir: 1,
+    heightIndex: 0,
+    heightDir: 1,
+    maxOrbs: 18,
+    spawnSpacingMin: 3.2,
+    spawnSpacingMax: 4.2,
+    heightLanes: [1.6, 2.3, 3.2],
 
-    spawn(x, y, z, isAerial = false) {
+    createOrbMesh() {
         const group = new THREE.Group();
-        group.position.set(x, y, z);
-        group.userData.baseY = y;
-        group.userData.isAerial = isAerial;
-        group.userData.phase = Math.random() * Math.PI * 2;
 
         // Bright, consistent orb visuals for clarity on rainbow floor
         const coreGeo = new THREE.SphereGeometry(0.36, 16, 16);
@@ -961,247 +1014,105 @@ const BonusOrbManager = {
         group.add(ring);
 
         scene.add(group);
-        this.bonusOrbs.push(group);
+        return group;
     },
 
     update(delta, elapsed) {
-        if (GameState.isBonusActive) {
+        if (!GameState.isBonusActive) {
             if (this.bonusOrbs.length > 0) {
                 this.reset();
             }
             return;
         }
+
         const moveAmount = GameState.speed * delta;
-        const bonusStart = CONFIG.BONUS_START_DISTANCE;
-        const bonusEnd = CONFIG.BONUS_END_DISTANCE;
         const playerZ = player.position.z;
         const spawnZ = playerZ + CONFIG.SPAWN_DISTANCE;
+        const minX = CONFIG.LANE_POSITIONS[0];
+        const maxX = CONFIG.LANE_POSITIONS[2];
 
-        // Spawn new orbs during bonus mode
-        if (GameState.isBonusActive && GameState.distance >= bonusStart && GameState.distance < bonusEnd - this.endBuffer) {
-            if (this.nextPatternZ <= 0) {
-                this.nextPatternZ = spawnZ;
-            }
-
-            while (spawnZ >= this.nextPatternZ) {
-                this.spawnPattern(this.nextPatternZ);
-                const spacing = this.patternSpacingMin + Math.random() * (this.patternSpacingMax - this.patternSpacingMin);
-                this.nextPatternZ += spacing;
-            }
+        if (this.nextSpawnZ <= 0) {
+            this.nextSpawnZ = spawnZ;
         }
 
-        // Update existing orbs
+        while (spawnZ >= this.nextSpawnZ && this.bonusOrbs.length < this.maxOrbs) {
+            const startX = this.horizontalDir > 0 ? minX : maxX;
+            const orb = new BonusOrb(startX, this.nextSpawnZ, this.horizontalDir, this.heightIndex, this.heightLanes);
+            this.bonusOrbs.push(orb);
+
+            this.waveCount++;
+            if (this.waveCount >= this.waveSize) {
+                this.waveCount = 0;
+                this.horizontalDir *= -1;
+            }
+
+            this.heightIndex += this.heightDir;
+            if (this.heightIndex <= 0 || this.heightIndex >= this.heightLanes.length - 1) {
+                this.heightDir *= -1;
+            }
+
+            const spacing = this.spawnSpacingMin + Math.random() * (this.spawnSpacingMax - this.spawnSpacingMin);
+            this.nextSpawnZ += spacing;
+        }
+
         for (let i = this.bonusOrbs.length - 1; i >= 0; i--) {
             const orb = this.bonusOrbs[i];
+            orb.update(delta, elapsed, moveAmount, minX, maxX);
 
-            // Move toward player
-            orb.position.z -= moveAmount;
-
-            // Subtle pulse for visibility without changing color
-            const pulse = 1 + Math.sin(elapsed * 4 + i) * 0.06;
-            orb.children[0].material.emissiveIntensity = 1.4 * pulse;
-            orb.children[1].material.opacity = 0.45 + Math.sin(elapsed * 3 + i) * 0.1;
-
-            // Rotate (faster than normal orbs)
-            orb.rotation.y += delta * 5;
-            orb.rotation.x += delta * 3;
-
-            // Bobbing animation
-            const bobPhase = elapsed * 5 + orb.userData.phase;
-            orb.position.y = orb.userData.baseY + Math.sin(bobPhase) * 0.2;
-
-            // Magnet attraction
             if (GameState.isMagnetActive) {
-                const dx = player.position.x - orb.position.x;
-                const dz = player.position.z - orb.position.z;
+                const dx = player.position.x - orb.group.position.x;
+                const dz = player.position.z - orb.group.position.z;
                 const dist = Math.sqrt(dx * dx + dz * dz);
 
                 if (dist < MagnetManager.magnetRange) {
-                    orb.position.x += (dx / dist) * MagnetManager.magnetPull * delta;
-                    orb.position.z += (dz / dist) * MagnetManager.magnetPull * delta * 0.65;
+                    orb.group.position.x += (dx / dist) * MagnetManager.magnetPull * delta;
+                    orb.group.position.z += (dz / dist) * MagnetManager.magnetPull * delta * 0.65;
                 }
             }
 
-            // Remove if behind player
-            if (orb.position.z < player.position.z - CONFIG.DESPAWN_DISTANCE) {
-                scene.remove(orb);
+            if (orb.group.position.z < player.position.z - CONFIG.DESPAWN_DISTANCE) {
+                scene.remove(orb.group);
                 this.bonusOrbs.splice(i, 1);
             }
         }
     },
 
-    spawnPattern(zBase) {
-        const baseY = 1.7;
-        const jumpY = 3.1;
-        const jumpYHigh = 3.4;
-        const patterns = [
-            // ZIGZAG PATTERN 1: Right-Left-Right-Left with jumps
-            () => ([
-                { lane: 2, y: baseY, z: 0 },           // RIGHT
-                { lane: 0, y: baseY, z: 1.6 },         // LEFT
-                { lane: 2, y: jumpY, z: 3.2, isAerial: true },    // RIGHT (jump)
-                { lane: 0, y: baseY, z: 4.8 },         // LEFT
-                { lane: 2, y: baseY, z: 6.4 },         // RIGHT
-                { lane: 0, y: jumpYHigh, z: 8.0, isAerial: true } // LEFT (high jump)
-            ]),
-            // ZIGZAG PATTERN 2: Left-Right-Left-Right with jumps
-            () => ([
-                { lane: 0, y: baseY, z: 0 },           // LEFT
-                { lane: 2, y: baseY, z: 1.6 },         // RIGHT
-                { lane: 0, y: jumpY, z: 3.2, isAerial: true },    // LEFT (jump)
-                { lane: 2, y: baseY, z: 4.8 },         // RIGHT
-                { lane: 0, y: baseY, z: 6.4 },         // LEFT
-                { lane: 2, y: jumpYHigh, z: 8.0, isAerial: true } // RIGHT (high jump)
-            ]),
-            // ZIGZAG PATTERN 3: Dense Right-Left
-            () => ([
-                { lane: 2, y: baseY, z: 0 },           // RIGHT
-                { lane: 0, y: baseY, z: 1.2 },         // LEFT
-                { lane: 2, y: baseY, z: 2.4 },         // RIGHT
-                { lane: 0, y: jumpY, z: 3.6, isAerial: true },    // LEFT (jump)
-                { lane: 2, y: baseY, z: 5.0 },         // RIGHT
-            ]),
-            // ZIGZAG PATTERN 4: Dense Left-Right
-            () => ([
-                { lane: 0, y: baseY, z: 0 },           // LEFT
-                { lane: 2, y: baseY, z: 1.2 },         // RIGHT
-                { lane: 0, y: baseY, z: 2.4 },         // LEFT
-                { lane: 2, y: jumpY, z: 3.6, isAerial: true },    // RIGHT (jump)
-                { lane: 0, y: baseY, z: 5.0 },         // LEFT
-            ]),
-            () => ([
-                { lane: 0, y: baseY, z: 0 },
-                { lane: 1, y: baseY, z: 2.8 },
-                { lane: 2, y: baseY, z: 5.6 },
-                { lane: 1, y: jumpY, z: 8.4, isAerial: true }
-            ]),
-            () => ([
-                { lane: 0, y: baseY, z: 0 },
-                { lane: 2, y: baseY, z: 1.6 },
-                { lane: 0, y: baseY, z: 4.6 },
-                { lane: 2, y: jumpY, z: 6.6, isAerial: true }
-            ]),
-            () => ([
-                { lane: 1, y: jumpYHigh, z: 0, isAerial: true },
-                { lane: 0, y: baseY, z: 3 },
-                { lane: 2, y: baseY, z: 6 }
-            ]),
-            () => ([
-                { lane: 0, y: jumpYHigh, z: 0, isAerial: true },
-                { lane: 1, y: baseY, z: 3 },
-                { lane: 2, y: jumpYHigh, z: 6, isAerial: true }
-            ]),
-            (seed) => {
-                const sideLane = seed % 2 === 0 ? 0 : 2;
-                const otherLane = sideLane === 0 ? 2 : 0;
-                return [
-                    { lane: sideLane, y: baseY, z: 0 },
-                    { lane: sideLane, y: jumpYHigh, z: 2.5, isAerial: true },
-                    { lane: 1, y: baseY, z: 5.2 },
-                    { lane: otherLane, y: baseY, z: 8 }
-                ];
-            },
-            (seed) => {
-                const sweep = seed % 3;
-                const lanes = sweep === 0 ? [0, 1, 2] : (sweep === 1 ? [2, 1, 0] : [1, 0, 2]);
-                return [
-                    { lane: lanes[0], y: baseY, z: 0 },
-                    { lane: lanes[1], y: baseY, z: 3 },
-                    { lane: lanes[2], y: jumpY, z: 6.5, isAerial: true }
-                ];
-            },
-            (seed) => {
-                const sideLane = seed % 2 === 0 ? 0 : 2;
-                return [
-                    { lane: 1, y: baseY, z: 0 },
-                    { lane: sideLane, y: jumpYHigh, z: 3.2, isAerial: true },
-                    { lane: 1, y: baseY, z: 6.4 },
-                    { lane: sideLane, y: jumpYHigh, z: 9.2, isAerial: true }
-                ];
-            },
-            (seed) => {
-                const firstLane = seed % 2 === 0 ? 0 : 2;
-                const secondLane = firstLane === 0 ? 1 : 1;
-                return [
-                    { lane: firstLane, y: baseY, z: 0 },
-                    { lane: 1, y: jumpY, z: 2.2, isAerial: true },
-                    { lane: secondLane, y: baseY, z: 4.6 },
-                    { lane: 2, y: jumpYHigh, z: 7.2, isAerial: true },
-                    { lane: 0, y: baseY, z: 9.4 }
-                ];
-            },
-            () => ([
-                { lane: 0, y: baseY, z: 0 },
-                { lane: 1, y: baseY, z: 2.4 },
-                { lane: 2, y: jumpY, z: 4.8, isAerial: true },
-                { lane: 1, y: baseY, z: 7.2 },
-                { lane: 0, y: jumpYHigh, z: 9.6, isAerial: true }
-            ]),
-            () => ([
-                { lane: 2, y: baseY, z: 0 },
-                { lane: 1, y: baseY, z: 2.4 },
-                { lane: 0, y: jumpY, z: 4.8, isAerial: true },
-                { lane: 1, y: baseY, z: 7.2 },
-                { lane: 2, y: jumpYHigh, z: 9.6, isAerial: true }
-            ])
-        ];
-
-        const patternSeed = this.patternIndex;
-        const pattern = patterns[patternSeed % patterns.length](patternSeed);
-        this.patternIndex++;
-
-        pattern.forEach(point => {
-            const x = CONFIG.LANE_POSITIONS[point.lane];
-            const y = point.y;
-            const z = zBase + point.z;
-            const isAerial = Boolean(point.isAerial);
-            this.spawn(x, y, z, isAerial);
-        });
-    },
-
     checkCollection() {
-        if (GameState.isBonusActive) return;
         const playerX = player.position.x;
         const playerY = player.position.y;
         const playerZ = player.position.z;
 
         for (let i = this.bonusOrbs.length - 1; i >= 0; i--) {
             const orb = this.bonusOrbs[i];
-            const dx = playerX - orb.position.x;
-            const dz = playerZ - orb.position.z;
-            const dy = playerY - orb.position.y;
+            const dx = playerX - orb.group.position.x;
+            const dz = playerZ - orb.group.position.z;
+            const dy = playerY - orb.group.position.y;
 
-            // 3D collision for aerial orbs, 2D for side orbs
-            let collected = false;
-            if (orb.userData.isAerial) {
-                const dist3D = Math.sqrt(dx * dx + dy * dy + dz * dz);
-                collected = dist3D < 1.5;
-            } else {
-                const dist2D = Math.sqrt(dx * dx + dz * dz);
-                collected = dist2D < 1.3;
-            }
+            const dist3D = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            const collected = dist3D < 1.5;
 
             if (collected) {
                 GameState.orbs++;
                 GameState.score += 100;
                 addOrbs(1);
 
-                // Visual/audio feedback
                 playCollectSound();
                 flashScreen(0.1, '#00ffff');
 
-                // Remove orb
-                scene.remove(orb);
+                scene.remove(orb.group);
                 this.bonusOrbs.splice(i, 1);
             }
         }
     },
 
     reset() {
-        this.bonusOrbs.forEach(orb => scene.remove(orb));
+        this.bonusOrbs.forEach(orb => scene.remove(orb.group));
         this.bonusOrbs.length = 0;
-        this.nextPatternZ = 0;
-        this.patternIndex = 0;
+        this.nextSpawnZ = 0;
+        this.waveCount = 0;
+        this.horizontalDir = 1;
+        this.heightIndex = 0;
+        this.heightDir = 1;
     }
 };
 
