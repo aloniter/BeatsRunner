@@ -29,6 +29,10 @@ const CONFIG = {
     DESPAWN_DISTANCE: -15,
     OBSTACLE_MIN_GAP: 18,
     ORB_SPAWN_CHANCE: 0.5,
+
+    // Bonus mode
+    BONUS_START_DISTANCE: 1000,
+    BONUS_END_DISTANCE: 1150,
     
     // Visual settings
     FOG_NEAR: 25,

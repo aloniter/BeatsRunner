@@ -12,7 +12,9 @@ let obstacles = [];
 let collectibles = [];
 let magnetPickups = [];
 let shieldPickups = [];
-let floorTiles = [];
+let floorTilesNormal = [];    // Original dark neon track
+let floorTilesRainbow = [];   // Rainbow bonus track
+let floorTiles = [];          // Backward compatibility reference
 let sidePillars = [];
 let particleSystem;
 let animationFrameId;
@@ -54,5 +56,6 @@ const finalScore = document.getElementById('final-score');
 // Dev tool settings (main menu only)
 const DevSettings = {
     startWithShield: false,
-    startWithMagnet: false
+    startWithMagnet: false,
+    forceBonus: false
 };

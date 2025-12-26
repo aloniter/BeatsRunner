@@ -22,5 +22,8 @@ const GameState = {
     jumpVelocity: 0,
     jumpQueued: false,
     isMagnetActive: false,
-    hasShield: false
+    hasShield: false,
+    isBonusActive: false,
+    bonusTriggered: false,
+    bonusTransitionProgress: 0 // 0 = normal, 1 = full rainbow
 };

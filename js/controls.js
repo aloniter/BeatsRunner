@@ -185,6 +185,7 @@ function setupDevTools() {
     const distanceInput = document.getElementById('dev-distance-input');
     const startShieldToggle = document.getElementById('dev-start-shield');
     const startMagnetToggle = document.getElementById('dev-start-magnet');
+    const forceBonusToggle = document.getElementById('dev-force-bonus');
     
     if (startShieldToggle) {
         startShieldToggle.addEventListener('change', () => {
@@ -195,6 +196,25 @@ function setupDevTools() {
     if (startMagnetToggle) {
         startMagnetToggle.addEventListener('change', () => {
             DevSettings.startWithMagnet = startMagnetToggle.checked;
+        });
+    }
+
+    if (forceBonusToggle) {
+        forceBonusToggle.addEventListener('change', () => {
+            DevSettings.forceBonus = forceBonusToggle.checked;
+            if (!GameState.isPlaying) return;
+            if (DevSettings.forceBonus) {
+                GameState.distance = CONFIG.BONUS_START_DISTANCE;
+                GameState.isBonusActive = true;
+                GameState.score = GameState.orbs * 100 + Math.floor(GameState.distance);
+                if (distanceValue) distanceValue.textContent = Math.floor(GameState.distance);
+                if (scoreValue) scoreValue.textContent = GameState.score;
+            } else {
+                GameState.isBonusActive = false;
+                if (GameState.distance < CONFIG.BONUS_START_DISTANCE) {
+                    GameState.bonusTriggered = false;
+                }
+            }
         });
     }
     

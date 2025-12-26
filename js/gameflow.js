@@ -5,7 +5,7 @@ function startGame() {
     
     GameState.isPlaying = true;
     GameState.isPaused = false;
-    GameState.distance = 0;
+    GameState.distance = DevSettings.forceBonus ? CONFIG.BONUS_START_DISTANCE : 0;
     GameState.orbs = 0;
     GameState.score = 0;
     GameState.currentLane = 1;
@@ -13,6 +13,9 @@ function startGame() {
     GameState.gameStartTime = performance.now();
     GameState.isMagnetActive = false;
     GameState.hasShield = false;
+    GameState.isBonusActive = DevSettings.forceBonus;
+    GameState.bonusTriggered = false;
+    GameState.bonusTransitionProgress = DevSettings.forceBonus ? 1 : 0;
     
     PlayerController.reset();
     BeatManager.reset();
@@ -84,22 +87,39 @@ function restartGame() {
     ObstacleManager.reset();
     CollectibleManager.reset();
     ShieldManager.reset();
-    
-    // Reset floor positions
-    floorTiles.forEach((tile, i) => {
+    BonusOrbManager.reset();
+    ExitBoosterManager.reset();
+
+    // Reset normal track positions and opacity
+    floorTilesNormal.forEach((tile, i) => {
         tile.position.z = i * tile.userData.length;
+        tile.children.forEach(child => {
+            if (child.material) {
+                child.material.opacity = 1;
+                child.material.transparent = false;
+            }
+        });
     });
-    
+
+    // Reset rainbow track positions and hide
+    floorTilesRainbow.forEach((tile, i) => {
+        tile.position.z = i * tile.userData.length;
+        tile.visible = false;
+    });
+
+    // Backward compatibility
+    floorTiles = floorTilesNormal;
+
     // Reset pillar positions
     const spacing = sidePillars[0]?.userData.spacing || 20;
     sidePillars.forEach((pillar, i) => {
         const pairIndex = Math.floor(i / 2);
         pillar.position.z = pairIndex * spacing;
     });
-    
+
     // Hide game over
     gameoverScreen.style.display = 'none';
-    
+
     // Start fresh
     startGame();
 }
@@ -110,27 +130,44 @@ function goToMainMenu() {
     CollectibleManager.reset();
     ShieldManager.reset();
     MagnetManager.reset();
-    
-    // Reset floor positions
-    floorTiles.forEach((tile, i) => {
+    BonusOrbManager.reset();
+    ExitBoosterManager.reset();
+
+    // Reset normal track positions and opacity
+    floorTilesNormal.forEach((tile, i) => {
         tile.position.z = i * tile.userData.length;
+        tile.children.forEach(child => {
+            if (child.material) {
+                child.material.opacity = 1;
+                child.material.transparent = false;
+            }
+        });
     });
-    
+
+    // Reset rainbow track positions and hide
+    floorTilesRainbow.forEach((tile, i) => {
+        tile.position.z = i * tile.userData.length;
+        tile.visible = false;
+    });
+
+    // Backward compatibility
+    floorTiles = floorTilesNormal;
+
     // Reset pillar positions
     const spacing = sidePillars[0]?.userData.spacing || 20;
     sidePillars.forEach((pillar, i) => {
         const pairIndex = Math.floor(i / 2);
         pillar.position.z = pairIndex * spacing;
     });
-    
+
     // Reset player
     PlayerController.reset();
-    
+
     // Pause background music
     if (bgMusic) {
         bgMusic.pause();
     }
-    
+
     // Hide game over and show start screen
     gameoverScreen.style.display = 'none';
     startScreen.style.display = 'flex';

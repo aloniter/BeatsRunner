@@ -74,6 +74,31 @@ function updateGame(delta, elapsed) {
     // Update distance/score
     GameState.distance += GameState.speed * delta * 0.5;
     GameState.score = GameState.orbs * 100 + Math.floor(GameState.distance);
+
+    if (!GameState.bonusTriggered && GameState.distance >= CONFIG.BONUS_START_DISTANCE) {
+        GameState.isBonusActive = true;
+        GameState.bonusTriggered = true;
+        console.log('BONUS START (1000)');
+    }
+
+    if (GameState.isBonusActive && GameState.distance >= CONFIG.BONUS_END_DISTANCE) {
+        GameState.isBonusActive = false;
+        ExitBoosterManager.spawn();  // Spawn exit boosters
+        console.log('BONUS END (1150)');
+    }
+
+    // Update bonus mode visual transition (0.75 second fade)
+    const transitionSpeed = delta / 0.75;
+    if (GameState.isBonusActive) {
+        GameState.bonusTransitionProgress = Math.min(1, GameState.bonusTransitionProgress + transitionSpeed);
+    } else {
+        GameState.bonusTransitionProgress = Math.max(0, GameState.bonusTransitionProgress - transitionSpeed);
+    }
+
+    // Apply rainbow visual effects during bonus mode
+    if (GameState.bonusTransitionProgress > 0) {
+        updateBonusVisuals(elapsed, GameState.distance, GameState.bonusTransitionProgress);
+    }
     
     // Update obstacles
     ObstacleManager.update(delta);
@@ -89,19 +114,35 @@ function updateGame(delta, elapsed) {
     // Update collectibles
     CollectibleManager.update(delta, elapsed);
     CollectibleManager.checkCollection();
-    
+
+    // Update bonus orbs (during Rainbow Bonus)
+    BonusOrbManager.update(delta, elapsed);
+    BonusOrbManager.checkCollection();
+
+    // Update exit boosters
+    ExitBoosterManager.update(delta, elapsed);
+
     // Check collision
-    if (ObstacleManager.checkCollision()) {
+    if (!GameState.isBonusActive && ObstacleManager.checkCollision()) {
         gameOver();
         return;
     }
     
-    // Update floor (infinite scroll)
+    // Update floor (infinite scroll) - handle both track sets
     const moveAmount = GameState.speed * delta;
-    const tileLength = floorTiles[0].userData.length;
-    const totalLength = floorTiles.length * tileLength;
-    
-    floorTiles.forEach(tile => {
+    const tileLength = floorTilesNormal[0].userData.length;
+    const totalLength = floorTilesNormal.length * tileLength;
+
+    // Move normal track tiles
+    floorTilesNormal.forEach(tile => {
+        tile.position.z -= moveAmount;
+        if (tile.position.z < -tileLength) {
+            tile.position.z += totalLength;
+        }
+    });
+
+    // Move rainbow track tiles (synchronized)
+    floorTilesRainbow.forEach(tile => {
         tile.position.z -= moveAmount;
         if (tile.position.z < -tileLength) {
             tile.position.z += totalLength;
@@ -139,6 +180,66 @@ function updateGame(delta, elapsed) {
     distanceValue.textContent = Math.floor(GameState.distance);
     orbsValue.textContent = GameState.orbs;
     scoreValue.textContent = GameState.score;
+}
+
+// ========================================
+// BONUS MODE VISUAL EFFECTS - Dual Track System
+// ========================================
+function updateBonusVisuals(elapsed, distance, transitionProgress) {
+    // === OPACITY CROSSFADE TRANSITION ===
+    const normalOpacity = 1 - transitionProgress;
+    const rainbowOpacity = transitionProgress;
+
+    // Fade out normal track
+    floorTilesNormal.forEach(tile => {
+        tile.children.forEach(child => {
+            if (child.material) {
+                child.material.opacity = normalOpacity;
+                child.material.transparent = true;
+            }
+        });
+    });
+
+    // Fade in rainbow track
+    floorTilesRainbow.forEach(tile => {
+        tile.visible = transitionProgress > 0; // Show when transitioning
+        tile.children.forEach(child => {
+            if (child.material) {
+                child.material.opacity = rainbowOpacity;
+                child.material.transparent = true;
+            }
+        });
+    });
+
+    // === RAINBOW COLOR ANIMATION - VIVID AND DOMINANT ===
+    if (window.rainbowMaterials && transitionProgress > 0) {
+        // Slow, smooth color cycling with forward spatial flow
+        const timeCycle = elapsed * 0.3;        // Slower for smooth cycling
+        const spatialFlow = distance * 0.04;    // Forward flow along track
+        const hue = (timeCycle + spatialFlow) % 1.0;
+
+        // Animate floor colors - STRONG and VIVID
+        window.rainbowMaterials.floors.forEach(mat => {
+            const rainbowColor = new THREE.Color().setHSL(hue, 1.0, 0.65);
+            mat.color.copy(rainbowColor);  // Full intensity color
+            mat.emissive.copy(rainbowColor.clone().multiplyScalar(0.9));  // Strong emissive
+            mat.emissiveIntensity = 1.8;  // Very high emissive intensity
+        });
+
+        // Animate edges with offset hue - keep readable
+        window.rainbowMaterials.edges.forEach((mat, index) => {
+            const offsetHue = (hue + index * 0.15) % 1.0;
+            const edgeColor = new THREE.Color().setHSL(offsetHue, 0.95, 0.65);
+            mat.color.copy(edgeColor);
+        });
+
+        // Animate grids with subtle offset
+        window.rainbowMaterials.grids.forEach((mat, index) => {
+            const offsetHue = (hue + index * 0.08) % 1.0;
+            const gridColor = new THREE.Color().setHSL(offsetHue, 0.85, 0.55);
+            mat.color.copy(gridColor);
+        });
+    }
 }
 
 // ========================================

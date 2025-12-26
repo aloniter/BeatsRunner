@@ -55,7 +55,7 @@ const PlayerController = {
         if (GameState.isJumping) {
             GameState.jumpVelocity -= CONFIG.GRAVITY * delta;
             player.position.y += GameState.jumpVelocity * delta;
-            
+
             // Land
             if (player.position.y <= CONFIG.GROUND_Y + 0.001) {
                 player.position.y = CONFIG.GROUND_Y;
@@ -279,6 +279,10 @@ const ObstacleManager = {
         
         // Spawn new obstacles
         this.lastSpawnZ -= moveAmount;
+        if (GameState.isBonusActive) {
+            this.lastSpawnZ = Math.max(this.lastSpawnZ, CONFIG.SPAWN_DISTANCE);
+            return;
+        }
         while (this.lastSpawnZ < CONFIG.SPAWN_DISTANCE) {
             this.spawn();
         }
@@ -881,6 +885,373 @@ const CollectibleManager = {
             scene.remove(collectibles[i]);
         }
         collectibles.length = 0;
+    }
+};
+
+// ========================================
+// BONUS ORB MANAGER - Rainbow Bonus Collectibles
+// ========================================
+const BonusOrbManager = {
+    bonusOrbs: [],
+    lastSpawnZ: 0,
+    spawnCounter: 0,
+    sideOrbInterval: 10,      // Spawn side orbs every 10 units
+    aerialOrbInterval: 20,    // Spawn aerial orbs every 20 units
+    lastAerialSpawnZ: 0,
+
+    spawn(x, y, z, isAerial = false) {
+        const group = new THREE.Group();
+        group.position.set(x, y, z);
+        group.userData.baseY = y;
+        group.userData.isAerial = isAerial;
+        group.userData.phase = Math.random() * Math.PI * 2;
+
+        // Rainbow gradient core (cycles through colors)
+        const coreGeo = new THREE.SphereGeometry(0.36, 16, 16);
+        const coreMat = new THREE.MeshStandardMaterial({
+            color: 0xff00ff,  // Will be animated
+            emissive: 0xff00ff,
+            emissiveIntensity: 1.5,
+            metalness: 0,
+            roughness: 0.3
+        });
+        const core = new THREE.Mesh(coreGeo, coreMat);
+        group.add(core);
+
+        // Brighter outer glow
+        const glowGeo = new THREE.SphereGeometry(0.55, 12, 12);
+        const glowMat = new THREE.MeshBasicMaterial({
+            color: 0xff00ff,  // Will be animated
+            transparent: true,
+            opacity: 0.5,
+            side: THREE.BackSide
+        });
+        const glow = new THREE.Mesh(glowGeo, glowMat);
+        group.add(glow);
+
+        // Rainbow-colored ring
+        const ringGeo = new THREE.TorusGeometry(0.45, 0.03, 8, 24);
+        const ringMat = new THREE.MeshBasicMaterial({
+            color: 0xffff00,  // Will be animated
+            transparent: true,
+            opacity: 0.6
+        });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = Math.PI / 2;
+        group.add(ring);
+
+        scene.add(group);
+        this.bonusOrbs.push(group);
+    },
+
+    update(delta, elapsed) {
+        if (!GameState.isBonusActive) return;
+
+        const moveAmount = GameState.speed * delta;
+
+        // Spawn new orbs during bonus mode
+        if (GameState.distance >= 1000 && GameState.distance < 1145) {
+            const playerZ = player.position.z;
+            const spawnZ = playerZ + CONFIG.SPAWN_DISTANCE;
+
+            // Spawn side orbs (alternating left/right)
+            if (spawnZ - this.lastSpawnZ >= this.sideOrbInterval) {
+                const isLeft = (this.spawnCounter % 2 === 0);
+                const x = isLeft ? CONFIG.LANE_POSITIONS[0] : CONFIG.LANE_POSITIONS[2];
+                this.spawn(x, 1.7, spawnZ, false);
+                this.lastSpawnZ = spawnZ;
+                this.spawnCounter++;
+            }
+
+            // Spawn aerial orbs (center lane, high)
+            if (spawnZ - this.lastAerialSpawnZ >= this.aerialOrbInterval) {
+                this.spawn(CONFIG.LANE_POSITIONS[1], 3.2, spawnZ, true);
+                this.lastAerialSpawnZ = spawnZ;
+            }
+        }
+
+        // Update existing orbs
+        for (let i = this.bonusOrbs.length - 1; i >= 0; i--) {
+            const orb = this.bonusOrbs[i];
+
+            // Move toward player
+            orb.position.z -= moveAmount;
+
+            // Animate rainbow colors
+            const hue = (elapsed * 0.5 + i * 0.1) % 1.0;
+            const rainbowColor = new THREE.Color().setHSL(hue, 1.0, 0.6);
+            orb.children[0].material.color.copy(rainbowColor);
+            orb.children[0].material.emissive.copy(rainbowColor);
+            orb.children[1].material.color.copy(rainbowColor);
+            const ringHue = (hue + 0.3) % 1.0;
+            orb.children[2].material.color.setHSL(ringHue, 1.0, 0.5);
+
+            // Rotate (faster than normal orbs)
+            orb.rotation.y += delta * 5;
+            orb.rotation.x += delta * 3;
+
+            // Bobbing animation
+            const bobPhase = elapsed * 5 + orb.userData.phase;
+            orb.position.y = orb.userData.baseY + Math.sin(bobPhase) * 0.2;
+
+            // Magnet attraction
+            if (GameState.isMagnetActive) {
+                const dx = player.position.x - orb.position.x;
+                const dz = player.position.z - orb.position.z;
+                const dist = Math.sqrt(dx * dx + dz * dz);
+
+                if (dist < MagnetManager.magnetRange) {
+                    orb.position.x += (dx / dist) * MagnetManager.magnetPull * delta;
+                    orb.position.z += (dz / dist) * MagnetManager.magnetPull * delta * 0.65;
+                }
+            }
+
+            // Remove if behind player
+            if (orb.position.z < player.position.z - CONFIG.DESPAWN_DISTANCE) {
+                scene.remove(orb);
+                this.bonusOrbs.splice(i, 1);
+            }
+        }
+    },
+
+    checkCollection() {
+        const playerX = player.position.x;
+        const playerY = player.position.y;
+        const playerZ = player.position.z;
+
+        for (let i = this.bonusOrbs.length - 1; i >= 0; i--) {
+            const orb = this.bonusOrbs[i];
+            const dx = playerX - orb.position.x;
+            const dz = playerZ - orb.position.z;
+            const dy = playerY - orb.position.y;
+
+            // 3D collision for aerial orbs, 2D for side orbs
+            let collected = false;
+            if (orb.userData.isAerial) {
+                const dist3D = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                collected = dist3D < 1.5;
+            } else {
+                const dist2D = Math.sqrt(dx * dx + dz * dz);
+                collected = dist2D < 1.3;
+            }
+
+            if (collected) {
+                // Award points (bonus for aerial orbs)
+                const points = orb.userData.isAerial ? 200 : 100;
+                GameState.orbs++;
+                GameState.score += points;
+                addOrbs(1);
+
+                // Visual/audio feedback
+                playCollectSound();
+                const flashColor = orb.userData.isAerial ? '#ffff00' : '#ff00ff';
+                flashScreen(0.1, flashColor);
+
+                // Remove orb
+                scene.remove(orb);
+                this.bonusOrbs.splice(i, 1);
+            }
+        }
+    },
+
+    reset() {
+        this.bonusOrbs.forEach(orb => scene.remove(orb));
+        this.bonusOrbs.length = 0;
+        this.lastSpawnZ = 0;
+        this.lastAerialSpawnZ = 0;
+        this.spawnCounter = 0;
+    }
+};
+
+// ========================================
+// EXIT BOOSTER MANAGER - Bonus Mode Reward Selection
+// ========================================
+const ExitBoosterManager = {
+    boosters: [],
+    spawned: false,
+    selectedBooster: null,
+    speedBoostActive: false,
+    speedBoostEndTime: 0,
+    originalSpeed: 0,
+
+    spawn() {
+        if (this.spawned) return;
+        this.spawned = true;
+
+        const spawnZ = player.position.z + CONFIG.SPAWN_DISTANCE;
+        const boosterTypes = ['speed', 'shield', 'magnet'];
+
+        CONFIG.LANE_POSITIONS.forEach((x, laneIndex) => {
+            const type = boosterTypes[laneIndex];
+            const booster = this.createBooster(type, x, spawnZ, laneIndex);
+            scene.add(booster);
+            this.boosters.push(booster);
+        });
+    },
+
+    createBooster(type, x, z, lane) {
+        const group = new THREE.Group();
+        group.position.set(x, 1.8, z);
+        group.userData.type = type;
+        group.userData.lane = lane;
+        group.userData.checked = false;
+        group.scale.set(2, 2, 2);  // 2x larger than normal pickups
+
+        // Color-coded by type
+        const colors = {
+            speed: { main: 0xffff00, glow: 0xffaa00 },    // Yellow/gold
+            shield: { main: 0x0088ff, glow: 0x00ffff },   // Blue/cyan
+            magnet: { main: 0xff6600, glow: 0xff9900 }    // Orange
+        };
+        const color = colors[type];
+
+        // Core sphere
+        const coreGeo = new THREE.SphereGeometry(0.4, 16, 16);
+        const coreMat = new THREE.MeshStandardMaterial({
+            color: color.main,
+            emissive: color.main,
+            emissiveIntensity: 1.2,
+            metalness: 0.5,
+            roughness: 0.3
+        });
+        const core = new THREE.Mesh(coreGeo, coreMat);
+        group.add(core);
+
+        // Outer glow
+        const glowGeo = new THREE.SphereGeometry(0.7, 12, 12);
+        const glowMat = new THREE.MeshBasicMaterial({
+            color: color.glow,
+            transparent: true,
+            opacity: 0.4,
+            side: THREE.BackSide
+        });
+        const glow = new THREE.Mesh(glowGeo, glowMat);
+        group.add(glow);
+
+        // Ground indicator ring
+        const ringGeo = new THREE.TorusGeometry(1.2, 0.08, 8, 32);
+        const ringMat = new THREE.MeshBasicMaterial({
+            color: color.main,
+            transparent: true,
+            opacity: 0.6
+        });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = Math.PI / 2;
+        ring.position.y = -1.8;  // On the ground
+        group.add(ring);
+
+        // Type-specific icon/shape
+        if (type === 'speed') {
+            // Arrow pointing forward
+            const arrowShape = new THREE.Shape();
+            arrowShape.moveTo(0, 0.3);
+            arrowShape.lineTo(0.2, -0.1);
+            arrowShape.lineTo(0.05, -0.1);
+            arrowShape.lineTo(0.05, -0.3);
+            arrowShape.lineTo(-0.05, -0.3);
+            arrowShape.lineTo(-0.05, -0.1);
+            arrowShape.lineTo(-0.2, -0.1);
+            arrowShape.lineTo(0, 0.3);
+
+            const arrowGeo = new THREE.ShapeGeometry(arrowShape);
+            const arrowMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const arrow = new THREE.Mesh(arrowGeo, arrowMat);
+            arrow.position.z = 0.41;
+            group.add(arrow);
+        }
+
+        return group;
+    },
+
+    update(delta, elapsed) {
+        const moveAmount = GameState.speed * delta;
+
+        // Update boosters
+        for (let i = this.boosters.length - 1; i >= 0; i--) {
+            const booster = this.boosters[i];
+
+            // Move toward player
+            booster.position.z -= moveAmount;
+
+            // Rotate and pulse
+            booster.rotation.y += delta * 2;
+            const pulse = 1 + Math.sin(elapsed * 4) * 0.1;
+            booster.scale.set(2 * pulse, 2 * pulse, 2 * pulse);
+
+            // Pulse ring
+            booster.children[2].material.opacity = 0.4 + Math.sin(elapsed * 5) * 0.2;
+
+            // Check if player passed through
+            if (!booster.userData.checked && booster.position.z < player.position.z) {
+                booster.userData.checked = true;
+
+                if (booster.userData.lane === GameState.currentLane) {
+                    // Player selected this booster!
+                    this.activateBooster(booster.userData.type);
+                    flashScreen(0.15, '#' + booster.children[0].material.color.getHexString());
+                    playCollectSound();
+
+                    // Visual: selected booster explodes
+                    booster.children[1].material.opacity = 1.0;
+                    booster.scale.set(4, 4, 4);
+                } else {
+                    // Fade out unselected boosters
+                    booster.children[0].material.opacity = 0.2;
+                    booster.children[1].material.opacity = 0.1;
+                }
+            }
+
+            // Remove if far behind player
+            if (booster.position.z < player.position.z - 20) {
+                scene.remove(booster);
+                this.boosters.splice(i, 1);
+            }
+        }
+
+        // Handle active speed boost
+        if (this.speedBoostActive) {
+            const currentTime = performance.now() / 1000;
+            if (currentTime >= this.speedBoostEndTime) {
+                // End speed boost
+                GameState.speed = this.originalSpeed;
+                this.speedBoostActive = false;
+            }
+        }
+    },
+
+    activateBooster(type) {
+        this.selectedBooster = type;
+
+        switch (type) {
+            case 'speed':
+                this.originalSpeed = GameState.speed;
+                GameState.speed = Math.min(GameState.speed + 15, CONFIG.MAX_SPEED);
+                this.speedBoostActive = true;
+                this.speedBoostEndTime = (performance.now() / 1000) + 8;  // 8 second boost
+                console.log('SPEED BOOST activated!');
+                break;
+
+            case 'shield':
+                ShieldManager.activate();
+                console.log('SHIELD activated!');
+                break;
+
+            case 'magnet':
+                MagnetManager.activate();
+                console.log('MAGNET activated!');
+                break;
+        }
+    },
+
+    reset() {
+        this.boosters.forEach(booster => scene.remove(booster));
+        this.boosters.length = 0;
+        this.spawned = false;
+        this.selectedBooster = null;
+        if (this.speedBoostActive) {
+            GameState.speed = this.originalSpeed;
+            this.speedBoostActive = false;
+        }
     }
 };
 
