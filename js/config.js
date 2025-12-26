@@ -25,14 +25,14 @@ const CONFIG = {
     get BEAT_INTERVAL() { return 60 / this.BPM; },
     
     // Spawn settings
-    SPAWN_DISTANCE: 120,
+    SPAWN_DISTANCE: 180,  // Increased for better reaction time (3.6s vs 2.4s)
     DESPAWN_DISTANCE: -15,
     OBSTACLE_MIN_GAP: 18,
     ORB_SPAWN_CHANCE: 0.5,
 
     // Bonus mode
     BONUS_START_DISTANCE: 1000,
-    BONUS_END_DISTANCE: 1150,
+    BONUS_END_DISTANCE: 1200,  // Extended from 1150 for longer bonus with more orbs
     
     // Visual settings
     FOG_NEAR: 25,

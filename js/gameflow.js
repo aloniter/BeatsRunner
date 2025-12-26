@@ -21,6 +21,7 @@ function startGame() {
     BeatManager.reset();
     MagnetManager.reset();
     ShieldManager.reset();
+    SpeedBoostManager.reset();
 
     if (DevSettings.forceBonus) {
         enterBonusMode();
@@ -63,13 +64,14 @@ function enterBonusMode() {
     GameState.isBonusActive = true;
     GameState.bonusTriggered = true;
     ObstacleManager.clearForBonus();
+    SpeedBoostManager.reset();
 }
 
 function exitBonusMode() {
     if (!GameState.isBonusActive) return;
     GameState.isBonusActive = false;
     ObstacleManager.resumeAfterBonus();
-    ExitBoosterManager.spawn();
+    // Exit boosters now spawn at distance 1145 (in loop.js)
 }
 
 function gameOver() {
@@ -108,6 +110,7 @@ function restartGame() {
     ObstacleManager.reset();
     CollectibleManager.reset();
     ShieldManager.reset();
+    SpeedBoostManager.reset();
     BonusOrbManager.reset();
     ExitBoosterManager.reset();
 
@@ -151,6 +154,7 @@ function goToMainMenu() {
     CollectibleManager.reset();
     ShieldManager.reset();
     MagnetManager.reset();
+    SpeedBoostManager.reset();
     BonusOrbManager.reset();
     ExitBoosterManager.reset();
 

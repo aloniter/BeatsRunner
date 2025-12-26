@@ -12,6 +12,7 @@ let obstacles = [];
 let collectibles = [];
 let magnetPickups = [];
 let shieldPickups = [];
+let speedPickups = [];
 let floorTilesNormal = [];    // Original dark neon track
 let floorTilesRainbow = [];   // Rainbow bonus track
 let floorTiles = [];          // Backward compatibility reference

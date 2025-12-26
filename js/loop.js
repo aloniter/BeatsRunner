@@ -86,9 +86,15 @@ function updateGame(delta, elapsed) {
         console.log('BONUS START (1000)');
     }
 
+    // Spawn exit boosters before bonus ends (at 1195) so they're visible
+    if (GameState.isBonusActive && !ExitBoosterManager.spawned && GameState.distance >= 1195) {
+        ExitBoosterManager.spawn();
+        console.log('EXIT BOOSTERS SPAWNED (1195)');
+    }
+
     if (GameState.isBonusActive && GameState.distance >= CONFIG.BONUS_END_DISTANCE) {
         exitBonusMode();
-        console.log('BONUS END (1150)');
+        console.log('BONUS END (1200)');
     }
 
     // Update bonus mode visual transition (0.75 second fade)
@@ -114,6 +120,10 @@ function updateGame(delta, elapsed) {
     // Update shield power-up
     ShieldManager.update(delta, elapsed);
     ShieldManager.checkCollection();
+
+    // Update speed boost power-up
+    SpeedBoostManager.update(delta, elapsed);
+    SpeedBoostManager.checkCollection();
     
     // Update collectibles
     CollectibleManager.update(delta, elapsed);
