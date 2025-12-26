@@ -32,7 +32,7 @@ const CONFIG = {
 
     // Bonus mode
     BONUS_START_DISTANCE: 1000,
-    BONUS_END_DISTANCE: 1200,  // Extended from 1150 for longer bonus with more orbs
+    BONUS_END_DISTANCE: 1250,  // Extended from 1150 for longer bonus with more orbs
     
     // Visual settings
     FOG_NEAR: 25,

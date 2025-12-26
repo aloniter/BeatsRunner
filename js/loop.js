@@ -94,7 +94,7 @@ function updateGame(delta, elapsed) {
 
     if (GameState.isBonusActive && GameState.distance >= CONFIG.BONUS_END_DISTANCE) {
         exitBonusMode();
-        console.log('BONUS END (1200)');
+        console.log('BONUS END (1250)');
     }
 
     // Update bonus mode visual transition (0.75 second fade)

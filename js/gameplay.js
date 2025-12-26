@@ -912,45 +912,21 @@ const CollectibleManager = {
 // BONUS ORB MANAGER - Rainbow Bonus Collectibles
 // ========================================
 class BonusOrb {
-    constructor(x, z, direction, heightIndex, heightLanes) {
+    constructor(x, y, z) {
         this.group = BonusOrbManager.createOrbMesh();
-        this.group.position.set(x, heightLanes[heightIndex], z);
-        this.direction = direction;
-        this.heightIndex = heightIndex;
-        this.heightDir = 1;
-        this.heightLanes = heightLanes;
-        this.speedX = 4.6;
-        this.speedY = 2.8;
+        this.group.position.set(x, y, z);
+        this.lastZ = z;
+        this.baseY = y;
         this.phase = Math.random() * Math.PI * 2;
     }
 
-    update(delta, elapsed, moveAmount, minX, maxX) {
+    update(delta, elapsed, moveAmount) {
+        this.lastZ = this.group.position.z;
         // Move toward player
         this.group.position.z -= moveAmount;
 
-        // Horizontal zigzag
-        this.group.position.x += this.direction * this.speedX * delta;
-        if (this.group.position.x >= maxX) {
-            this.group.position.x = maxX;
-            this.direction = -1;
-        } else if (this.group.position.x <= minX) {
-            this.group.position.x = minX;
-            this.direction = 1;
-        }
-
-        // Vertical lane shifts (low/mid/high)
-        const targetY = this.heightLanes[this.heightIndex];
-        const dy = targetY - this.group.position.y;
-        const stepY = Math.sign(dy) * this.speedY * delta;
-        if (Math.abs(dy) <= Math.abs(stepY)) {
-            this.group.position.y = targetY;
-            this.heightIndex += this.heightDir;
-            if (this.heightIndex <= 0 || this.heightIndex >= this.heightLanes.length - 1) {
-                this.heightDir *= -1;
-            }
-        } else {
-            this.group.position.y += stepY;
-        }
+        // Light bobbing for readability
+        this.group.position.y = this.baseY + Math.sin(elapsed * 4 + this.phase) * 0.12;
 
         // Subtle pulse for visibility without changing color
         const pulse = 1 + Math.sin(elapsed * 4 + this.phase) * 0.06;
@@ -965,16 +941,11 @@ class BonusOrb {
 
 const BonusOrbManager = {
     bonusOrbs: [],
-    nextSpawnZ: 0,
-    waveSize: 6,
-    waveCount: 0,
-    horizontalDir: 1,
-    heightIndex: 0,
-    heightDir: 1,
-    maxOrbs: 18,
-    spawnSpacingMin: 3.2,
-    spawnSpacingMax: 4.2,
-    heightLanes: [1.6, 2.3, 3.2],
+    lastSpawnZ: 0,
+    maxOrbs: 36,
+    spawnGapMin: 1.6,
+    spawnGapMax: 2.4,
+    heightLanes: [1.6, 2.1, 2.6],
 
     createOrbMesh() {
         const group = new THREE.Group();
@@ -1026,38 +997,21 @@ const BonusOrbManager = {
         }
 
         const moveAmount = GameState.speed * delta;
-        const playerZ = player.position.z;
-        const spawnZ = playerZ + CONFIG.SPAWN_DISTANCE;
-        const minX = CONFIG.LANE_POSITIONS[0];
-        const maxX = CONFIG.LANE_POSITIONS[2];
 
-        if (this.nextSpawnZ <= 0) {
-            this.nextSpawnZ = spawnZ;
+        if (this.lastSpawnZ <= 0) {
+            this.lastSpawnZ = CONFIG.SPAWN_DISTANCE - 1;
         }
 
-        while (spawnZ >= this.nextSpawnZ && this.bonusOrbs.length < this.maxOrbs) {
-            const startX = this.horizontalDir > 0 ? minX : maxX;
-            const orb = new BonusOrb(startX, this.nextSpawnZ, this.horizontalDir, this.heightIndex, this.heightLanes);
-            this.bonusOrbs.push(orb);
-
-            this.waveCount++;
-            if (this.waveCount >= this.waveSize) {
-                this.waveCount = 0;
-                this.horizontalDir *= -1;
-            }
-
-            this.heightIndex += this.heightDir;
-            if (this.heightIndex <= 0 || this.heightIndex >= this.heightLanes.length - 1) {
-                this.heightDir *= -1;
-            }
-
-            const spacing = this.spawnSpacingMin + Math.random() * (this.spawnSpacingMax - this.spawnSpacingMin);
-            this.nextSpawnZ += spacing;
+        this.lastSpawnZ -= moveAmount;
+        while (this.lastSpawnZ < CONFIG.SPAWN_DISTANCE && this.bonusOrbs.length < this.maxOrbs) {
+            const patternLength = this.spawnDiagonalPattern(this.lastSpawnZ);
+            const gap = this.spawnGapMin + Math.random() * (this.spawnGapMax - this.spawnGapMin);
+            this.lastSpawnZ = this.lastSpawnZ + patternLength + gap;
         }
 
         for (let i = this.bonusOrbs.length - 1; i >= 0; i--) {
             const orb = this.bonusOrbs[i];
-            orb.update(delta, elapsed, moveAmount, minX, maxX);
+            orb.update(delta, elapsed, moveAmount);
 
             if (GameState.isMagnetActive) {
                 const dx = player.position.x - orb.group.position.x;
@@ -1070,11 +1024,28 @@ const BonusOrbManager = {
                 }
             }
 
-            if (orb.group.position.z < player.position.z - CONFIG.DESPAWN_DISTANCE) {
+            const bonusDespawnZ = player.position.z + CONFIG.DESPAWN_DISTANCE - 10;
+            if (orb.group.position.z < bonusDespawnZ) {
                 scene.remove(orb.group);
                 this.bonusOrbs.splice(i, 1);
             }
         }
+    },
+
+    spawnDiagonalPattern(zBase) {
+        const leftToRight = (Math.floor(zBase) / 10) % 2 === 0;
+        const lanes = leftToRight ? [0, 1, 2] : [2, 1, 0];
+        const heights = leftToRight ? [0, 1, 2] : [2, 1, 0];
+        const stepZ = 2.0;
+
+        for (let i = 0; i < lanes.length; i++) {
+            if (this.bonusOrbs.length >= this.maxOrbs) break;
+            const x = CONFIG.LANE_POSITIONS[lanes[i]];
+            const y = this.heightLanes[heights[i]];
+            const z = zBase + stepZ * i;
+            this.bonusOrbs.push(new BonusOrb(x, y, z));
+        }
+        return stepZ * (lanes.length - 1) + 0.8;
     },
 
     checkCollection() {
@@ -1089,7 +1060,9 @@ const BonusOrbManager = {
             const dy = playerY - orb.group.position.y;
 
             const dist3D = Math.sqrt(dx * dx + dy * dy + dz * dz);
-            const collected = dist3D < 1.5;
+            const crossedPlayer = orb.lastZ >= playerZ && orb.group.position.z <= playerZ;
+            const closeXY = Math.abs(dx) < 1.4 && Math.abs(dy) < 1.6;
+            const collected = dist3D < 2.1 || (crossedPlayer && closeXY);
 
             if (collected) {
                 GameState.orbs++;
@@ -1108,11 +1081,7 @@ const BonusOrbManager = {
     reset() {
         this.bonusOrbs.forEach(orb => scene.remove(orb.group));
         this.bonusOrbs.length = 0;
-        this.nextSpawnZ = 0;
-        this.waveCount = 0;
-        this.horizontalDir = 1;
-        this.heightIndex = 0;
-        this.heightDir = 1;
+        this.lastSpawnZ = 0;
     }
 };
 
