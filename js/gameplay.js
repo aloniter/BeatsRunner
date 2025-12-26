@@ -942,10 +942,14 @@ class BonusOrb {
 const BonusOrbManager = {
     bonusOrbs: [],
     lastSpawnZ: 0,
-    maxOrbs: 36,
-    spawnGapMin: 1.6,
-    spawnGapMax: 2.4,
+    maxOrbs: 18,
+    spawnGapMin: 2.6,
+    spawnGapMax: 3.6,
     heightLanes: [1.6, 2.1, 2.6],
+    laneIndex: 1,
+    laneDir: 1,
+    heightIndex: 0,
+    heightDir: 1,
 
     createOrbMesh() {
         const group = new THREE.Group();
@@ -1004,7 +1008,7 @@ const BonusOrbManager = {
 
         this.lastSpawnZ -= moveAmount;
         while (this.lastSpawnZ < CONFIG.SPAWN_DISTANCE && this.bonusOrbs.length < this.maxOrbs) {
-            const patternLength = this.spawnDiagonalPattern(this.lastSpawnZ);
+            const patternLength = this.spawnSingleOrb(this.lastSpawnZ);
             const gap = this.spawnGapMin + Math.random() * (this.spawnGapMax - this.spawnGapMin);
             this.lastSpawnZ = this.lastSpawnZ + patternLength + gap;
         }
@@ -1032,20 +1036,22 @@ const BonusOrbManager = {
         }
     },
 
-    spawnDiagonalPattern(zBase) {
-        const leftToRight = (Math.floor(zBase) / 10) % 2 === 0;
-        const lanes = leftToRight ? [0, 1, 2] : [2, 1, 0];
-        const heights = leftToRight ? [0, 1, 2] : [2, 1, 0];
-        const stepZ = 2.0;
+    spawnSingleOrb(zBase) {
+        const x = CONFIG.LANE_POSITIONS[this.laneIndex];
+        const y = this.heightLanes[this.heightIndex];
+        this.bonusOrbs.push(new BonusOrb(x, y, zBase));
 
-        for (let i = 0; i < lanes.length; i++) {
-            if (this.bonusOrbs.length >= this.maxOrbs) break;
-            const x = CONFIG.LANE_POSITIONS[lanes[i]];
-            const y = this.heightLanes[heights[i]];
-            const z = zBase + stepZ * i;
-            this.bonusOrbs.push(new BonusOrb(x, y, z));
+        this.laneIndex += this.laneDir;
+        if (this.laneIndex <= 0 || this.laneIndex >= CONFIG.LANE_POSITIONS.length - 1) {
+            this.laneDir *= -1;
         }
-        return stepZ * (lanes.length - 1) + 0.8;
+
+        this.heightIndex += this.heightDir;
+        if (this.heightIndex <= 0 || this.heightIndex >= this.heightLanes.length - 1) {
+            this.heightDir *= -1;
+        }
+
+        return 0;
     },
 
     checkCollection() {
@@ -1082,6 +1088,10 @@ const BonusOrbManager = {
         this.bonusOrbs.forEach(orb => scene.remove(orb.group));
         this.bonusOrbs.length = 0;
         this.lastSpawnZ = 0;
+        this.laneIndex = 1;
+        this.laneDir = 1;
+        this.heightIndex = 0;
+        this.heightDir = 1;
     }
 };
 
