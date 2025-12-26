@@ -340,6 +340,18 @@ const ObstacleManager = {
         }
         obstacles.length = 0;
         this.lastSpawnZ = 60;
+    },
+
+    clearForBonus() {
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+            scene.remove(obstacles[i]);
+        }
+        obstacles.length = 0;
+        this.lastSpawnZ = CONFIG.SPAWN_DISTANCE;
+    },
+
+    resumeAfterBonus() {
+        this.lastSpawnZ = CONFIG.SPAWN_DISTANCE;
     }
 };
 
@@ -893,11 +905,11 @@ const CollectibleManager = {
 // ========================================
 const BonusOrbManager = {
     bonusOrbs: [],
-    lastSpawnZ: 0,
-    spawnCounter: 0,
-    sideOrbInterval: 10,      // Spawn side orbs every 10 units
-    aerialOrbInterval: 20,    // Spawn aerial orbs every 20 units
-    lastAerialSpawnZ: 0,
+    nextPatternZ: 0,
+    patternIndex: 0,
+    patternSpacingMin: 7,
+    patternSpacingMax: 9,
+    endBuffer: 10,
 
     spawn(x, y, z, isAerial = false) {
         const group = new THREE.Group();
@@ -945,28 +957,22 @@ const BonusOrbManager = {
     },
 
     update(delta, elapsed) {
-        if (!GameState.isBonusActive) return;
-
         const moveAmount = GameState.speed * delta;
+        const bonusStart = CONFIG.BONUS_START_DISTANCE;
+        const bonusEnd = CONFIG.BONUS_END_DISTANCE;
+        const playerZ = player.position.z;
+        const spawnZ = playerZ + CONFIG.SPAWN_DISTANCE;
 
         // Spawn new orbs during bonus mode
-        if (GameState.distance >= 1000 && GameState.distance < 1145) {
-            const playerZ = player.position.z;
-            const spawnZ = playerZ + CONFIG.SPAWN_DISTANCE;
-
-            // Spawn side orbs (alternating left/right)
-            if (spawnZ - this.lastSpawnZ >= this.sideOrbInterval) {
-                const isLeft = (this.spawnCounter % 2 === 0);
-                const x = isLeft ? CONFIG.LANE_POSITIONS[0] : CONFIG.LANE_POSITIONS[2];
-                this.spawn(x, 1.7, spawnZ, false);
-                this.lastSpawnZ = spawnZ;
-                this.spawnCounter++;
+        if (GameState.isBonusActive && GameState.distance >= bonusStart && GameState.distance < bonusEnd - this.endBuffer) {
+            if (this.nextPatternZ <= 0) {
+                this.nextPatternZ = spawnZ;
             }
 
-            // Spawn aerial orbs (center lane, high)
-            if (spawnZ - this.lastAerialSpawnZ >= this.aerialOrbInterval) {
-                this.spawn(CONFIG.LANE_POSITIONS[1], 3.2, spawnZ, true);
-                this.lastAerialSpawnZ = spawnZ;
+            while (spawnZ >= this.nextPatternZ) {
+                this.spawnPattern(this.nextPatternZ);
+                const spacing = this.patternSpacingMin + Math.random() * (this.patternSpacingMax - this.patternSpacingMin);
+                this.nextPatternZ += spacing;
             }
         }
 
@@ -1014,6 +1020,66 @@ const BonusOrbManager = {
         }
     },
 
+    spawnPattern(zBase) {
+        const baseY = 1.7;
+        const jumpY = 3.0;
+        const patterns = [
+            () => ([
+                { lane: 0, y: baseY, z: 0 },
+                { lane: 1, y: baseY, z: 3 },
+                { lane: 2, y: baseY, z: 6 },
+                { lane: 1, y: baseY, z: 9 }
+            ]),
+            () => ([
+                { lane: 0, y: baseY, z: 0 },
+                { lane: 2, y: baseY, z: 0 },
+                { lane: 0, y: baseY, z: 4 },
+                { lane: 2, y: baseY, z: 4 }
+            ]),
+            () => ([
+                { lane: 1, y: jumpY, z: 0, isAerial: true },
+                { lane: 0, y: baseY, z: 3 },
+                { lane: 2, y: baseY, z: 6 }
+            ]),
+            () => ([
+                { lane: 0, y: jumpY, z: 0, isAerial: true },
+                { lane: 1, y: baseY, z: 3 },
+                { lane: 2, y: jumpY, z: 6, isAerial: true }
+            ]),
+            (seed) => {
+                const sideLane = seed % 2 === 0 ? 0 : 2;
+                const otherLane = sideLane === 0 ? 2 : 0;
+                return [
+                    { lane: sideLane, y: baseY, z: 0 },
+                    { lane: sideLane, y: jumpY, z: 2.5, isAerial: true },
+                    { lane: 1, y: baseY, z: 5.5 },
+                    { lane: otherLane, y: baseY, z: 8 }
+                ];
+            },
+            (seed) => {
+                const sweep = seed % 3;
+                const lanes = sweep === 0 ? [0, 1, 2] : (sweep === 1 ? [2, 1, 0] : [1, 0, 2]);
+                return [
+                    { lane: lanes[0], y: baseY, z: 0 },
+                    { lane: lanes[1], y: baseY, z: 3 },
+                    { lane: lanes[2], y: jumpY, z: 6, isAerial: true }
+                ];
+            }
+        ];
+
+        const patternSeed = this.patternIndex;
+        const pattern = patterns[patternSeed % patterns.length](patternSeed);
+        this.patternIndex++;
+
+        pattern.forEach(point => {
+            const x = CONFIG.LANE_POSITIONS[point.lane];
+            const y = point.y;
+            const z = zBase + point.z;
+            const isAerial = Boolean(point.isAerial);
+            this.spawn(x, y, z, isAerial);
+        });
+    },
+
     checkCollection() {
         const playerX = player.position.x;
         const playerY = player.position.y;
@@ -1057,9 +1123,8 @@ const BonusOrbManager = {
     reset() {
         this.bonusOrbs.forEach(orb => scene.remove(orb));
         this.bonusOrbs.length = 0;
-        this.lastSpawnZ = 0;
-        this.lastAerialSpawnZ = 0;
-        this.spawnCounter = 0;
+        this.nextPatternZ = 0;
+        this.patternIndex = 0;
     }
 };
 
@@ -1090,75 +1155,91 @@ const ExitBoosterManager = {
     },
 
     createBooster(type, x, z, lane) {
-        const group = new THREE.Group();
+        let group = null;
+        let glowMeshes = [];
+        let fadeMeshes = [];
+        let flashColor = '#ffffff';
+
+        if (type === 'magnet') {
+            group = MagnetManager.createPickup();
+            glowMeshes = [group.children[3]];
+            fadeMeshes = [group.children[0], group.children[1], group.children[2], group.children[3]];
+            flashColor = '#ff9900';
+        } else if (type === 'shield') {
+            group = ShieldManager.createPickup();
+            glowMeshes = [group.children[1], group.children[2]];
+            fadeMeshes = [group.children[0], group.children[1], group.children[2], group.children[3]];
+            flashColor = '#66ccff';
+        } else {
+            group = new THREE.Group();
+
+            const shaftGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.7, 12);
+            const shaftMat = new THREE.MeshStandardMaterial({
+                color: 0xffcc00,
+                emissive: 0xffcc00,
+                emissiveIntensity: 1.2,
+                metalness: 0.6,
+                roughness: 0.25
+            });
+            const shaft = new THREE.Mesh(shaftGeo, shaftMat);
+            shaft.position.y = 0.1;
+            group.add(shaft);
+
+            const headGeo = new THREE.ConeGeometry(0.28, 0.6, 16);
+            const headMat = new THREE.MeshStandardMaterial({
+                color: 0xffff66,
+                emissive: 0xffff66,
+                emissiveIntensity: 1.4,
+                metalness: 0.5,
+                roughness: 0.2
+            });
+            const head = new THREE.Mesh(headGeo, headMat);
+            head.position.y = 0.65;
+            group.add(head);
+
+            const finGeo = new THREE.BoxGeometry(0.12, 0.35, 0.5);
+            const finMat = new THREE.MeshStandardMaterial({
+                color: 0xffee88,
+                emissive: 0xffee88,
+                emissiveIntensity: 1,
+                metalness: 0.4,
+                roughness: 0.3
+            });
+            const finLeft = new THREE.Mesh(finGeo, finMat);
+            finLeft.position.set(-0.22, -0.05, 0);
+            finLeft.rotation.z = 0.2;
+            group.add(finLeft);
+
+            const finRight = new THREE.Mesh(finGeo, finMat);
+            finRight.position.set(0.22, -0.05, 0);
+            finRight.rotation.z = -0.2;
+            group.add(finRight);
+
+            const glowGeo = new THREE.ConeGeometry(0.5, 1.0, 16, 1, true);
+            const glowMat = new THREE.MeshBasicMaterial({
+                color: 0xffee88,
+                transparent: true,
+                opacity: 0.35,
+                side: THREE.BackSide
+            });
+            const glow = new THREE.Mesh(glowGeo, glowMat);
+            glow.position.y = 0.55;
+            group.add(glow);
+
+            glowMeshes = [glow];
+            fadeMeshes = [shaft, head, finLeft, finRight, glow];
+            flashColor = '#ffdd55';
+        }
+
         group.position.set(x, 1.8, z);
         group.userData.type = type;
         group.userData.lane = lane;
         group.userData.checked = false;
+        group.userData.glowMeshes = glowMeshes.filter(Boolean);
+        group.userData.fadeMeshes = fadeMeshes.filter(Boolean);
+        group.userData.flashColor = flashColor;
+        group.userData.baseScale = 2;
         group.scale.set(2, 2, 2);  // 2x larger than normal pickups
-
-        // Color-coded by type
-        const colors = {
-            speed: { main: 0xffff00, glow: 0xffaa00 },    // Yellow/gold
-            shield: { main: 0x0088ff, glow: 0x00ffff },   // Blue/cyan
-            magnet: { main: 0xff6600, glow: 0xff9900 }    // Orange
-        };
-        const color = colors[type];
-
-        // Core sphere
-        const coreGeo = new THREE.SphereGeometry(0.4, 16, 16);
-        const coreMat = new THREE.MeshStandardMaterial({
-            color: color.main,
-            emissive: color.main,
-            emissiveIntensity: 1.2,
-            metalness: 0.5,
-            roughness: 0.3
-        });
-        const core = new THREE.Mesh(coreGeo, coreMat);
-        group.add(core);
-
-        // Outer glow
-        const glowGeo = new THREE.SphereGeometry(0.7, 12, 12);
-        const glowMat = new THREE.MeshBasicMaterial({
-            color: color.glow,
-            transparent: true,
-            opacity: 0.4,
-            side: THREE.BackSide
-        });
-        const glow = new THREE.Mesh(glowGeo, glowMat);
-        group.add(glow);
-
-        // Ground indicator ring
-        const ringGeo = new THREE.TorusGeometry(1.2, 0.08, 8, 32);
-        const ringMat = new THREE.MeshBasicMaterial({
-            color: color.main,
-            transparent: true,
-            opacity: 0.6
-        });
-        const ring = new THREE.Mesh(ringGeo, ringMat);
-        ring.rotation.x = Math.PI / 2;
-        ring.position.y = -1.8;  // On the ground
-        group.add(ring);
-
-        // Type-specific icon/shape
-        if (type === 'speed') {
-            // Arrow pointing forward
-            const arrowShape = new THREE.Shape();
-            arrowShape.moveTo(0, 0.3);
-            arrowShape.lineTo(0.2, -0.1);
-            arrowShape.lineTo(0.05, -0.1);
-            arrowShape.lineTo(0.05, -0.3);
-            arrowShape.lineTo(-0.05, -0.3);
-            arrowShape.lineTo(-0.05, -0.1);
-            arrowShape.lineTo(-0.2, -0.1);
-            arrowShape.lineTo(0, 0.3);
-
-            const arrowGeo = new THREE.ShapeGeometry(arrowShape);
-            const arrowMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-            const arrow = new THREE.Mesh(arrowGeo, arrowMat);
-            arrow.position.z = 0.41;
-            group.add(arrow);
-        }
 
         return group;
     },
@@ -1176,10 +1257,19 @@ const ExitBoosterManager = {
             // Rotate and pulse
             booster.rotation.y += delta * 2;
             const pulse = 1 + Math.sin(elapsed * 4) * 0.1;
-            booster.scale.set(2 * pulse, 2 * pulse, 2 * pulse);
+            const baseScale = booster.userData.baseScale || 2;
+            booster.scale.set(baseScale * pulse, baseScale * pulse, baseScale * pulse);
 
-            // Pulse ring
-            booster.children[2].material.opacity = 0.4 + Math.sin(elapsed * 5) * 0.2;
+            // Pulse glow meshes
+            if (booster.userData.glowMeshes) {
+                const glowOpacity = 0.35 + Math.sin(elapsed * 5) * 0.2;
+                booster.userData.glowMeshes.forEach(mesh => {
+                    if (mesh && mesh.material) {
+                        mesh.material.opacity = glowOpacity;
+                        mesh.material.transparent = true;
+                    }
+                });
+            }
 
             // Check if player passed through
             if (!booster.userData.checked && booster.position.z < player.position.z) {
@@ -1188,16 +1278,29 @@ const ExitBoosterManager = {
                 if (booster.userData.lane === GameState.currentLane) {
                     // Player selected this booster!
                     this.activateBooster(booster.userData.type);
-                    flashScreen(0.15, '#' + booster.children[0].material.color.getHexString());
+                    flashScreen(0.15, booster.userData.flashColor || '#ffffff');
                     playCollectSound();
 
                     // Visual: selected booster explodes
-                    booster.children[1].material.opacity = 1.0;
+                    if (booster.userData.glowMeshes) {
+                        booster.userData.glowMeshes.forEach(mesh => {
+                            if (mesh && mesh.material) {
+                                mesh.material.opacity = 1.0;
+                                mesh.material.transparent = true;
+                            }
+                        });
+                    }
                     booster.scale.set(4, 4, 4);
                 } else {
                     // Fade out unselected boosters
-                    booster.children[0].material.opacity = 0.2;
-                    booster.children[1].material.opacity = 0.1;
+                    if (booster.userData.fadeMeshes) {
+                        booster.userData.fadeMeshes.forEach(mesh => {
+                            if (mesh && mesh.material) {
+                                mesh.material.opacity = 0.2;
+                                mesh.material.transparent = true;
+                            }
+                        });
+                    }
                 }
             }
 

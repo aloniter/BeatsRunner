@@ -13,7 +13,7 @@ function startGame() {
     GameState.gameStartTime = performance.now();
     GameState.isMagnetActive = false;
     GameState.hasShield = false;
-    GameState.isBonusActive = DevSettings.forceBonus;
+    GameState.isBonusActive = false;
     GameState.bonusTriggered = false;
     GameState.bonusTransitionProgress = DevSettings.forceBonus ? 1 : 0;
     
@@ -21,6 +21,10 @@ function startGame() {
     BeatManager.reset();
     MagnetManager.reset();
     ShieldManager.reset();
+
+    if (DevSettings.forceBonus) {
+        enterBonusMode();
+    }
     
     if (DevSettings.startWithShield) {
         ShieldManager.activate();
@@ -49,6 +53,20 @@ function startGame() {
     }
     
     lastTime = performance.now();
+}
+
+function enterBonusMode() {
+    if (GameState.isBonusActive) return;
+    GameState.isBonusActive = true;
+    GameState.bonusTriggered = true;
+    ObstacleManager.clearForBonus();
+}
+
+function exitBonusMode() {
+    if (!GameState.isBonusActive) return;
+    GameState.isBonusActive = false;
+    ObstacleManager.resumeAfterBonus();
+    ExitBoosterManager.spawn();
 }
 
 function gameOver() {

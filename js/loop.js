@@ -76,14 +76,12 @@ function updateGame(delta, elapsed) {
     GameState.score = GameState.orbs * 100 + Math.floor(GameState.distance);
 
     if (!GameState.bonusTriggered && GameState.distance >= CONFIG.BONUS_START_DISTANCE) {
-        GameState.isBonusActive = true;
-        GameState.bonusTriggered = true;
+        enterBonusMode();
         console.log('BONUS START (1000)');
     }
 
     if (GameState.isBonusActive && GameState.distance >= CONFIG.BONUS_END_DISTANCE) {
-        GameState.isBonusActive = false;
-        ExitBoosterManager.spawn();  // Spawn exit boosters
+        exitBonusMode();
         console.log('BONUS END (1150)');
     }
 

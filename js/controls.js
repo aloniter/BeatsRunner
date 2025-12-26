@@ -205,12 +205,12 @@ function setupDevTools() {
             if (!GameState.isPlaying) return;
             if (DevSettings.forceBonus) {
                 GameState.distance = CONFIG.BONUS_START_DISTANCE;
-                GameState.isBonusActive = true;
+                enterBonusMode();
                 GameState.score = GameState.orbs * 100 + Math.floor(GameState.distance);
                 if (distanceValue) distanceValue.textContent = Math.floor(GameState.distance);
                 if (scoreValue) scoreValue.textContent = GameState.score;
             } else {
-                GameState.isBonusActive = false;
+                exitBonusMode();
                 if (GameState.distance < CONFIG.BONUS_START_DISTANCE) {
                     GameState.bonusTriggered = false;
                 }
