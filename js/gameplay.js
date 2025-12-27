@@ -109,11 +109,18 @@ const ObstacleManager = {
     ],
     
     spawn() {
-        const z = this.lastSpawnZ + CONFIG.OBSTACLE_MIN_GAP + Math.random() * 12;
-        
-        // Randomly choose between regular obstacles and jump obstacles
-        const useJumpObstacle = Math.random() < 0.35; // 35% chance of jump obstacle
-        
+        // Get stage-specific settings (or defaults for Free Run)
+        const stage = GameState.isStageMode ? GameState.currentStage : null;
+        const pool = stage ? getPatternPool(stage) : null;
+
+        // Calculate gap based on stage tier (or use default for Free Run)
+        const minGap = pool ? pool.gap : CONFIG.OBSTACLE_MIN_GAP;
+        const z = this.lastSpawnZ + minGap + Math.random() * 12;
+
+        // Determine jump frequency based on stage
+        const jumpChance = pool ? pool.jumpFrequency : 0.35;
+        const useJumpObstacle = Math.random() < jumpChance;
+
         if (useJumpObstacle) {
             // Spawn low obstacle across all lanes (must jump)
             const obstacle = this.createJumpObstacle();
@@ -122,10 +129,16 @@ const ObstacleManager = {
             scene.add(obstacle);
             obstacles.push(obstacle);
         } else {
-            // Regular lane-blocking obstacles
-            const patternIndex = Math.floor(Math.random() * this.patterns.length);
-            const pattern = this.patterns[patternIndex];
-            
+            // Select pattern from stage pool (or use default patterns for Free Run)
+            let pattern;
+            if (pool) {
+                pattern = selectRandomPattern(pool);
+            } else {
+                // Free Run: use existing hardcoded patterns
+                const patternIndex = Math.floor(Math.random() * this.patterns.length);
+                pattern = this.patterns[patternIndex];
+            }
+
             // Create obstacles for blocked lanes
             pattern.forEach(lane => {
                 const obstacle = this.createObstacle();
@@ -135,15 +148,15 @@ const ObstacleManager = {
                 scene.add(obstacle);
                 obstacles.push(obstacle);
             });
-            
-            // Always spawn collectible in one empty lane
+
+            // Spawn collectible in one empty lane
             const emptyLanes = [0, 1, 2].filter(l => !pattern.includes(l));
             if (emptyLanes.length > 0 && Math.random() < CONFIG.ORB_SPAWN_CHANCE) {
                 const orbLane = emptyLanes[Math.floor(Math.random() * emptyLanes.length)];
                 CollectibleManager.spawn(CONFIG.LANE_POSITIONS[orbLane], z);
             }
         }
-        
+
         this.lastSpawnZ = z;
     },
     
@@ -395,6 +408,9 @@ const MagnetManager = {
     },
     
     trySpawn(elapsed) {
+        // Disable power-ups in Stage Mode
+        if (GameState.isStageMode) return;
+
         if (!player) return;
         if (GameState.distance < this.minDistance) return;
         if (elapsed < this.nextSpawnTime) return;
@@ -601,13 +617,16 @@ const ShieldManager = {
     },
     
     trySpawn(elapsed) {
+        // Disable power-ups in Stage Mode
+        if (GameState.isStageMode) return;
+
         if (!player) return;
         if (elapsed < this.minElapsed) return;
         if (GameState.distance < this.minDistance) return;
         if (elapsed < this.nextSpawnTime) return;
         if (GameState.hasShield) return;
         if (shieldPickups.length > 0) return;
-        
+
         this.spawn(elapsed);
     },
     
@@ -891,6 +910,12 @@ const CollectibleManager = {
                 GameState.orbs++;
                 GameState.score += 100;
                 addOrbs(1);
+
+                // Track orbs for Stage Mode star calculation
+                if (GameState.isStageMode) {
+                    GameState.orbsCollected++;
+                }
+
                 scene.remove(orb);
                 collectibles.splice(i, 1);
 
@@ -1377,6 +1402,9 @@ const SpeedBoostManager = {
     },
 
     trySpawn(elapsed) {
+        // Disable power-ups in Stage Mode
+        if (GameState.isStageMode) return;
+
         if (!player) return;
         if (elapsed < this.minElapsed) return;
         if (GameState.distance < this.minDistance) return;

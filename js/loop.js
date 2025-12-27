@@ -81,7 +81,19 @@ function updateGame(delta, elapsed) {
     GameState.distance += GameState.speed * delta * 0.5;
     GameState.score = GameState.orbs * 100 + Math.floor(GameState.distance);
 
-    if (!GameState.bonusTriggered && GameState.distance >= CONFIG.BONUS_START_DISTANCE) {
+    // Track distance for Stage Mode finish line
+    if (GameState.isStageMode) {
+        GameState.distanceTraveled = GameState.distance;
+        updateFinishLine();
+
+        // Update Stage Mode HUD
+        if (typeof StageHudUI !== 'undefined') {
+            StageHudUI.update();
+        }
+    }
+
+    // Bonus Mode only in Free Run (disabled in Stage Mode)
+    if (!GameState.isStageMode && !GameState.bonusTriggered && GameState.distance >= CONFIG.BONUS_START_DISTANCE) {
         enterBonusMode();
         console.log('BONUS START (1000)');
     }
@@ -138,7 +150,15 @@ function updateGame(delta, elapsed) {
 
     // Check collision
     if (!GameState.isBonusActive && !DevSettings.godMode && ObstacleManager.checkCollision()) {
-        gameOver();
+        if (GameState.isStageMode) {
+            // Stage Mode: Count crash, don't end game
+            GameState.crashes++;
+            flashScreen(0.15, '#ff0066');
+            // Continue playing - no gameOver()
+        } else {
+            // Free Run: Game over as usual
+            gameOver();
+        }
         return;
     }
     

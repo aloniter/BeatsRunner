@@ -1,0 +1,16 @@
+{
+  "name": "beat-runner-stage-mode",
+  "version": "1.0.0",
+  "description": "Beat Runner with Stage Mode MVP",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report",
+    "dev": "http-server . -p 5000 -c-1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.45.0",
+    "http-server": "^14.1.1"
+  }
+}

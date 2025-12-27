@@ -1,0 +1,396 @@
+/* ========================================
+   BEAT RUNNER - Stage Registry
+   Stage Mode MVP: 15 Stages, 1 World
+   ======================================== */
+
+/**
+ * Stage Registry - All 15 stage definitions for MVP
+ * World 1: Neon District (Easy → Medium → Hard)
+ *
+ * Each stage has:
+ * - Gameplay settings (distance, speed, orbs)
+ * - Star thresholds (crashes + orbs%)
+ * - Unlock requirements
+ * - Obstacle pattern type
+ */
+
+const STAGES = {
+  // ========================================
+  // EASY TIER (Stages 1-5)
+  // Goal: Build confidence, 90%+ get 3 stars
+  // ========================================
+
+  'stage-1-intro': {
+    id: 'stage-1-intro',
+    name: 'Neon Intro',
+    order: 1,
+    world: 'neon-district',
+
+    // Gameplay
+    distance: 1000,
+    targetTime: 45,
+    speed: 28,
+    totalOrbs: 15,
+
+    // Star thresholds
+    stars: {
+      star3: { crashes: 2, orbs: 60 },
+      star2: { crashes: 5, orbs: 40 }
+    },
+
+    // Obstacle pattern
+    pattern: 'single-lane',
+
+    // Unlock
+    unlock: { type: 'default' }
+  },
+
+  'stage-2-rhythm': {
+    id: 'stage-2-rhythm',
+    name: 'Rhythm Basics',
+    order: 2,
+    world: 'neon-district',
+
+    distance: 1100,
+    targetTime: 50,
+    speed: 28,
+    totalOrbs: 18,
+
+    stars: {
+      star3: { crashes: 2, orbs: 60 },
+      star2: { crashes: 5, orbs: 40 }
+    },
+
+    pattern: 'single-lane',
+    unlock: { type: 'complete-previous', requiredStageId: 'stage-1-intro' }
+  },
+
+  'stage-3-jump': {
+    id: 'stage-3-jump',
+    name: 'Jump Practice',
+    order: 3,
+    world: 'neon-district',
+
+    distance: 1100,
+    targetTime: 50,
+    speed: 28,
+    totalOrbs: 18,
+
+    stars: {
+      star3: { crashes: 2, orbs: 60 },
+      star2: { crashes: 5, orbs: 40 }
+    },
+
+    pattern: 'single-lane',
+    unlock: { type: 'complete-previous', requiredStageId: 'stage-2-rhythm' }
+  },
+
+  'stage-4-lane': {
+    id: 'stage-4-lane',
+    name: 'Lane Switching',
+    order: 4,
+    world: 'neon-district',
+
+    distance: 1200,
+    targetTime: 55,
+    speed: 28,
+    totalOrbs: 20,
+
+    stars: {
+      star3: { crashes: 2, orbs: 60 },
+      star2: { crashes: 5, orbs: 40 }
+    },
+
+    pattern: 'single-lane',
+    unlock: { type: 'complete-previous', requiredStageId: 'stage-3-jump' }
+  },
+
+  'stage-5-speed': {
+    id: 'stage-5-speed',
+    name: 'Speed Boost',
+    order: 5,
+    world: 'neon-district',
+
+    distance: 1200,
+    targetTime: 55,
+    speed: 29,
+    totalOrbs: 20,
+
+    stars: {
+      star3: { crashes: 2, orbs: 60 },
+      star2: { crashes: 5, orbs: 40 }
+    },
+
+    pattern: 'mixed',
+    unlock: { type: 'complete-previous', requiredStageId: 'stage-4-lane' }
+  },
+
+  // ========================================
+  // MEDIUM TIER (Stages 6-10)
+  // Goal: Combine mechanics, 60% get 3 stars
+  // ========================================
+
+  'stage-6-double': {
+    id: 'stage-6-double',
+    name: 'Double Trouble',
+    order: 6,
+    world: 'neon-district',
+
+    distance: 1250,
+    targetTime: 60,
+    speed: 30,
+    totalOrbs: 22,
+
+    stars: {
+      star3: { crashes: 2, orbs: 70 },
+      star2: { crashes: 5, orbs: 50 }
+    },
+
+    pattern: 'mixed',
+    unlock: { type: 'complete-previous', requiredStageId: 'stage-5-speed' }
+  },
+
+  'stage-7-rhythm-run': {
+    id: 'stage-7-rhythm-run',
+    name: 'Rhythm Run',
+    order: 7,
+    world: 'neon-district',
+
+    distance: 1300,
+    targetTime: 62,
+    speed: 30,
+    totalOrbs: 23,
+
+    stars: {
+      star3: { crashes: 2, orbs: 70 },
+      star2: { crashes: 5, orbs: 50 }
+    },
+
+    pattern: 'mixed',
+    unlock: { type: 'complete-previous', requiredStageId: 'stage-6-double' }
+  },
+
+  'stage-8-jump-chain': {
+    id: 'stage-8-jump-chain',
+    name: 'Jump Chains',
+    order: 8,
+    world: 'neon-district',
+
+    distance: 1300,
+    targetTime: 62,
+    speed: 30,
+    totalOrbs: 24,
+
+    stars: {
+      star3: { crashes: 2, orbs: 70 },
+      star2: { crashes: 5, orbs: 50 }
+    },
+
+    pattern: 'mixed',
+    unlock: { type: 'complete-previous', requiredStageId: 'stage-7-rhythm-run' }
+  },
+
+  'stage-9-reflex': {
+    id: 'stage-9-reflex',
+    name: 'Quick Reflexes',
+    order: 9,
+    world: 'neon-district',
+
+    distance: 1350,
+    targetTime: 65,
+    speed: 31,
+    totalOrbs: 24,
+
+    stars: {
+      star3: { crashes: 2, orbs: 70 },
+      star2: { crashes: 5, orbs: 50 }
+    },
+
+    pattern: 'mixed',
+    unlock: { type: 'complete-previous', requiredStageId: 'stage-8-jump-chain' }
+  },
+
+  'stage-10-gauntlet': {
+    id: 'stage-10-gauntlet',
+    name: 'Neon Gauntlet',
+    order: 10,
+    world: 'neon-district',
+
+    distance: 1400,
+    targetTime: 68,
+    speed: 31,
+    totalOrbs: 25,
+
+    stars: {
+      star3: { crashes: 2, orbs: 70 },
+      star2: { crashes: 5, orbs: 50 }
+    },
+
+    pattern: 'mixed',
+    unlock: { type: 'complete-previous', requiredStageId: 'stage-9-reflex' }
+  },
+
+  // ========================================
+  // HARD TIER (Stages 11-15)
+  // Goal: Test mastery, 30% get 3 stars
+  // ========================================
+
+  'stage-11-speed': {
+    id: 'stage-11-speed',
+    name: 'Speed Demon',
+    order: 11,
+    world: 'neon-district',
+
+    distance: 1450,
+    targetTime: 70,
+    speed: 32,
+    totalOrbs: 26,
+
+    stars: {
+      star3: { crashes: 1, orbs: 75 },
+      star2: { crashes: 4, orbs: 50 }
+    },
+
+    pattern: 'complex',
+    unlock: { type: 'complete-previous', requiredStageId: 'stage-10-gauntlet' }
+  },
+
+  'stage-12-timing': {
+    id: 'stage-12-timing',
+    name: 'Perfect Timing',
+    order: 12,
+    world: 'neon-district',
+
+    distance: 1450,
+    targetTime: 70,
+    speed: 32,
+    totalOrbs: 27,
+
+    stars: {
+      star3: { crashes: 1, orbs: 75 },
+      star2: { crashes: 4, orbs: 50 }
+    },
+
+    pattern: 'complex',
+    unlock: { type: 'complete-previous', requiredStageId: 'stage-11-speed' }
+  },
+
+  'stage-13-jump-master': {
+    id: 'stage-13-jump-master',
+    name: 'Jump Master',
+    order: 13,
+    world: 'neon-district',
+
+    distance: 1500,
+    targetTime: 72,
+    speed: 32,
+    totalOrbs: 28,
+
+    stars: {
+      star3: { crashes: 1, orbs: 80 },
+      star2: { crashes: 4, orbs: 50 }
+    },
+
+    pattern: 'complex',
+    unlock: { type: 'complete-previous', requiredStageId: 'stage-12-timing' }
+  },
+
+  'stage-14-chaos': {
+    id: 'stage-14-chaos',
+    name: 'Neon Chaos',
+    order: 14,
+    world: 'neon-district',
+
+    distance: 1500,
+    targetTime: 72,
+    speed: 32,
+    totalOrbs: 29,
+
+    stars: {
+      star3: { crashes: 1, orbs: 80 },
+      star2: { crashes: 4, orbs: 50 }
+    },
+
+    pattern: 'complex',
+    unlock: { type: 'complete-previous', requiredStageId: 'stage-13-jump-master' }
+  },
+
+  'stage-15-final': {
+    id: 'stage-15-final',
+    name: 'Final Challenge',
+    order: 15,
+    world: 'neon-district',
+
+    distance: 1500,
+    targetTime: 75,
+    speed: 32,
+    totalOrbs: 30,
+
+    stars: {
+      star3: { crashes: 1, orbs: 80 },
+      star2: { crashes: 4, orbs: 50 }
+    },
+
+    pattern: 'complex',
+    unlock: { type: 'complete-previous', requiredStageId: 'stage-14-chaos' }
+  }
+};
+
+/**
+ * Get stage by ID
+ * @param {string} stageId - Stage ID (e.g., 'stage-1-intro')
+ * @returns {object|null} Stage object or null if not found
+ */
+function getStage(stageId) {
+  return STAGES[stageId] || null;
+}
+
+/**
+ * Get stage by order number
+ * @param {number} order - Stage order (1-15)
+ * @returns {object|null} Stage object or null if not found
+ */
+function getStageByOrder(order) {
+  return Object.values(STAGES).find(stage => stage.order === order) || null;
+}
+
+/**
+ * Get next stage in sequence
+ * @param {string} currentStageId - Current stage ID
+ * @returns {object|null} Next stage object or null if last stage
+ */
+function getNextStage(currentStageId) {
+  const currentStage = STAGES[currentStageId];
+  if (!currentStage) return null;
+
+  const nextOrder = currentStage.order + 1;
+  return getStageByOrder(nextOrder);
+}
+
+/**
+ * Get all stages as array, sorted by order
+ * @returns {array} Array of stage objects
+ */
+function getAllStages() {
+  return Object.values(STAGES).sort((a, b) => a.order - b.order);
+}
+
+/**
+ * Get total number of stages
+ * @returns {number} Total stages (15 in MVP)
+ */
+function getTotalStages() {
+  return Object.keys(STAGES).length;
+}
+
+// Export for use in other modules
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    STAGES,
+    getStage,
+    getStageByOrder,
+    getNextStage,
+    getAllStages,
+    getTotalStages
+  };
+}

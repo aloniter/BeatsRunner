@@ -127,8 +127,30 @@ function setupControls() {
     document.getElementById('restart-btn').addEventListener('click', restartGame);
     document.getElementById('mainmenu-btn').addEventListener('click', goToMainMenu);
     pauseBtn.addEventListener('click', togglePause);
-    
+
+    // Stage Mode button
+    document.getElementById('stage-mode-btn').addEventListener('click', () => {
+        startScreen.style.display = 'none';
+        LevelSelectUI.show();
+    });
+
+    // Initialize Stage Mode UI
+    initStageUI();
+
     setupDevTools();
+}
+
+/**
+ * Initialize all Stage Mode UI components
+ */
+function initStageUI() {
+    LevelSelectUI.init();
+    StageInfoCardUI.init();
+    StageHudUI.init();
+    ResultsScreenUI.init();
+
+    // Update menu stars on init
+    LevelSelectUI.updateMenuStars();
 }
 
 // ========================================
