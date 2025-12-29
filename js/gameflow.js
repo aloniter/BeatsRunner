@@ -138,8 +138,10 @@ function startStage(stageId) {
 
     lastTime = performance.now();
 
-    // Show level display with fade effect
-    showLevelDisplay(stage.name);
+    // Show Stage Mode HUD
+    if (typeof StageHudUI !== 'undefined') {
+        StageHudUI.show();
+    }
 
     console.log(`Starting Stage: ${stage.name} (${stage.distance}m, speed ${stage.speed})`);
 }
@@ -154,29 +156,16 @@ function exitStageMode() {
     GameState.orbsCollected = 0;
     GameState.distanceTraveled = 0;
 
+    // Hide Stage Mode HUD
+    if (typeof StageHudUI !== 'undefined') {
+        StageHudUI.hide();
+    }
+
     // Destroy finish line
     destroyFinishLine();
 
     // Reset speed to default
     GameState.speed = CONFIG.INITIAL_SPEED;
-}
-
-/**
- * Show level display with fade in/out effect
- */
-function showLevelDisplay(stageName) {
-    if (!levelDisplay) return;
-
-    // Set level text
-    levelDisplay.textContent = stageName;
-
-    // Fade in
-    levelDisplay.classList.add('visible');
-
-    // Fade out after 2 seconds
-    setTimeout(() => {
-        levelDisplay.classList.remove('visible');
-    }, 2000);
 }
 
 function enterBonusMode() {
