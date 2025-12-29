@@ -40,6 +40,8 @@ const pauseBtn = document.getElementById('pause-btn');
 // HUD Values
 const distanceValue = document.getElementById('distance-value');
 const orbsValue = document.getElementById('orbs-value');
+const hitValue = document.getElementById('hit-value');
+const levelDisplay = document.getElementById('level-display');
 const scoreValue = document.getElementById('score-value');
 const menuOrbsValue = document.getElementById('menu-orbs-value');
 const menuTopDistanceValue = document.getElementById('menu-top-distance-value');
