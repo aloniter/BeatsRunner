@@ -1593,10 +1593,12 @@
 .stage-path {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 14px;
+    row-gap: 24px;
+    column-gap: 14px;
     justify-content: center;
-    align-items: flex-start;
-    padding: 0 10px 20px 10px;
+    align-items: center;
+    padding: 16px 12px 24px 12px;
     overflow-y: auto;
     flex: 1;
     min-height: 0;
@@ -1656,10 +1658,13 @@
 }
 
 .stage-connector {
-    width: 20px;
-    height: 3px;
-    background: linear-gradient(90deg, rgba(0, 255, 255, 0.4), rgba(255, 0, 255, 0.4));
+    /* Connector line between stage nodes */
+    width: 32px;
+    height: 4px;
+    background: linear-gradient(90deg, rgba(0, 255, 255, 0.5) 0%, rgba(255, 0, 255, 0.5) 100%);
     border-radius: 2px;
+    flex-shrink: 0;
+    /* Ensure connectors don't wrap and stay centered vertically with nodes */
 }
 
 .locked-tooltip {
@@ -2007,9 +2012,10 @@
         font-size: 12px;
     }
 
+    /* Tablet: Reduce stage node size but maintain visual balance */
     .stage-node {
-        width: 50px;
-        height: 50px;
+        width: 52px;
+        height: 52px;
     }
 
     .node-number {
@@ -2020,8 +2026,17 @@
         font-size: 8px;
     }
 
+    /* Proportionally scale connector lines for tablet */
     .stage-connector {
-        width: 12px;
+        width: 28px;
+        height: 4px;
+    }
+
+    .stage-path {
+        gap: 12px;
+        row-gap: 20px;
+        column-gap: 12px;
+        padding: 14px 10px 20px 10px;
     }
 
     .stage-hud {
@@ -2068,17 +2083,27 @@
 }
 
 @media (max-width: 380px) {
+    /* Small phones: Compact layout with improved spacing */
     .stage-node {
-        width: 45px;
-        height: 45px;
+        width: 48px;
+        height: 48px;
     }
 
     .node-number {
         font-size: 14px;
     }
 
+    /* Small phone connector: Maintain visibility while conserving space */
     .stage-connector {
-        width: 8px;
+        width: 24px;
+        height: 3px;
+    }
+
+    .stage-path {
+        gap: 10px;
+        row-gap: 18px;
+        column-gap: 10px;
+        padding: 12px 8px 18px 8px;
     }
 
     .stage-info-buttons {
