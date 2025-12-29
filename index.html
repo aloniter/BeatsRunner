@@ -24,11 +24,14 @@
             <div class="hud-label">Orbs</div>
             <div class="hud-value" id="orbs-value">0</div>
         </div>
-        <div class="hud-item is-hidden">
-            <div class="hud-label">Score</div>
-            <div class="hud-value" id="score-value">0</div>
+        <div class="hud-item">
+            <div class="hud-label">Hit</div>
+            <div class="hud-value" id="hit-value">0</div>
         </div>
     </div>
+
+    <!-- Level Display (fades in/out at stage start) -->
+    <div id="level-display" class="level-display"></div>
     <button class="pause-btn" id="pause-btn" aria-label="Pause">Ⅱ</button>
 
     <!-- Mobile Controls -->
@@ -205,23 +208,7 @@
         </div>
     </div>
 
-    <!-- Stage Mode HUD -->
-    <!-- Removed: Stage progress bar and percentage (no longer needed for clean HUD design) -->
-    <div id="stage-hud" class="stage-hud">
-        <div class="stage-hud-left">
-            <span class="stage-hud-name" id="stage-hud-name">Stage 1</span>
-        </div>
-        <div class="stage-hud-right">
-            <div class="hud-counter">
-                <span class="counter-icon">💎</span>
-                <span id="stage-orb-count">0</span>/<span id="stage-orb-total">15</span>
-            </div>
-            <div class="hud-counter hud-counter-hit">
-                <span class="counter-icon">⚠️</span>
-                <span id="stage-crash-count">0</span>
-            </div>
-        </div>
-    </div>
+    <!-- Stage Mode HUD: Removed - replaced with unified HUD system -->
 
     <!-- Results Screen (Stage Mode) -->
     <div class="overlay" id="results-overlay" aria-hidden="true">
@@ -290,7 +277,6 @@
     <!-- Stage Mode (MVP) - Week 3 UI -->
     <script defer src="js/ui/level-select.js"></script>
     <script defer src="js/ui/stage-info-card.js"></script>
-    <script defer src="js/ui/stage-hud.js"></script>
     <script defer src="js/ui/results-screen.js"></script>
 
     <script defer src="js/scene.js"></script>

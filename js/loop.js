@@ -85,11 +85,6 @@ function updateGame(delta, elapsed) {
     if (GameState.isStageMode) {
         GameState.distanceTraveled = GameState.distance;
         updateFinishLine();
-
-        // Update Stage Mode HUD
-        if (typeof StageHudUI !== 'undefined') {
-            StageHudUI.update();
-        }
     }
 
     // Bonus Mode only in Free Run (disabled in Stage Mode)
@@ -213,7 +208,7 @@ function updateGame(delta, elapsed) {
     // Update HUD
     distanceValue.textContent = Math.floor(GameState.distance);
     orbsValue.textContent = GameState.orbs;
-    scoreValue.textContent = GameState.score;
+    hitValue.textContent = GameState.crashes;
 }
 
 // ========================================
