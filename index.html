@@ -206,23 +206,18 @@
     </div>
 
     <!-- Stage Mode HUD -->
+    <!-- Removed: Stage progress bar and percentage (no longer needed for clean HUD design) -->
     <div id="stage-hud" class="stage-hud">
         <div class="stage-hud-left">
             <span class="stage-hud-name" id="stage-hud-name">Stage 1</span>
-        </div>
-        <div class="stage-hud-center">
-            <div class="progress-bar">
-                <div class="progress-fill" id="stage-progress-fill"></div>
-            </div>
-            <span class="progress-percent" id="stage-progress-percent">0%</span>
         </div>
         <div class="stage-hud-right">
             <div class="hud-counter">
                 <span class="counter-icon">💎</span>
                 <span id="stage-orb-count">0</span>/<span id="stage-orb-total">15</span>
             </div>
-            <div class="hud-counter">
-                <span class="counter-icon">💥</span>
+            <div class="hud-counter hud-counter-hit">
+                <span class="counter-icon">⚠️</span>
                 <span id="stage-crash-count">0</span>
             </div>
         </div>
