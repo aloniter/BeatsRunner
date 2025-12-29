@@ -1,16 +1,15 @@
 /* ========================================
    BEAT RUNNER - Stage Mode HUD
-   In-game UI: Progress bar, orbs, crashes
+   In-game UI: Distance, Orbs, Hit counter
    ======================================== */
 
 /**
  * Stage HUD UI
- * Displays stage progress, orb count, and crash count during gameplay
+ * Displays stage name, orb count, and hit/crash count during gameplay
+ * Progress bar removed for cleaner arcade-style HUD
  */
 const StageHudUI = {
     container: null,
-    progressFill: null,
-    progressPercent: null,
     orbCount: null,
     orbTotal: null,
     crashCount: null,
@@ -21,8 +20,6 @@ const StageHudUI = {
      */
     init() {
         this.container = document.getElementById('stage-hud');
-        this.progressFill = document.getElementById('stage-progress-fill');
-        this.progressPercent = document.getElementById('stage-progress-percent');
         this.orbCount = document.getElementById('stage-orb-count');
         this.orbTotal = document.getElementById('stage-orb-total');
         this.crashCount = document.getElementById('stage-crash-count');
@@ -41,11 +38,9 @@ const StageHudUI = {
         this.stageName.textContent = `Stage ${stage.order}`;
         this.orbTotal.textContent = stage.totalOrbs;
 
-        // Reset values
+        // Reset counter values
         this.orbCount.textContent = '0';
         this.crashCount.textContent = '0';
-        this.progressFill.style.width = '0%';
-        this.progressPercent.textContent = '0%';
 
         // Show HUD
         this.container.classList.add('is-visible');
@@ -60,19 +55,12 @@ const StageHudUI = {
 
     /**
      * Update HUD values (called every frame in loop.js)
+     * Note: Progress bar removed - distance tracking handled by main Distance stat
      */
     update() {
         if (!GameState.isStageMode || !GameState.currentStage) return;
 
-        const stage = GameState.currentStage;
-        const distance = GameState.distanceTraveled;
-        const progress = Math.min(100, (distance / stage.distance) * 100);
-
-        // Update progress bar
-        this.progressFill.style.width = `${progress}%`;
-        this.progressPercent.textContent = `${Math.floor(progress)}%`;
-
-        // Update counters
+        // Update counters (Orbs collected and Hit/crash count)
         this.orbCount.textContent = GameState.orbsCollected;
         this.crashCount.textContent = GameState.crashes;
     }

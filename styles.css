@@ -1791,7 +1791,8 @@
     padding: 14px 30px;
 }
 
-/* Stage Mode HUD */
+/* Stage Mode HUD - Clean minimal design */
+/* Progress bar removed for cleaner arcade-style HUD */
 .stage-hud {
     position: fixed;
     top: calc(70px + var(--safe-area-inset-top));
@@ -1799,11 +1800,11 @@
     transform: translateX(-50%);
     display: none;
     align-items: center;
-    gap: 15px;
+    gap: 20px;
     background: rgba(0, 0, 0, 0.6);
     border: 1px solid rgba(255, 0, 255, 0.3);
     border-radius: 12px;
-    padding: 8px 16px;
+    padding: 8px 20px;
     z-index: 100;
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
@@ -1826,45 +1827,17 @@
     text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
 }
 
-.stage-hud-center {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.progress-bar {
-    width: 100px;
-    height: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #ff00ff, #00ffff);
-    border-radius: 3px;
-    transition: width 0.3s ease;
-    width: 0%;
-}
-
-.progress-percent {
-    font-size: 12px;
-    color: #fff;
-    font-weight: 600;
-    min-width: 35px;
-}
-
 .stage-hud-right {
     display: flex;
-    gap: 12px;
+    gap: 16px;
+    align-items: center;
 }
 
+/* Stat counters (Orbs and Hit) */
 .hud-counter {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     font-size: 14px;
     color: #fff;
     font-weight: 600;
@@ -1872,6 +1845,15 @@
 
 .counter-icon {
     font-size: 14px;
+}
+
+/* Hit counter - Subtle warning style */
+.hud-counter-hit {
+    color: #ffaa00;
+}
+
+.hud-counter-hit .counter-icon {
+    opacity: 0.85;
 }
 
 /* Results Screen */
