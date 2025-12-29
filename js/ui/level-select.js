@@ -32,9 +32,15 @@ const LevelSelectUI = {
 
     /**
      * Show Level Select screen
+     * Ensures progression data is always fresh by reloading from localStorage
+     * FIX: This handles the progression bug by calling refreshStageNodes()
+     * which properly updates stages that have been completed and unlocked
      */
     show() {
+        // Refresh all stage nodes with latest progress data from localStorage
+        // This ensures completed stages and newly unlocked stages are visible
         this.refreshStageNodes();
+        // Update the total stars count in the header
         this.updateTotalStars();
         this.overlay.classList.add('is-open');
         this.overlay.setAttribute('aria-hidden', 'false');
@@ -98,6 +104,9 @@ const LevelSelectUI = {
 
     /**
      * Refresh node states without full re-render
+     * FIX: Properly handles locked→unlocked transitions by re-rendering node HTML
+     * Ensures that when a stage is completed and the next stage unlocks,
+     * the UI immediately reflects these changes when the level select is shown
      */
     refreshStageNodes() {
         const progress = loadProgress();
@@ -109,16 +118,54 @@ const LevelSelectUI = {
 
             if (!stageData) return;
 
-            // Update classes
-            node.classList.toggle('unlocked', stageData.unlocked);
-            node.classList.toggle('locked', !stageData.unlocked);
-            node.classList.toggle('completed', stageData.completed);
+            // Get stage for rendering locked/unlocked content
+            const stage = getStage(stageId);
+            if (!stage) return;
 
-            // Update content for unlocked nodes
-            if (stageData.unlocked) {
-                const starsContainer = node.querySelector('.node-stars');
-                if (starsContainer) {
-                    starsContainer.innerHTML = this.renderStarsSmall(stageData.bestStars);
+            const isCurrentlyUnlocked = node.classList.contains('unlocked');
+            const shouldBeUnlocked = stageData.unlocked;
+
+            // If unlock state has changed, we need to update the entire node HTML
+            // This is the FIX for the progression bug: when a stage transitions from
+            // locked to unlocked, the node HTML needs to be completely re-rendered
+            if (isCurrentlyUnlocked !== shouldBeUnlocked) {
+                // Clear old event listeners by replacing the element
+                const newNode = node.cloneNode(false);
+                newNode.dataset.stageId = stageId;
+                newNode.dataset.order = stage.order;
+
+                if (shouldBeUnlocked) {
+                    // Stage is now unlocked
+                    newNode.className = 'stage-node unlocked';
+                    if (stageData.completed) {
+                        newNode.classList.add('completed');
+                    }
+                    newNode.innerHTML = `
+                        <div class="node-number">${stage.order}</div>
+                        <div class="node-stars">${this.renderStarsSmall(stageData.bestStars)}</div>
+                    `;
+                    newNode.addEventListener('click', () => this.onStageClick(stageId));
+                } else {
+                    // Stage is locked
+                    newNode.className = 'stage-node locked';
+                    newNode.innerHTML = `
+                        <div class="node-lock">🔒</div>
+                    `;
+                    newNode.addEventListener('click', (e) => this.showLockedTooltip(stage, newNode, e));
+                }
+
+                // Replace the old node with the new one
+                node.parentNode.replaceChild(newNode, node);
+            } else {
+                // Unlock state unchanged - just update visual state
+                node.classList.toggle('completed', stageData.completed);
+
+                // If already unlocked, update the star display
+                if (shouldBeUnlocked) {
+                    const starsContainer = node.querySelector('.node-stars');
+                    if (starsContainer) {
+                        starsContainer.innerHTML = this.renderStarsSmall(stageData.bestStars);
+                    }
                 }
             }
         });
