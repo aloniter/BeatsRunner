@@ -1535,15 +1535,17 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    gap: 0;
 }
 
 .overlay-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     padding-bottom: 12px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
 }
 
 .overlay-title {
@@ -1593,9 +1595,11 @@
     flex-wrap: wrap;
     gap: 8px;
     justify-content: center;
-    align-items: center;
-    padding: 20px 10px;
+    align-items: flex-start;
+    padding: 0 10px 20px 10px;
     overflow-y: auto;
+    flex: 1;
+    min-height: 0;
 }
 
 .stage-node {
@@ -1659,18 +1663,24 @@
 }
 
 .locked-tooltip {
-    position: absolute;
-    bottom: -35px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.9);
-    color: #fff;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 11px;
-    white-space: nowrap;
-    z-index: 10;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: none;
+}
+
+.stage-info-bar {
+    padding: 12px 16px;
+    margin-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 255, 100, 0.08) 100%);
+    border-radius: 8px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    line-height: 1.4;
+    flex-shrink: 0;
 }
 
 /* Stage Info Card */
@@ -1987,6 +1997,14 @@
         max-height: 100%;
         border-radius: 0;
         border: none;
+        padding: 16px 16px 12px 16px;
+    }
+
+    .stage-info-bar {
+        margin-top: 12px;
+        padding: 10px 14px;
+        min-height: 40px;
+        font-size: 12px;
     }
 
     .stage-node {

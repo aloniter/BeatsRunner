@@ -52,6 +52,17 @@ const LevelSelectUI = {
     hide() {
         this.overlay.classList.remove('is-open');
         this.overlay.setAttribute('aria-hidden', 'true');
+        this.clearInfoBar();
+    },
+
+    /**
+     * Clear the info bar
+     */
+    clearInfoBar() {
+        const infoBar = document.getElementById('stage-info-bar');
+        if (infoBar) {
+            infoBar.textContent = '';
+        }
     },
 
     /**
@@ -187,39 +198,26 @@ const LevelSelectUI = {
      */
     onStageClick(stageId) {
         this.selectedStageId = stageId;
+        this.clearInfoBar();
         StageInfoCardUI.show(stageId);
     },
 
     /**
-     * Show tooltip for locked stage
+     * Show hint for locked stage in bottom info bar
      * @param {object} stage - Stage object
      * @param {HTMLElement} node - Node element
      * @param {Event} e - Click event
      */
     showLockedTooltip(stage, node, e) {
-        // Remove existing tooltips
-        const existingTooltip = node.querySelector('.locked-tooltip');
-        if (existingTooltip) {
-            existingTooltip.remove();
-            return;
-        }
-
         // Get previous stage name
         const prevStage = getStageByOrder(stage.order - 1);
         const prevStageName = prevStage ? prevStage.name : 'previous stage';
 
-        // Create tooltip
-        const tooltip = document.createElement('div');
-        tooltip.className = 'locked-tooltip';
-        tooltip.textContent = `Complete "${prevStageName}" to unlock`;
-        node.appendChild(tooltip);
-
-        // Remove after 2 seconds
-        setTimeout(() => {
-            if (tooltip.parentNode) {
-                tooltip.remove();
-            }
-        }, 2000);
+        // Display in the info bar at the bottom
+        const infoBar = document.getElementById('stage-info-bar');
+        if (infoBar) {
+            infoBar.textContent = `Complete "${prevStageName}" to unlock`;
+        }
     },
 
     /**
