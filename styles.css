@@ -1791,8 +1791,8 @@
     padding: 14px 30px;
 }
 
-/* Stage Mode HUD - Clean minimal design */
-/* Progress bar removed for cleaner arcade-style HUD */
+/* Stage Mode HUD - Flat arcade-style text-only design */
+/* HUD bar background/border/container FULLY REMOVED - text + icons only */
 .stage-hud {
     position: fixed;
     top: calc(70px + var(--safe-area-inset-top));
@@ -1801,13 +1801,8 @@
     display: none;
     align-items: center;
     gap: 20px;
-    background: rgba(0, 0, 0, 0.6);
-    border: 1px solid rgba(255, 0, 255, 0.3);
-    border-radius: 12px;
-    padding: 8px 20px;
     z-index: 100;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    pointer-events: none;
 }
 
 .stage-hud.is-visible {
@@ -1824,7 +1819,7 @@
     text-transform: uppercase;
     letter-spacing: 1px;
     font-weight: 600;
-    text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.8), 0 0 20px rgba(255, 0, 255, 0.4);
 }
 
 .stage-hud-right {
@@ -1833,7 +1828,7 @@
     align-items: center;
 }
 
-/* Stat counters (Orbs and Hit) */
+/* Stat counters (Orbs and Hit) - Arcade-style text with glow */
 .hud-counter {
     display: flex;
     align-items: center;
@@ -1841,19 +1836,21 @@
     font-size: 14px;
     color: #fff;
     font-weight: 600;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.8), 0 0 20px rgba(0, 255, 255, 0.4);
 }
 
 .counter-icon {
     font-size: 14px;
 }
 
-/* Hit counter - Subtle warning style */
+/* Hit counter - Warning style with glow */
 .hud-counter-hit {
     color: #ffaa00;
+    text-shadow: 0 0 10px rgba(255, 170, 0, 0.8), 0 0 20px rgba(255, 170, 0, 0.4);
 }
 
 .hud-counter-hit .counter-icon {
-    opacity: 0.85;
+    opacity: 0.9;
 }
 
 /* Results Screen */
@@ -2023,8 +2020,7 @@
 
     .stage-hud {
         top: calc(60px + var(--safe-area-inset-top));
-        padding: 6px 12px;
-        gap: 10px;
+        gap: 16px;
     }
 
     .stage-hud-name {
