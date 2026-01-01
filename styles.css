@@ -103,6 +103,16 @@
             font-weight: bold;
         }
 
+/* Hits counter - Warning/orange style in main HUD */
+.hud-item-hits {
+    color: #ffaa00;
+    text-shadow: 0 0 10px rgba(255, 170, 0, 0.8), 0 0 20px rgba(255, 170, 0, 0.4);
+}
+
+.hud-item-hits .hud-value {
+    color: #ffaa00;
+}
+
         /* Start Screen */
         #start-screen {
             position: fixed;
@@ -1791,67 +1801,8 @@
     padding: 14px 30px;
 }
 
-/* Stage Mode HUD - Flat arcade-style text-only design */
-/* HUD bar background/border/container FULLY REMOVED - text + icons only */
-.stage-hud {
-    position: fixed;
-    top: calc(70px + var(--safe-area-inset-top));
-    left: 50%;
-    transform: translateX(-50%);
-    display: none;
-    align-items: center;
-    gap: 20px;
-    z-index: 100;
-    pointer-events: none;
-}
-
-.stage-hud.is-visible {
-    display: flex;
-}
-
-.stage-hud-left {
-    min-width: 80px;
-}
-
-.stage-hud-name {
-    font-size: 12px;
-    color: #ff00ff;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 600;
-    text-shadow: 0 0 10px rgba(255, 0, 255, 0.8), 0 0 20px rgba(255, 0, 255, 0.4);
-}
-
-.stage-hud-right {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-}
-
-/* Stat counters (Orbs and Hit) - Arcade-style text with glow */
-.hud-counter {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 14px;
-    color: #fff;
-    font-weight: 600;
-    text-shadow: 0 0 10px rgba(0, 255, 255, 0.8), 0 0 20px rgba(0, 255, 255, 0.4);
-}
-
-.counter-icon {
-    font-size: 14px;
-}
-
-/* Hit counter - Warning style with glow */
-.hud-counter-hit {
-    color: #ffaa00;
-    text-shadow: 0 0 10px rgba(255, 170, 0, 0.8), 0 0 20px rgba(255, 170, 0, 0.4);
-}
-
-.hud-counter-hit .counter-icon {
-    opacity: 0.9;
-}
+/* Stage Mode HUD - Secondary HUD row REMOVED */
+/* Hits counter is now in the main HUD alongside Distance and Orbs */
 
 /* Results Screen */
 .results-panel {
@@ -2016,28 +1967,6 @@
         row-gap: 20px;
         column-gap: 12px;
         padding: 14px 10px 20px 10px;
-    }
-
-    .stage-hud {
-        top: calc(60px + var(--safe-area-inset-top));
-        gap: 16px;
-    }
-
-    .stage-hud-name {
-        font-size: 10px;
-    }
-
-    .progress-bar {
-        width: 70px;
-        height: 6px;
-    }
-
-    .progress-percent {
-        font-size: 10px;
-    }
-
-    .hud-counter {
-        font-size: 12px;
     }
 
     .results-message {

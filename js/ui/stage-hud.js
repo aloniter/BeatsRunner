@@ -1,67 +1,41 @@
 /* ========================================
    BEAT RUNNER - Stage Mode HUD
-   In-game UI: Distance, Orbs, Hit counter
+   Secondary HUD row removed - hits now displayed in main HUD
+   This file maintains backward compatibility interface
    ======================================== */
 
 /**
  * Stage HUD UI
- * Displays stage name, orb count, and hit/crash count during gameplay
- * Progress bar removed for cleaner arcade-style HUD
+ * Secondary HUD row (Stage X, diamonds, hits) has been removed.
+ * Hits are now displayed in the main HUD alongside Distance and Orbs.
+ * This object maintains the interface for backward compatibility.
  */
 const StageHudUI = {
-    container: null,
-    orbCount: null,
-    orbTotal: null,
-    crashCount: null,
-    stageName: null,
-
     /**
-     * Initialize Stage HUD
+     * Initialize Stage HUD - No-op (secondary HUD removed)
      */
     init() {
-        this.container = document.getElementById('stage-hud');
-        this.orbCount = document.getElementById('stage-orb-count');
-        this.orbTotal = document.getElementById('stage-orb-total');
-        this.crashCount = document.getElementById('stage-crash-count');
-        this.stageName = document.getElementById('stage-hud-name');
+        // Secondary HUD removed - hits now in main HUD
     },
 
     /**
-     * Show Stage HUD for current stage
+     * Show Stage HUD - No-op (secondary HUD removed)
      */
     show() {
-        if (!GameState.isStageMode || !GameState.currentStage) return;
-
-        const stage = GameState.currentStage;
-
-        // Set stage info
-        this.stageName.textContent = `Stage ${stage.order}`;
-        this.orbTotal.textContent = stage.totalOrbs;
-
-        // Reset counter values
-        this.orbCount.textContent = '0';
-        this.crashCount.textContent = '0';
-
-        // Show HUD
-        this.container.classList.add('is-visible');
+        // Secondary HUD removed - hits now in main HUD
     },
 
     /**
-     * Hide Stage HUD
+     * Hide Stage HUD - No-op (secondary HUD removed)
      */
     hide() {
-        this.container.classList.remove('is-visible');
+        // Secondary HUD removed - hits now in main HUD
     },
 
     /**
-     * Update HUD values (called every frame in loop.js)
-     * Note: Progress bar removed - distance tracking handled by main Distance stat
+     * Update HUD values - No-op (hits updated in main loop.js)
      */
     update() {
-        if (!GameState.isStageMode || !GameState.currentStage) return;
-
-        // Update counters (Orbs collected and Hit/crash count)
-        this.orbCount.textContent = GameState.orbsCollected;
-        this.crashCount.textContent = GameState.crashes;
+        // Secondary HUD removed - hits now updated in main HUD (loop.js)
     }
 };
