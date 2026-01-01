@@ -24,6 +24,10 @@
             <div class="hud-label">Orbs</div>
             <div class="hud-value" id="orbs-value">0</div>
         </div>
+        <div class="hud-item hud-item-hits">
+            <div class="hud-label">Hits</div>
+            <div class="hud-value" id="hits-value">0</div>
+        </div>
         <div class="hud-item is-hidden">
             <div class="hud-label">Score</div>
             <div class="hud-value" id="score-value">0</div>
@@ -205,23 +209,6 @@
         </div>
     </div>
 
-    <!-- Stage Mode HUD -->
-    <!-- Removed: Stage progress bar and percentage (no longer needed for clean HUD design) -->
-    <div id="stage-hud" class="stage-hud">
-        <div class="stage-hud-left">
-            <span class="stage-hud-name" id="stage-hud-name">Stage 1</span>
-        </div>
-        <div class="stage-hud-right">
-            <div class="hud-counter">
-                <span class="counter-icon">💎</span>
-                <span id="stage-orb-count">0</span>/<span id="stage-orb-total">15</span>
-            </div>
-            <div class="hud-counter hud-counter-hit">
-                <span class="counter-icon">⚠️</span>
-                <span id="stage-crash-count">0</span>
-            </div>
-        </div>
-    </div>
 
     <!-- Results Screen (Stage Mode) -->
     <div class="overlay" id="results-overlay" aria-hidden="true">

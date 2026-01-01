@@ -213,6 +213,7 @@ function updateGame(delta, elapsed) {
     // Update HUD
     distanceValue.textContent = Math.floor(GameState.distance);
     orbsValue.textContent = GameState.orbs;
+    hitsValue.textContent = GameState.crashes;
     scoreValue.textContent = GameState.score;
 }
 
