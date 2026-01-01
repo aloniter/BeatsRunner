@@ -303,21 +303,25 @@ const ObstacleManager = {
     
     checkCollision() {
         if (!player) return false;
-        
+
         const playerX = player.position.x;
         const playerZ = player.position.z;
         const playerY = player.position.y;
         const hitboxWidth = 0.7;
         const hitboxDepth = 0.7;
-        
+
         for (let i = obstacles.length - 1; i >= 0; i--) {
             const obstacle = obstacles[i];
+
+            // Skip obstacles that have already registered a hit (Stage Mode fix)
+            if (obstacle.userData.hasBeenHit) continue;
+
             const oz = obstacle.position.z;
             const ox = obstacle.position.x;
-            
+
             // Check Z collision first
             if (Math.abs(oz - playerZ) < hitboxDepth) {
-                
+
                 // Check if it's a jump obstacle
                 if (obstacle.userData.requiresJump) {
                     // Jump obstacle - check if player is high enough
@@ -328,6 +332,8 @@ const ObstacleManager = {
                             obstacles.splice(i, 1);
                             return false;
                         }
+                        // Mark obstacle as hit to prevent double-counting in Stage Mode
+                        obstacle.userData.hasBeenHit = true;
                         return true;
                     }
                 } else {
@@ -339,6 +345,8 @@ const ObstacleManager = {
                             obstacles.splice(i, 1);
                             return false;
                         }
+                        // Mark obstacle as hit to prevent double-counting in Stage Mode
+                        obstacle.userData.hasBeenHit = true;
                         return true;
                     }
                 }
