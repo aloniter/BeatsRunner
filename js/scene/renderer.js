@@ -1,0 +1,111 @@
+// ========================================
+// RENDERER - Three.js Setup & Initialization
+// ========================================
+
+function init() {
+    loadOrbs();
+    loadTopDistance();
+    loadDiscoBallState();
+    loadFireBallState();
+
+    // Initialize quality settings based on device capabilities
+    qualitySettings = QualityManager.init();
+
+    // Create scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050010);
+    scene.fog = new THREE.Fog(0x050010, CONFIG.FOG_NEAR, CONFIG.FOG_FAR);
+
+    // Create camera - positioned BEHIND player looking FORWARD
+    // Adjusted for better mobile view - higher and further back
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 500);
+    camera.position.set(0, 6, -10);
+    camera.lookAt(0, 1, 25);
+
+    // Create renderer with quality-based optimizations
+    renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: qualitySettings.antialias,
+        powerPreference: "high-performance",
+        stencil: false,
+        depth: true
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, qualitySettings.pixelRatio));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    // ========================================
+    // POST-PROCESSING SETUP - Quality-Aware Bloom
+    // ========================================
+    // Check if post-processing modules loaded successfully
+    if (qualitySettings.bloom.enabled &&
+        typeof THREE.EffectComposer !== 'undefined' &&
+        typeof THREE.RenderPass !== 'undefined' &&
+        typeof THREE.UnrealBloomPass !== 'undefined') {
+
+        // Create composer
+        composer = new THREE.EffectComposer(renderer);
+
+        // Add render pass - renders scene normally
+        const renderPass = new THREE.RenderPass(scene, camera);
+        composer.addPass(renderPass);
+
+        // Add bloom pass with quality-adjusted parameters
+        const bloomPass = new THREE.UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            qualitySettings.bloom.strength,    // Quality-based strength
+            qualitySettings.bloom.radius,      // Quality-based radius
+            qualitySettings.bloom.threshold    // Quality-based threshold
+        );
+        composer.addPass(bloomPass);
+
+        console.log(`✓ Bloom initialized (${QualityManager.presetName}): strength=${qualitySettings.bloom.strength}, radius=${qualitySettings.bloom.radius}`);
+    } else {
+        console.warn('⚠ Post-processing modules not loaded or bloom disabled');
+        composer = null; // Fallback to direct rendering
+    }
+
+    // Create game elements
+    createLights();
+    createFloor();
+    createPlayer();
+    createSidePillars();
+    createParticles();
+
+    // Setup audio
+    setupAudio();
+
+    // Setup background music
+    bgMusic = document.getElementById('bg-music');
+    bgMusic.volume = 0.4; // Set volume to 40%
+
+    // Setup controls
+    setupControls();
+    setupStore();
+
+    // Handle resize
+    window.addEventListener('resize', onWindowResize);
+
+    // Handle orientation change
+    window.addEventListener('orientationchange', onOrientationChange);
+
+    // Handle visibility change (pause when tab hidden)
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    // Start render loop
+    lastTime = performance.now();
+    animate();
+}
+
+// ========================================
+// LIGHTS
+// ========================================
+function createLights() {
+    // Ambient light
+    const ambient = new THREE.AmbientLight(0x333355, 0.6);
+    scene.add(ambient);
+
+    // Hemisphere light for better ambient
+    const hemi = new THREE.HemisphereLight(0x0066ff, 0xff00ff, 0.3);
+    scene.add(hemi);
+}

@@ -170,7 +170,7 @@ const QualityManager = {
 
     // Initialize with auto-detection or saved preference
     init() {
-        const savedQuality = localStorage.getItem('beat-runner-quality');
+        const savedQuality = Storage.get(Storage.KEYS.QUALITY);
         if (savedQuality && QUALITY_PRESETS[savedQuality]) {
             this.presetName = savedQuality;
         } else {
@@ -186,7 +186,7 @@ const QualityManager = {
         if (!QUALITY_PRESETS[presetName]) return false;
         this.presetName = presetName;
         this.currentPreset = QUALITY_PRESETS[presetName];
-        localStorage.setItem('beat-runner-quality', presetName);
+        Storage.set(Storage.KEYS.QUALITY, presetName);
         console.log(`Quality changed to: ${presetName}`);
         return true;
     },

@@ -94,7 +94,7 @@ const ResultsScreenUI = {
 
         // Hide game UI
         hud.style.display = 'none';
-        StageHudUI.hide();
+        if (typeof StageHudUI !== 'undefined') StageHudUI.hide();
         mobileControls.style.display = 'none';
         pauseBtn.style.display = 'none';
         beatIndicator.style.display = 'none';

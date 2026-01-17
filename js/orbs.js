@@ -1,15 +1,11 @@
-// Keep old storage key for backwards compatibility with existing saves
-const ORBS_STORAGE_KEY = 'beat-runner-coins';
-
 function loadOrbs() {
-    const raw = localStorage.getItem(ORBS_STORAGE_KEY);
-    const value = Number(raw);
-    GameState.totalOrbs = Number.isFinite(value) && value >= 0 ? value : 0;
+    const value = Storage.getNumber(Storage.KEYS.ORBS, 0);
+    GameState.totalOrbs = value >= 0 ? value : 0;
     if (menuOrbsValue) menuOrbsValue.textContent = GameState.totalOrbs;
 }
 
 function saveOrbs() {
-    localStorage.setItem(ORBS_STORAGE_KEY, String(GameState.totalOrbs));
+    Storage.set(Storage.KEYS.ORBS, GameState.totalOrbs);
 }
 
 function spendOrbs(amount) {

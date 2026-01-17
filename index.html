@@ -9,7 +9,13 @@
     <link rel="icon" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
     <title>Beat Runner - Neon Rhythm Game</title>
-    <link rel="stylesheet" href="styles.css">
+    <!-- CSS Modules (split from styles.css) -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/hud.css">
+    <link rel="stylesheet" href="css/screens.css">
+    <link rel="stylesheet" href="css/store.css">
+    <link rel="stylesheet" href="css/controls.css">
+    <link rel="stylesheet" href="css/overlays.css">
 </head>
 <body>
     <canvas id="game-canvas"></canvas>
@@ -263,12 +269,18 @@
     <script defer src="js/postprocessing-bundle.js"></script>
 
     <!-- Game Scripts -->
+    <script defer src="js/core/storage.js"></script>
     <script defer src="js/config.js"></script>
     <script defer src="js/state.js"></script>
     <script defer src="js/globals.js"></script>
     <script defer src="js/orbs.js"></script>
     <script defer src="js/top-distance.js"></script>
-    <script defer src="js/skins.js"></script>
+    <!-- Skins & Store (split from skins.js) -->
+    <script defer src="js/skins/skin-manager.js"></script>
+    <script defer src="js/skins/disco-ball.js"></script>
+    <script defer src="js/skins/fire-ball.js"></script>
+    <script defer src="js/skins/skin-preview.js"></script>
+    <script defer src="js/store/store-ui.js"></script>
 
     <!-- Stage Mode (MVP) - Week 1 -->
     <script defer src="js/data/stage-registry.js"></script>
@@ -282,11 +294,26 @@
     <!-- Stage Mode (MVP) - Week 3 UI -->
     <script defer src="js/ui/level-select.js"></script>
     <script defer src="js/ui/stage-info-card.js"></script>
-    <script defer src="js/ui/stage-hud.js"></script>
     <script defer src="js/ui/results-screen.js"></script>
 
-    <script defer src="js/scene.js"></script>
-    <script defer src="js/gameplay.js"></script>
+    <!-- Scene Components (split from scene.js) -->
+    <script defer src="js/scene/floor.js"></script>
+    <script defer src="js/scene/pillars.js"></script>
+    <script defer src="js/scene/particles.js"></script>
+    <script defer src="js/scene/player.js"></script>
+    <script defer src="js/scene/renderer.js"></script>
+
+    <!-- Game Managers (split from gameplay.js) -->
+    <script defer src="js/managers/player-controller.js"></script>
+    <script defer src="js/managers/beat-manager.js"></script>
+    <script defer src="js/managers/magnet-manager.js"></script>
+    <script defer src="js/managers/shield-manager.js"></script>
+    <script defer src="js/managers/collectible-manager.js"></script>
+    <script defer src="js/managers/obstacle-manager.js"></script>
+    <script defer src="js/managers/speed-boost-manager.js"></script>
+    <script defer src="js/managers/exit-booster-manager.js"></script>
+    <script defer src="js/managers/bonus-orb-manager.js"></script>
+
     <script defer src="js/audio.js"></script>
     <script defer src="js/controls.js"></script>
     <script defer src="js/gameflow.js"></script>

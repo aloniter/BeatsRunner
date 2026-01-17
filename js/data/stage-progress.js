@@ -1,14 +1,12 @@
 /* ========================================
    BEAT RUNNER - Stage Progress Storage
-   localStorage save/load for Stage Mode
+   Storage abstraction for Stage Mode
    ======================================== */
 
 /**
  * Stage Progress Storage
  * Handles saving and loading stage completion data, unlocks, and rewards
  */
-
-const STORAGE_KEY = 'beat-runner-stage-mode-progress';
 
 // Reward thresholds (total stars needed)
 const REWARD_THRESHOLDS = [
@@ -62,22 +60,15 @@ function getStageIdByOrder(order) {
 }
 
 /**
- * Load progress from localStorage
+ * Load progress from storage
  * @returns {object} Progress data (initialized if not exists)
  */
 function loadProgress() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const progress = JSON.parse(saved);
+  const progress = Storage.getJSON(Storage.KEYS.STAGE_PROGRESS, null);
 
-      // Validate structure
-      if (progress.stageProgress && typeof progress.totalStars === 'number') {
-        return progress;
-      }
-    }
-  } catch (error) {
-    console.error('Error loading stage progress:', error);
+  // Validate structure
+  if (progress && progress.stageProgress && typeof progress.totalStars === 'number') {
+    return progress;
   }
 
   // Return fresh progress if load fails or no save exists
@@ -85,15 +76,11 @@ function loadProgress() {
 }
 
 /**
- * Save progress to localStorage
+ * Save progress to storage
  * @param {object} progress - Progress data to save
  */
 function saveProgressData(progress) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
-  } catch (error) {
-    console.error('Error saving stage progress:', error);
-  }
+  Storage.setJSON(Storage.KEYS.STAGE_PROGRESS, progress);
 }
 
 /**
@@ -285,7 +272,6 @@ if (typeof module !== 'undefined' && module.exports) {
     getStageData,
     resetProgress,
     getProgressSummary,
-    STORAGE_KEY,
     REWARD_THRESHOLDS
   };
 }

@@ -1,15 +1,12 @@
-const TOP_DISTANCE_STORAGE_KEY = 'beat-runner-top-distance';
-
 function loadTopDistance() {
-    const raw = localStorage.getItem(TOP_DISTANCE_STORAGE_KEY);
-    const value = Number(raw);
-    GameState.topDistance = Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0;
+    const value = Storage.getNumber(Storage.KEYS.TOP_DISTANCE, 0);
+    GameState.topDistance = value >= 0 ? Math.floor(value) : 0;
     if (menuTopDistanceValue) menuTopDistanceValue.textContent = GameState.topDistance;
     if (finalTopDistance) finalTopDistance.textContent = GameState.topDistance;
 }
 
 function saveTopDistance() {
-    localStorage.setItem(TOP_DISTANCE_STORAGE_KEY, String(GameState.topDistance));
+    Storage.set(Storage.KEYS.TOP_DISTANCE, GameState.topDistance);
 }
 
 function updateTopDistance(currentDistance) {

@@ -146,7 +146,7 @@ function setupControls() {
 function initStageUI() {
     LevelSelectUI.init();
     StageInfoCardUI.init();
-    StageHudUI.init();
+    if (typeof StageHudUI !== 'undefined') StageHudUI.init();
     ResultsScreenUI.init();
 
     // Update menu stars on init

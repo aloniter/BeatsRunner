@@ -1,0 +1,75 @@
+/* HUD - Score Display */
+#hud {
+    position: fixed;
+    top: calc(20px + var(--safe-area-inset-top));
+    left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            gap: 30px;
+            z-index: 100;
+    pointer-events: none;
+}
+
+.pause-btn {
+    position: fixed;
+    top: calc(16px + var(--safe-area-inset-top));
+    right: calc(16px + var(--safe-area-inset-right));
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    border: 2px solid rgba(0, 255, 255, 0.6);
+    background: rgba(0, 0, 0, 0.4);
+    color: #00ffff;
+    font-size: 18px;
+    font-weight: 700;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 150;
+    cursor: pointer;
+    text-shadow: 0 0 10px #00ffff;
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.35);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.pause-btn:hover {
+    background: rgba(0, 255, 255, 0.18);
+    box-shadow: 0 0 18px rgba(0, 255, 255, 0.6);
+}
+
+.pause-btn.is-paused {
+    color: #ff00ff;
+    border-color: rgba(255, 0, 255, 0.6);
+    text-shadow: 0 0 10px #ff00ff;
+    box-shadow: 0 0 12px rgba(255, 0, 255, 0.35);
+}
+
+        .hud-item {
+            text-align: center;
+            color: #fff;
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+        }
+
+        .hud-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            opacity: 0.8;
+            font-weight: 600;
+        }
+
+        .hud-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+/* Hits counter - Warning/orange style in main HUD */
+.hud-item-hits {
+    color: #ffaa00;
+    text-shadow: 0 0 10px rgba(255, 170, 0, 0.8), 0 0 20px rgba(255, 170, 0, 0.4);
+}
+
+.hud-item-hits .hud-value {
+    color: #ffaa00;
+}
+
