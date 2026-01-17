@@ -27,10 +27,10 @@ const STAGES = {
     world: 'neon-district',
 
     // Gameplay
-    distance: 1000,
-    targetTime: 45,
+    distance: 700,  // Shorter intro for quick confidence building
+    targetTime: 30,
     speed: 28,
-    totalOrbs: 15,
+    totalOrbs: 12,  // Proportionally reduced
 
     // Star thresholds
     stars: {
@@ -51,10 +51,10 @@ const STAGES = {
     order: 2,
     world: 'neon-district',
 
-    distance: 1100,
-    targetTime: 50,
+    distance: 900,  // +200m from Stage 1 (incremental)
+    targetTime: 38,
     speed: 28,
-    totalOrbs: 18,
+    totalOrbs: 16,  // More orbs = more rhythm emphasis
 
     stars: {
       star3: { crashes: 2, orbs: 60 },
@@ -71,8 +71,8 @@ const STAGES = {
     order: 3,
     world: 'neon-district',
 
-    distance: 1100,
-    targetTime: 50,
+    distance: 1000,  // +100m from Stage 2 (practice jumping longer)
+    targetTime: 42,
     speed: 28,
     totalOrbs: 18,
 
@@ -81,7 +81,7 @@ const STAGES = {
       star2: { crashes: 5, orbs: 40 }
     },
 
-    pattern: 'single-lane',
+    pattern: 'single-lane-jump-focus',  // 25% jumps (up from 15%)
     unlock: { type: 'complete-previous', requiredStageId: 'stage-2-rhythm' }
   },
 
@@ -91,8 +91,8 @@ const STAGES = {
     order: 4,
     world: 'neon-district',
 
-    distance: 1200,
-    targetTime: 55,
+    distance: 1100,  // +100m from Stage 3 (Phase 2: Reinforcement)
+    targetTime: 46,
     speed: 28,
     totalOrbs: 20,
 
@@ -111,10 +111,10 @@ const STAGES = {
     order: 5,
     world: 'neon-district',
 
-    distance: 1200,
-    targetTime: 55,
+    distance: 1200,  // +100m + speed increase (Phase 2 → 3 transition)
+    targetTime: 48,
     speed: 29,
-    totalOrbs: 20,
+    totalOrbs: 22,
 
     stars: {
       star3: { crashes: 2, orbs: 60 },

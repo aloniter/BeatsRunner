@@ -26,6 +26,19 @@ const PATTERN_POOLS = {
         gap: 25               // 25m minimum between obstacles
     },
 
+    // Stage 3 "Jump Practice" pattern
+    // Emphasizes jump mechanics with increased frequency
+    // Following Stage Mode Design skill: Phase 1 jump introduction
+    'single-lane-jump-focus': {
+        obstacles: [
+            [0],    // Left lane blocked
+            [1],    // Center lane blocked
+            [2]     // Right lane blocked
+        ],
+        jumpFrequency: 0.25,  // 25% (up from 15%) - emphasizes jumping
+        gap: 25               // 25m maintained (generous for intro phase)
+    },
+
     // ========================================
     // MEDIUM TIER (Stages 6-10): mixed
     // Mix of single and double lane blocks
