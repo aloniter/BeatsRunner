@@ -39,6 +39,29 @@ const PATTERN_POOLS = {
         gap: 25               // 25m maintained (generous for intro phase)
     },
 
+    // Stage 4 "Lane Switching" pattern
+    // Reduces gap to train reaction time without increasing spatial complexity
+    'single-lane-dense': {
+        obstacles: [
+            [0], [1], [2]
+        ],
+        jumpFrequency: 0.15,
+        gap: 20               // 20m (tighter than 25m)
+    },
+
+    // Stage 5 "Speed Boost" pattern
+    // Gentle intro to double-lanes (20%) before Stage 6 hits (40%)
+    'mixed-intro': {
+        obstacles: [
+            [0], [1], [2],           // Single lane (heavily weighted)
+            [0], [1], [2],
+            [0], [1], [2],
+            [0, 1], [1, 2], [0, 2]   // Double lane (low weight ~20%)
+        ],
+        jumpFrequency: 0.20,
+        gap: 20
+    },
+
     // ========================================
     // MEDIUM TIER (Stages 6-10): mixed
     // Mix of single and double lane blocks
@@ -54,6 +77,57 @@ const PATTERN_POOLS = {
         gap: 20               // 20m minimum between obstacles
     },
 
+    // Stage 8 "Jump Chains" - Mixed pattern with high jump focus
+    'mixed-jump-chains': {
+        obstacles: [
+            [0], [1], [2],
+            [0], [1], [2],
+            [0, 1], [1, 2], [0, 2]
+        ],
+        jumpFrequency: 0.35,  // 35% (up from 25%)
+        gap: 20
+    },
+
+    // Stage 7 "Rhythm Run" pattern - Flow focus
+    // Higher single-lane weight (70%) for smoother rhythm
+    'mixed-rhythm': {
+        obstacles: [
+            [0], [1], [2],
+            [0], [1], [2],           // Single lane
+            [0], [1], [2],           // Single lane (~70% total)
+            [0, 1], [1, 2], [0, 2]   // Double lane (~30% total)
+        ],
+        jumpFrequency: 0.20,  // Slightly lower jumps to focus on lane switching
+        gap: 20
+    },
+
+    // Stage 9 "Quick Reflexes" pattern - Reaction focus
+    // Higher double-lane weight (50%) to test reflexes
+    'mixed-reflex': {
+        obstacles: [
+            [0], [1], [2],
+            [0], [1], [2],           // Single lane (50%)
+            [0, 1], [1, 2], [0, 2],
+            [0, 1], [1, 2], [0, 2]   // Double lane (50%)
+        ],
+        jumpFrequency: 0.30,  // Higher jumps
+        gap: 20
+    },
+
+    // Stage 10 "Neon Gauntlet" pattern - Endurance/Hard-intro
+    // Bridge to Hard tier: 19m gap (between 20 and 18)
+    'mixed-gauntlet': {
+        obstacles: [
+            [0], [1], [2],           // Single lane (40%)
+            [0], [1], [2],
+            [0, 1], [1, 2], [0, 2],
+            [0, 1], [1, 2], [0, 2],  // Double lane (60%)
+            [0, 1], [1, 2], [0, 2]
+        ],
+        jumpFrequency: 0.30,
+        gap: 19              // 19m (tighter than 20, easier than 18)
+    },
+
     // ========================================
     // HARD TIER (Stages 11-15): complex
     // Primarily double lane blocks, tight timing
@@ -67,6 +141,39 @@ const PATTERN_POOLS = {
         ],
         jumpFrequency: 0.35,  // 35% chance of jump obstacle
         gap: 18               // 18m minimum (tightest)
+    },
+
+    // Stage 13 "Jump Master" - Serious airtime required
+    'complex-jump-master': {
+        obstacles: [
+            [0, 1], [1, 2], [0, 2],
+            [0, 1], [1, 2], [0, 2],
+            [0], [1], [2]
+        ],
+        jumpFrequency: 0.45,  // 45% (highest jump rate)
+        gap: 18
+    },
+
+    // Stage 14 "Neon Chaos" - Speed and reflex test
+    'complex-chaos': {
+        obstacles: [
+            [0, 1], [1, 2], [0, 2],
+            [0, 1], [1, 2], [0, 2],
+            [0], [1], [2]
+        ],
+        jumpFrequency: 0.35,
+        gap: 16               // 16m (tightest possible gap without unavoidable hits)
+    },
+
+    // Stage 15 "Final Challenge" - The ultimate test
+    'complex-final': {
+        obstacles: [
+            [0, 1], [1, 2], [0, 2],
+            [0, 1], [1, 2], [0, 2],
+            [0], [1], [2]
+        ],
+        jumpFrequency: 0.40,  // High jumps
+        gap: 16               // High density
     }
 };
 

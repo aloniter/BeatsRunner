@@ -2,7 +2,7 @@
 // ========================================
 function startGame() {
     resumeAudio();
-    
+
     GameState.isPlaying = true;
     GameState.isPaused = false;
     GameState.distance = DevSettings.forceBonus ? CONFIG.BONUS_START_DISTANCE : 0;
@@ -16,7 +16,7 @@ function startGame() {
     GameState.isBonusActive = false;
     GameState.bonusTriggered = false;
     GameState.bonusTransitionProgress = DevSettings.forceBonus ? 1 : 0;
-    
+
     PlayerController.reset();
     BeatManager.reset();
     MagnetManager.reset();
@@ -26,33 +26,33 @@ function startGame() {
     if (DevSettings.forceBonus) {
         enterBonusMode();
     }
-    
+
     if (DevSettings.startWithShield) {
         ShieldManager.activate();
     }
     if (DevSettings.startWithMagnet) {
         MagnetManager.activate();
     }
-    
+
     startScreen.style.display = 'none';
     hud.style.display = 'flex';
     beatIndicator.style.display = 'block';
     pauseBtn.style.display = 'flex';
     pauseBtn.classList.remove('is-paused');
     pauseBtn.textContent = 'Ⅱ';
-    
+
     // Show mobile controls on mobile devices
     const isMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
     if (isMobile) {
         mobileControls.style.display = 'flex';
     }
-    
+
     // Start background music
     if (bgMusic) {
         bgMusic.currentTime = 0; // Start from beginning
         bgMusic.play().catch(e => console.log('Audio play failed:', e));
     }
-    
+
     lastTime = performance.now();
 }
 
@@ -73,7 +73,9 @@ function startStage(stageId) {
     }
 
     // Check if stage is unlocked
-    if (!isStageUnlocked(stageId)) {
+    // Allow if unlocked normally OR if QA mode is active
+    const isQA = typeof LevelSelectUI !== 'undefined' && LevelSelectUI.qaMode;
+    if (!isStageUnlocked(stageId) && !isQA) {
         console.error('Stage is locked:', stageId);
         return;
     }
@@ -190,25 +192,25 @@ function exitBonusMode() {
 
 function gameOver() {
     GameState.isPlaying = false;
-    
+
     playGameOverSound();
     flashScreen(0.4, '#ff0066');
-    
+
     // Pause background music
     if (bgMusic) {
         bgMusic.pause();
     }
-    
+
     // Calculate final score
     const finalScoreValue = GameState.score + Math.floor(GameState.distance);
     updateTopDistance(GameState.distance);
-    
+
     // Update display
     finalDistance.textContent = Math.floor(GameState.distance);
     finalOrbs.textContent = GameState.orbs;
     finalScore.textContent = finalScoreValue;
     finalTopDistance.textContent = GameState.topDistance;
-    
+
     // Show game over after brief delay
     setTimeout(() => {
         hud.style.display = 'none';
@@ -324,11 +326,11 @@ function goToMainMenu() {
 
 function togglePause() {
     if (!GameState.isPlaying) return;
-    
+
     GameState.isPaused = !GameState.isPaused;
     pauseBtn.classList.toggle('is-paused', GameState.isPaused);
     pauseBtn.textContent = GameState.isPaused ? '▶' : 'Ⅱ';
-    
+
     if (bgMusic) {
         if (GameState.isPaused) {
             bgMusic.pause();
@@ -336,7 +338,7 @@ function togglePause() {
             bgMusic.play().catch(e => console.log('Audio play failed:', e));
         }
     }
-    
+
     if (!GameState.isPaused) {
         lastTime = performance.now();
     }

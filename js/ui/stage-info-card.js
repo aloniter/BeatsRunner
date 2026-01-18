@@ -45,6 +45,7 @@ const StageInfoCardUI = {
         // Populate card
         document.getElementById('card-stage-number').textContent = stage.order;
         document.getElementById('card-stage-name').textContent = stage.name;
+        document.getElementById('card-stage-description').textContent = stage.description || '';
         document.getElementById('card-distance').textContent = `${stage.distance}m`;
 
         // Best performance

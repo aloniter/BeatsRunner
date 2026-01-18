@@ -263,6 +263,17 @@
     text-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
 }
 
+.stage-description {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 10px 0 0 0;
+    line-height: 1.4;
+    padding: 0 10px;
+    font-style: italic;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+}
+
 .stage-info-stats {
     display: flex;
     justify-content: center;

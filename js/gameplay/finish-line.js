@@ -38,9 +38,14 @@ function createFinishLine(distance) {
   const archHeight = 8;
   const archThickness = 0.3;
 
-  // Material: Glowing neon (pink/cyan gradient)
+  // Finale Effect: Gold/Orange instead of Pink/Cyan
+  const isFinale = GameState.currentStage && GameState.currentStage.isFinale;
+  const finishColor = isFinale ? 0xFFD700 : 0xff00ff; // Gold or Magenta
+  const glowColor = isFinale ? 0xFFAA00 : 0x00ffff;   // Orange or Cyan
+
+  // Material: Glowing neon
   const glowMaterial = new THREE.MeshBasicMaterial({
-    color: 0xff00ff,
+    color: finishColor,
     transparent: true,
     opacity: 0.9
   });
@@ -72,7 +77,7 @@ function createFinishLine(distance) {
   // Create glow effect (larger transparent boxes)
   const glowGeometry = new THREE.BoxGeometry(archThickness * 3, archHeight, archThickness * 3);
   const glowMat = new THREE.MeshBasicMaterial({
-    color: 0x00ffff,
+    color: glowColor,
     transparent: true,
     opacity: 0.3,
     blending: THREE.AdditiveBlending
@@ -197,11 +202,11 @@ function onFinishLineCrossed() {
   // Import star calculator (assumes it's loaded)
   const stars = typeof calculateStars === 'function'
     ? calculateStars(
-        GameState.crashes,
-        GameState.orbsCollected,
-        currentStage.totalOrbs,
-        currentStage
-      )
+      GameState.crashes,
+      GameState.orbsCollected,
+      currentStage.totalOrbs,
+      currentStage
+    )
     : 1;
 
   // Save progress (assumes stage-progress.js is loaded)

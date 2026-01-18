@@ -16,6 +16,11 @@ const LevelSelectUI = {
     /**
      * Initialize Level Select screen
      */
+    qaMode: false,
+
+    /**
+     * Initialize Level Select screen
+     */
     init() {
         this.overlay = document.getElementById('level-select-overlay');
         this.stagePath = document.getElementById('stage-path');
@@ -26,8 +31,70 @@ const LevelSelectUI = {
             startScreen.style.display = 'flex';
         });
 
+        // QA Unlock Toggle Button
+        this.createQAToggle();
+
         // Initial render
         this.renderStageNodes();
+    },
+
+    /**
+     * Create and inject QA toggle button
+     */
+    createQAToggle() {
+        const panel = this.overlay.querySelector('.level-select-panel');
+        if (!panel) return;
+
+        // Create container for QA tools if we want to expand later, but for now just a button
+        const qaBtn = document.createElement('button');
+        qaBtn.id = 'qa-unlock-btn';
+        qaBtn.textContent = '🔒 QA: Default';
+
+        // Inline styles for QA tool
+        Object.assign(qaBtn.style, {
+            position: 'absolute',
+            top: '70px',
+            right: '25px',
+            background: 'rgba(0, 0, 0, 0.6)',
+            border: '1px solid #ff00ff',
+            color: '#fff',
+            fontSize: '10px',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            zIndex: '10',
+            fontFamily: 'monospace',
+            textTransform: 'uppercase'
+        });
+
+        qaBtn.addEventListener('click', () => this.toggleQAMode(qaBtn));
+        panel.appendChild(qaBtn);
+
+        // Ensure panel is relative for absolute positioning
+        if (getComputedStyle(panel).position === 'static') {
+            panel.style.position = 'relative';
+        }
+    },
+
+    /**
+     * Toggle QA Mode
+     * @param {HTMLElement} btn - Button element
+     */
+    toggleQAMode(btn) {
+        this.qaMode = !this.qaMode;
+
+        if (this.qaMode) {
+            btn.textContent = '🔓 QA: Unlocked';
+            btn.style.background = 'rgba(255, 0, 255, 0.4)';
+            btn.style.borderColor = '#fff';
+        } else {
+            btn.textContent = '🔒 QA: Default';
+            btn.style.background = 'rgba(0, 0, 0, 0.6)';
+            btn.style.borderColor = '#ff00ff';
+        }
+
+        // Refresh UI to reflect new state
+        this.refreshStageNodes();
     },
 
     /**
@@ -76,7 +143,8 @@ const LevelSelectUI = {
 
         stages.forEach((stage, index) => {
             const stageData = progress.stageProgress[stage.id];
-            const isUnlocked = stageData ? stageData.unlocked : false;
+            // QA Mode overrides unlocked state
+            const isUnlocked = this.qaMode || (stageData ? stageData.unlocked : false);
             const isCompleted = stageData ? stageData.completed : false;
             const bestStars = stageData ? stageData.bestStars : 0;
 
@@ -134,7 +202,7 @@ const LevelSelectUI = {
             if (!stage) return;
 
             const isCurrentlyUnlocked = node.classList.contains('unlocked');
-            const shouldBeUnlocked = stageData.unlocked;
+            const shouldBeUnlocked = this.qaMode || stageData.unlocked;
 
             // If unlock state has changed, we need to update the entire node HTML
             // This is the FIX for the progression bug: when a stage transitions from

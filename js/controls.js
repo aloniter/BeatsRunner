@@ -245,7 +245,42 @@ function setupDevTools() {
             DevSettings.godMode = godModeToggle.checked;
         });
     }
-    
+
+    // Quality selector
+    const qualitySelect = document.getElementById('quality-select');
+    const qualityApplyBtn = document.getElementById('quality-apply');
+
+    if (qualitySelect) {
+        // Set initial value based on saved quality
+        const savedQuality = Storage.get(Storage.KEYS.QUALITY);
+        if (savedQuality) {
+            qualitySelect.value = savedQuality;
+        } else {
+            qualitySelect.value = 'AUTO';
+        }
+    }
+
+    if (qualityApplyBtn && qualitySelect) {
+        qualityApplyBtn.addEventListener('click', () => {
+            const selectedQuality = qualitySelect.value;
+
+            if (selectedQuality === 'AUTO') {
+                // Clear saved preference and auto-detect
+                Storage.remove(Storage.KEYS.QUALITY);
+                alert('Graphics quality will be automatically detected on next page reload.');
+            } else {
+                // Save preference
+                Storage.set(Storage.KEYS.QUALITY, selectedQuality);
+                alert(`Graphics quality set to ${selectedQuality}. Page will reload to apply changes.`);
+            }
+
+            // Reload page to apply quality changes
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        });
+    }
+
     panel.addEventListener('click', (event) => {
         const target = event.target;
         if (!target || !target.dataset) return;

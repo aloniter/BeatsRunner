@@ -73,13 +73,13 @@ const QUALITY_PRESETS = {
     },
     MEDIUM: {
         name: 'Medium',
-        pixelRatio: 1.5,
+        pixelRatio: 2.0,  // Increased from 1.5 - modern mobile devices can handle this
         antialias: true,
         bloom: {
             enabled: true,
-            strength: 0.7,
-            radius: 0.3,
-            threshold: 0.9
+            strength: 0.85,  // Increased from 0.7 for better visuals
+            radius: 0.35,    // Increased from 0.3
+            threshold: 0.88  // Reduced from 0.9 for more bloom
         },
         particles: {
             background: 150,
@@ -91,13 +91,13 @@ const QUALITY_PRESETS = {
     },
     LOW: {
         name: 'Low',
-        pixelRatio: 1.0,
+        pixelRatio: 1.5,  // Increased from 1.0 - even budget devices deserve better
         antialias: false,
         bloom: {
             enabled: true,
-            strength: 0.4,
-            radius: 0.2,
-            threshold: 0.95
+            strength: 0.6,   // Increased from 0.4 for more noticeable glow
+            radius: 0.25,    // Increased from 0.2
+            threshold: 0.92  // Reduced from 0.95 for more bloom
         },
         particles: {
             background: 80,
@@ -154,17 +154,23 @@ const QualityManager = {
     autoDetectQuality() {
         const device = this.detectDevice();
 
-        // LOW: User prefers reduced motion, low memory, or high-DPI mobile
-        if (device.prefersReducedMotion || device.isLowMemory || device.isHighDPIMobile) {
+        // Respect user accessibility preferences first
+        if (device.prefersReducedMotion) {
             return 'LOW';
         }
 
-        // MEDIUM: Any touch device or medium-sized screen
-        if (device.isTouchDevice || device.isMediumScreen) {
+        // LOW: Only very old devices with low memory AND small screens
+        if (device.isLowMemory && device.isSmallScreen) {
+            return 'LOW';
+        }
+
+        // MEDIUM: Modern mobile devices (default for touch devices)
+        // Modern phones have powerful GPUs and can handle MEDIUM quality well
+        if (device.isTouchDevice) {
             return 'MEDIUM';
         }
 
-        // HIGH: Desktop with good capabilities
+        // HIGH: Desktop and tablets with large screens
         return 'HIGH';
     },
 
@@ -177,8 +183,66 @@ const QualityManager = {
             this.presetName = this.autoDetectQuality();
         }
         this.currentPreset = QUALITY_PRESETS[this.presetName];
-        console.log(`Quality preset: ${this.presetName} (${this.currentPreset.name})`);
+
+        // Log quality information
+        const device = this.detectDevice();
+        console.log(`✓ Graphics Quality: ${this.presetName}`);
+        console.log(`  - Pixel Ratio: ${this.currentPreset.pixelRatio} (Device: ${device.pixelRatio})`);
+        console.log(`  - Antialiasing: ${this.currentPreset.antialias ? 'ON' : 'OFF'}`);
+        console.log(`  - Bloom Strength: ${this.currentPreset.bloom.strength}`);
+        console.log(`  - Particles: ${this.currentPreset.particles.background}`);
+
+        // Show quality notification
+        this.showQualityNotification();
+
         return this.currentPreset;
+    },
+
+    // Show temporary quality notification
+    showQualityNotification() {
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(0, 255, 255, 0.5);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: #fff;
+            font-size: 13px;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 255, 255, 0.3);
+            animation: slideIn 0.3s ease-out;
+        `;
+        notification.innerHTML = `
+            <div style="font-weight: bold; margin-bottom: 4px;">Graphics Quality: ${this.presetName}</div>
+            <div style="font-size: 11px; color: rgba(255, 255, 255, 0.7);">
+                ${this.currentPreset.pixelRatio}x resolution • ${this.currentPreset.antialias ? 'AA' : 'No AA'} • ${this.currentPreset.particles.background} particles
+            </div>
+        `;
+
+        // Add animation keyframes
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(400px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(400px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        document.body.appendChild(notification);
+
+        // Auto-hide after 4 seconds
+        setTimeout(() => {
+            notification.style.animation = 'slideOut 0.3s ease-out';
+            setTimeout(() => notification.remove(), 300);
+        }, 4000);
     },
 
     // Set quality level (for user preference)

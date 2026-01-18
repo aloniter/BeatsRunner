@@ -78,7 +78,19 @@
                             <span class="dev-tools-toggle-icon" aria-hidden="true">⚙</span>
                         </button>
                         <div class="dev-tools" id="dev-tools" aria-hidden="true">
-                            <div class="dev-tools-title">Dev Tools</div>
+                            <div class="dev-tools-title">Settings</div>
+                            <div class="dev-tools-row">
+                                <div class="dev-tools-label">Graphics Quality</div>
+                                <div class="dev-tools-actions">
+                                    <select class="dev-tools-select" id="quality-select">
+                                        <option value="AUTO">Auto (Recommended)</option>
+                                        <option value="HIGH">High</option>
+                                        <option value="MEDIUM">Medium</option>
+                                        <option value="LOW">Low</option>
+                                    </select>
+                                    <button class="dev-tools-btn" id="quality-apply">Apply</button>
+                                </div>
+                            </div>
                             <div class="dev-tools-row">
                                 <div class="dev-tools-label">Orbs</div>
                                 <div class="dev-tools-actions">
@@ -183,6 +195,7 @@
             <div class="stage-info-header">
                 <div class="stage-number" id="card-stage-number">1</div>
                 <div class="stage-name" id="card-stage-name">Neon Intro</div>
+                <div class="stage-description" id="card-stage-description"></div>
             </div>
             <div class="stage-info-stats">
                 <div class="stat-row">
