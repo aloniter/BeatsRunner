@@ -38,13 +38,14 @@ const GameplayHUD = {
         this.container.className = 'gameplay-hud';
         this.container.style.cssText = `
             position: fixed;
-            top: 80px;
-            right: 20px;
+            top: calc(90px + var(--safe-area-inset-top));
+            right: calc(16px + var(--safe-area-inset-right));
             display: none;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
             z-index: 100;
             pointer-events: none;
+            max-width: 220px;
         `;
 
         // Crash indicator

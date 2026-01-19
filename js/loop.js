@@ -172,6 +172,21 @@ function updateGame(delta, elapsed) {
             // Stage Mode: Count crash, don't end game
             GameState.crashes++;
             flashScreen(0.15, '#ff0066');
+
+            // Add impact feedback
+            if (cameraShake) cameraShake.addTrauma(0.7);
+            if (typeof createParticleBurst === 'function') {
+                const burstCount = qualitySettings?.effects?.particleBurstCounts?.collision || 15;
+                createParticleBurst(player.position, {
+                    count: burstCount,
+                    color: 0xff3333,
+                    spread: 1.5
+                });
+            }
+            if (typeof hapticFeedback !== 'undefined') {
+                hapticFeedback.crash();
+            }
+
             // Continue playing - no gameOver()
         } else {
             // Free Run: Game over as usual
@@ -401,6 +416,16 @@ function animate(currentTime = 0) {
     
     // Update game logic
     updateGame(delta, elapsed);
+
+    // Update particle bursts
+    if (typeof updateParticleBursts === 'function') {
+        updateParticleBursts(delta);
+    }
+
+    // Update camera shake
+    if (cameraShake) {
+        cameraShake.update(delta);
+    }
 
     // Render - Use bloom composer if available, fallback to direct render
     if (composer) {

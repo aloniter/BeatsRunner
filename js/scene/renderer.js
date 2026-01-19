@@ -22,6 +22,11 @@ function init() {
     camera.position.set(0, 6, -10);
     camera.lookAt(0, 1, 25);
 
+    // Initialize camera shake system
+    cameraShake = new CameraShake(camera);
+    cameraShake.setBasePosition(camera.position);
+    cameraShake.setIntensity(qualitySettings.effects ? qualitySettings.effects.screenShakeIntensity || 1.0 : 1.0);
+
     // Create renderer with quality-based optimizations
     renderer = new THREE.WebGLRenderer({
         canvas: canvas,
@@ -95,6 +100,51 @@ function init() {
     // Start render loop
     lastTime = performance.now();
     animate();
+}
+
+// ========================================
+// CAMERA SHAKE SYSTEM - Trauma-Based Screen Shake
+// ========================================
+class CameraShake {
+    constructor(camera) {
+        this.camera = camera;
+        this.trauma = 0; // 0-1 intensity
+        this.decay = 2.5; // Decay rate per second
+        this.originalPosition = new THREE.Vector3();
+        this.shakeIntensity = 1.0; // Quality multiplier (set by quality preset)
+    }
+
+    addTrauma(amount) {
+        // Add trauma capped at 1.0, scaled by quality intensity
+        this.trauma = Math.min(this.trauma + (amount * this.shakeIntensity), 1.0);
+    }
+
+    update(deltaTime) {
+        if (this.trauma > 0) {
+            // Decay trauma over time
+            this.trauma = Math.max(0, this.trauma - this.decay * deltaTime);
+
+            // Square for smooth falloff (trauma² creates more natural feel)
+            const shake = this.trauma * this.trauma;
+
+            // Apply random offset to camera position (position-only shake)
+            this.camera.position.x = this.originalPosition.x + (Math.random() - 0.5) * shake * 0.5;
+            this.camera.position.y = this.originalPosition.y + (Math.random() - 0.5) * shake * 0.3;
+        } else {
+            // Reset to original position when trauma is 0
+            this.camera.position.copy(this.originalPosition);
+        }
+    }
+
+    setBasePosition(position) {
+        // Store current camera position as the base position
+        this.originalPosition.copy(position);
+    }
+
+    setIntensity(intensity) {
+        // Set shake intensity multiplier (for quality presets)
+        this.shakeIntensity = intensity;
+    }
 }
 
 // ========================================

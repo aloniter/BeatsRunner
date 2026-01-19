@@ -15,6 +15,12 @@ const PlayerController = {
             GameState.currentLane = newLane;
             this.targetX = CONFIG.LANE_POSITIONS[newLane];
             playLaneChangeSound();
+
+            // Add subtle lane change feedback
+            if (cameraShake) cameraShake.addTrauma(0.1);
+            if (typeof hapticFeedback !== 'undefined') {
+                hapticFeedback.laneChange();
+            }
         }
     },
 

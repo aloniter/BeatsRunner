@@ -3,6 +3,7 @@
 // ========================================
 let scene, camera, renderer, composer;
 let qualitySettings = null;  // Quality preset settings (initialized in scene.js)
+let cameraShake = null;      // Camera shake system (initialized in renderer.js)
 let player, playerCore, playerGlow, playerRing;
 let discoBallGroup, discoBallCore, discoBallTiles = [], discoBallSparkles;
 let discoBallInnerGlow, discoBallOuterGlow, discoBallBeams;

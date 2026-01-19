@@ -69,6 +69,15 @@ const QUALITY_PRESETS = {
             ember: 30,
             sparkle: 40,
             skipFrames: 0  // Update every frame
+        },
+        effects: {
+            screenShakeIntensity: 1.0,
+            particleBurstCounts: {
+                collision: 30,
+                collect: 15,
+                victory: 100
+            },
+            haptics: true
         }
     },
     MEDIUM: {
@@ -87,6 +96,15 @@ const QUALITY_PRESETS = {
             ember: 15,
             sparkle: 20,
             skipFrames: 1  // Update every other frame
+        },
+        effects: {
+            screenShakeIntensity: 0.7,
+            particleBurstCounts: {
+                collision: 15,
+                collect: 8,
+                victory: 50
+            },
+            haptics: true
         }
     },
     LOW: {
@@ -105,6 +123,15 @@ const QUALITY_PRESETS = {
             ember: 10,
             sparkle: 10,
             skipFrames: 2  // Update every third frame
+        },
+        effects: {
+            screenShakeIntensity: 0.3,
+            particleBurstCounts: {
+                collision: 5,
+                collect: 3,
+                victory: 20
+            },
+            haptics: false  // Disable on LOW for performance
         }
     }
 };

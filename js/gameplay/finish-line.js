@@ -208,6 +208,42 @@ function onFinishLineCrossed() {
   if (currentStage.isFinale && typeof playVictoryFanfare === 'function') {
     playVictoryFanfare();
     flashScreen(0.3, '#FFD700'); // Gold flash
+
+    // Add extra victory feedback for finale
+    if (cameraShake) cameraShake.addTrauma(1.0);
+    if (typeof createParticleBurst === 'function') {
+      const burstCount = qualitySettings?.effects?.particleBurstCounts?.victory || 50;
+      createParticleBurst(
+        finishLineGroup ? finishLineGroup.position.clone() : new THREE.Vector3(0, 2, 20),
+        {
+          count: burstCount * 1.5, // Extra confetti for finale
+          color: 0xffdd00,
+          spread: 2.5,
+          duration: 1.5
+        }
+      );
+    }
+    if (typeof hapticFeedback !== 'undefined') {
+      hapticFeedback.victory();
+    }
+  } else {
+    // Standard victory feedback for regular stages
+    if (cameraShake) cameraShake.addTrauma(0.5);
+    if (typeof createParticleBurst === 'function') {
+      const burstCount = qualitySettings?.effects?.particleBurstCounts?.victory || 50;
+      createParticleBurst(
+        finishLineGroup ? finishLineGroup.position.clone() : new THREE.Vector3(0, 2, 20),
+        {
+          count: burstCount,
+          color: 0xffdd00,
+          spread: 2.0,
+          duration: 1.5
+        }
+      );
+    }
+    if (typeof hapticFeedback !== 'undefined') {
+      hapticFeedback.victory();
+    }
   }
 
   // Import star calculator (assumes it's loaded)

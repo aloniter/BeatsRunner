@@ -147,11 +147,29 @@ const CollectibleManager = {
                     GameState.orbsCollected++;
                 }
 
+                // Store orb position before removing
+                const orbPos = orb.position.clone();
+
                 scene.remove(orb);
                 collectibles.splice(i, 1);
 
                 playCollectSound();
                 flashScreen(0.08, '#00ffff');
+
+                // Add collection feedback
+                if (cameraShake) cameraShake.addTrauma(0.15);
+                if (typeof createParticleBurst === 'function') {
+                    const burstCount = qualitySettings?.effects?.particleBurstCounts?.collect || 8;
+                    createParticleBurst(orbPos, {
+                        count: burstCount,
+                        color: 0x00ffaa,
+                        spread: 0.8,
+                        duration: 0.5
+                    });
+                }
+                if (typeof hapticFeedback !== 'undefined') {
+                    hapticFeedback.collect();
+                }
             }
         }
     },
