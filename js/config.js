@@ -319,6 +319,11 @@ const QualityManager = {
             }
         }
 
+        // Update haptic feedback state based on quality preset
+        if (typeof hapticFeedback !== 'undefined' && hapticFeedback) {
+            hapticFeedback.setEnabled(this.currentPreset.effects.haptics);
+        }
+
         return true;
     }
 };

@@ -3,6 +3,7 @@
 function setupAudio() {
     try {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        window.audioContext = audioContext; // Expose globally for haptic system
         gainNode = audioContext.createGain();
         gainNode.connect(audioContext.destination);
         gainNode.gain.value = 0.25;

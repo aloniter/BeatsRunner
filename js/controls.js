@@ -137,6 +137,9 @@ function setupControls() {
     // Initialize Stage Mode UI
     initStageUI();
 
+    // Initialize haptics on first user gesture (required for iOS)
+    setupHapticInitialization();
+
     setupDevTools();
 }
 
@@ -151,6 +154,38 @@ function initStageUI() {
 
     // Update menu stars on init
     LevelSelectUI.updateMenuStars();
+}
+
+/**
+ * Initialize haptics on first user gesture
+ * Required for iOS - vibration must be triggered from user interaction
+ */
+function setupHapticInitialization() {
+    if (!hapticFeedback) return;
+
+    const initHaptics = () => {
+        hapticFeedback.initialize().then(success => {
+            if (success) {
+                console.log('✓ Haptics ready');
+            }
+        });
+    };
+
+    // Listen to various user interaction events (use once:true to auto-remove)
+    // Canvas touch events (mobile swipes/taps)
+    canvas.addEventListener('touchstart', initHaptics, { once: true, passive: true });
+
+    // Mobile button touches
+    const leftBtn = document.getElementById('left-btn');
+    const rightBtn = document.getElementById('right-btn');
+    const jumpBtn = document.getElementById('jump-btn');
+    if (leftBtn) leftBtn.addEventListener('touchstart', initHaptics, { once: true, passive: true });
+    if (rightBtn) rightBtn.addEventListener('touchstart', initHaptics, { once: true, passive: true });
+    if (jumpBtn) jumpBtn.addEventListener('touchstart', initHaptics, { once: true, passive: true });
+
+    // Start button click (desktop fallback)
+    const startBtn = document.getElementById('start-btn');
+    if (startBtn) startBtn.addEventListener('click', initHaptics, { once: true });
 }
 
 // ========================================
