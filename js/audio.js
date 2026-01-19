@@ -106,24 +106,79 @@ function playJumpSound() {
 
 function playGameOverSound() {
     if (!audioContext) return;
-    
+
     try {
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
-        
+
         osc.connect(gain);
         gain.connect(audioContext.destination);
-        
+
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(180, audioContext.currentTime);
         osc.frequency.exponentialRampToValueAtTime(40, audioContext.currentTime + 0.4);
-        
+
         gain.gain.setValueAtTime(0.25, audioContext.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.4);
-        
+
         osc.start(audioContext.currentTime);
         osc.stop(audioContext.currentTime + 0.4);
     } catch (e) {}
+}
+
+/**
+ * Play victory fanfare (Stage 15 finale)
+ * Triumphant ascending chord progression
+ */
+function playVictoryFanfare() {
+    if (!audioContext) return;
+
+    try {
+        const notes = [
+            { freq: 523, time: 0, duration: 0.3 },      // C5
+            { freq: 659, time: 0.15, duration: 0.3 },   // E5
+            { freq: 784, time: 0.3, duration: 0.5 },    // G5
+            { freq: 1047, time: 0.5, duration: 0.6 }    // C6 (finale)
+        ];
+
+        notes.forEach(note => {
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(note.freq, audioContext.currentTime + note.time);
+
+            gain.gain.setValueAtTime(0, audioContext.currentTime + note.time);
+            gain.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + note.time + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + note.time + note.duration);
+
+            osc.start(audioContext.currentTime + note.time);
+            osc.stop(audioContext.currentTime + note.time + note.duration);
+        });
+
+        // Add harmonic sparkle
+        setTimeout(() => {
+            const sparkle = audioContext.createOscillator();
+            const sparkleGain = audioContext.createGain();
+
+            sparkle.connect(sparkleGain);
+            sparkleGain.connect(audioContext.destination);
+
+            sparkle.type = 'sine';
+            sparkle.frequency.setValueAtTime(2093, audioContext.currentTime); // C7
+
+            sparkleGain.gain.setValueAtTime(0.15, audioContext.currentTime);
+            sparkleGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.8);
+
+            sparkle.start(audioContext.currentTime);
+            sparkle.stop(audioContext.currentTime + 0.8);
+        }, 600);
+    } catch (e) {
+        console.log('Victory fanfare failed:', e);
+    }
 }
 
 // ========================================

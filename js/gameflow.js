@@ -145,6 +145,16 @@ function startStage(stageId) {
         StageHudUI.show();
     }
 
+    // Start tutorial for Stage 1 (first-time players only)
+    if (typeof TutorialOverlay !== 'undefined') {
+        TutorialOverlay.start(stageId);
+    }
+
+    // Show real-time performance HUD
+    if (typeof GameplayHUD !== 'undefined') {
+        GameplayHUD.show();
+    }
+
     console.log(`Starting Stage: ${stage.name} (${stage.distance}m, speed ${stage.speed})`);
 }
 
@@ -161,6 +171,16 @@ function exitStageMode() {
     // Hide Stage Mode HUD
     if (typeof StageHudUI !== 'undefined') {
         StageHudUI.hide();
+    }
+
+    // Stop tutorial if active
+    if (typeof TutorialOverlay !== 'undefined') {
+        TutorialOverlay.stop(GameState.currentStage?.id);
+    }
+
+    // Hide real-time performance HUD
+    if (typeof GameplayHUD !== 'undefined') {
+        GameplayHUD.hide();
     }
 
     // Destroy finish line

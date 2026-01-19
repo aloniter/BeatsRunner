@@ -192,11 +192,22 @@ function onFinishLineCrossed() {
   // Stop game
   GameState.isPlaying = false;
 
+  // Stop tutorial if active
+  if (typeof TutorialOverlay !== 'undefined' && GameState.currentStage) {
+    TutorialOverlay.stop(GameState.currentStage.id);
+  }
+
   // Calculate stars
   const currentStage = GameState.currentStage;
   if (!currentStage) {
     console.error('No current stage set!');
     return;
+  }
+
+  // Play victory fanfare for Stage 15 finale
+  if (currentStage.isFinale && typeof playVictoryFanfare === 'function') {
+    playVictoryFanfare();
+    flashScreen(0.3, '#FFD700'); // Gold flash
   }
 
   // Import star calculator (assumes it's loaded)

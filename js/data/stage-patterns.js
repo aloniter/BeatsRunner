@@ -35,7 +35,7 @@ const PATTERN_POOLS = {
             [1],    // Center lane blocked
             [2]     // Right lane blocked
         ],
-        jumpFrequency: 0.25,  // 25% (up from 15%) - emphasizes jumping
+        jumpFrequency: 0.30,  // 30% (up from 15%) - noticeably emphasizes jumping
         gap: 25               // 25m maintained (generous for intro phase)
     },
 

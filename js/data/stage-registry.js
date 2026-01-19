@@ -117,8 +117,8 @@ const STAGES = {
     world: 'neon-district',
 
     distance: 1200,  // +100m + speed increase (Phase 2 → 3 transition)
-    targetTime: 48,
-    speed: 29,
+    targetTime: 46,  // Adjusted for speed 30
+    speed: 30,       // Changed from 29 to 30 to smooth Stage 6 transition
     totalOrbs: 22,
 
     stars: {

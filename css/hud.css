@@ -73,3 +73,136 @@
     color: #ffaa00;
 }
 
+/* ========================================
+   Real-Time Performance HUD
+   Priority 1: Enhanced Player Feedback
+   ======================================== */
+
+.gameplay-hud {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.hud-performance-item {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 8px 14px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+}
+
+.hud-perf-value {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    white-space: nowrap;
+}
+
+/* Status color coding */
+.hud-performance-item.status-good {
+    border-color: rgba(0, 255, 100, 0.6);
+    background: rgba(0, 255, 100, 0.1);
+    box-shadow: 0 0 12px rgba(0, 255, 100, 0.3);
+}
+
+.hud-performance-item.status-good .hud-perf-value {
+    color: #00ff64;
+    text-shadow: 0 0 10px rgba(0, 255, 100, 0.6);
+}
+
+.hud-performance-item.status-warning {
+    border-color: rgba(255, 170, 0, 0.6);
+    background: rgba(255, 170, 0, 0.1);
+    box-shadow: 0 0 12px rgba(255, 170, 0, 0.3);
+}
+
+.hud-performance-item.status-warning .hud-perf-value {
+    color: #ffaa00;
+    text-shadow: 0 0 10px rgba(255, 170, 0, 0.6);
+}
+
+.hud-performance-item.status-bad {
+    border-color: rgba(255, 0, 100, 0.6);
+    background: rgba(255, 0, 100, 0.1);
+    box-shadow: 0 0 12px rgba(255, 0, 100, 0.3);
+}
+
+.hud-performance-item.status-bad .hud-perf-value {
+    color: #ff0064;
+    text-shadow: 0 0 10px rgba(255, 0, 100, 0.6);
+}
+
+/* Star prediction */
+.hud-star-prediction {
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+}
+
+.hud-star-prediction span {
+    color: #ffd700;
+    font-size: 12px;
+    font-weight: 600;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+    letter-spacing: 0.5px;
+}
+
+.hud-star-prediction.status-excellent {
+    border-color: rgba(0, 255, 100, 0.6);
+    background: rgba(0, 255, 100, 0.1);
+    box-shadow: 0 0 15px rgba(0, 255, 100, 0.4);
+}
+
+.hud-star-prediction.status-excellent span {
+    color: #00ff64;
+    text-shadow: 0 0 12px rgba(0, 255, 100, 0.8);
+}
+
+.hud-star-prediction.status-decent {
+    border-color: rgba(255, 170, 0, 0.6);
+    background: rgba(255, 170, 0, 0.1);
+}
+
+.hud-star-prediction.status-decent span {
+    color: #ffaa00;
+}
+
+.hud-star-prediction.status-poor {
+    border-color: rgba(255, 0, 100, 0.6);
+    background: rgba(255, 0, 100, 0.1);
+}
+
+.hud-star-prediction.status-poor span {
+    color: #ff0064;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .gameplay-hud {
+        top: 70px;
+        right: 12px;
+    }
+
+    .hud-performance-item,
+    .hud-star-prediction {
+        padding: 6px 10px;
+    }
+
+    .hud-perf-value {
+        font-size: 11px;
+    }
+
+    .hud-star-prediction span {
+        font-size: 10px;
+    }
+}
+

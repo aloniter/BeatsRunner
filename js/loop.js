@@ -93,6 +93,21 @@ function updateGame(delta, elapsed) {
         if (typeof StageHudUI !== 'undefined') {
             StageHudUI.update();
         }
+
+        // Update tutorial overlay (Stage 1 only, first-time players)
+        if (typeof TutorialOverlay !== 'undefined') {
+            TutorialOverlay.update(GameState.distance, GameState.crashes, GameState.orbsCollected);
+        }
+
+        // Update real-time performance HUD
+        if (typeof GameplayHUD !== 'undefined') {
+            GameplayHUD.update();
+        }
+
+        // Stage 15 finale visuals (rainbow track at 800m)
+        if (GameState.currentStage && GameState.currentStage.isFinale) {
+            updateFinaleVisuals(delta, elapsed);
+        }
     }
 
     // Bonus Mode only in Free Run (disabled in Stage Mode)
@@ -280,6 +295,91 @@ function updateBonusVisuals(elapsed, distance, transitionProgress) {
             const gridColor = new THREE.Color().setHSL(offsetHue, 0.85, 0.55);
             mat.color.copy(gridColor);
         });
+    }
+}
+
+/**
+ * Update Stage 15 finale visuals
+ * Rainbow track transition at 800m (50% of 1600m stage)
+ */
+function updateFinaleVisuals(delta, elapsed) {
+    const FINALE_TRANSITION_START = 800;  // 50% of 1600m stage
+    const TRANSITION_DURATION = 200;       // 200m transition zone
+
+    // Calculate transition progress (0 to 1)
+    let transitionProgress = 0;
+    if (GameState.distance >= FINALE_TRANSITION_START) {
+        const distanceIntoTransition = GameState.distance - FINALE_TRANSITION_START;
+        transitionProgress = Math.min(distanceIntoTransition / TRANSITION_DURATION, 1);
+    }
+
+    // Only apply visuals if transitioning
+    if (transitionProgress > 0) {
+        // Opacity crossfade between normal and rainbow tracks
+        const normalOpacity = 1 - transitionProgress;
+        const rainbowOpacity = transitionProgress;
+
+        // Fade out normal track
+        floorTilesNormal.forEach(tile => {
+            tile.children.forEach(child => {
+                if (child.material) {
+                    child.material.opacity = normalOpacity;
+                    child.material.transparent = true;
+                }
+            });
+        });
+
+        // Fade in rainbow track
+        floorTilesRainbow.forEach(tile => {
+            tile.visible = true;
+            tile.children.forEach(child => {
+                if (child.material) {
+                    child.material.opacity = rainbowOpacity;
+                    child.material.transparent = true;
+                }
+            });
+        });
+
+        // Animate rainbow colors (similar to bonus mode)
+        if (window.rainbowMaterials) {
+            const timeCycle = elapsed * 0.4;       // Slightly faster than bonus mode
+            const spatialFlow = GameState.distance * 0.05;
+            const hue = (timeCycle + spatialFlow) % 1.0;
+
+            // Vibrant floor colors
+            window.rainbowMaterials.floors.forEach(mat => {
+                const rainbowColor = new THREE.Color().setHSL(hue, 1.0, 0.7);
+                mat.color.copy(rainbowColor);
+                mat.emissive.copy(rainbowColor.clone().multiplyScalar(0.95));
+                mat.emissiveIntensity = 2.0; // Extra vivid for finale
+            });
+
+            // Offset edge colors
+            window.rainbowMaterials.edges.forEach((mat, index) => {
+                const offsetHue = (hue + index * 0.2) % 1.0;
+                const edgeColor = new THREE.Color().setHSL(offsetHue, 0.95, 0.7);
+                mat.color.copy(edgeColor);
+            });
+
+            // Subtle grid colors
+            window.rainbowMaterials.grids.forEach((mat, index) => {
+                const offsetHue = (hue + index * 0.1) % 1.0;
+                const gridColor = new THREE.Color().setHSL(offsetHue, 0.9, 0.6);
+                mat.color.copy(gridColor);
+            });
+        }
+
+        // Increase particle intensity in final stretch (last 400m)
+        const FINALE_PARTICLE_BOOST_START = 1200; // Last 400m
+        if (GameState.distance >= FINALE_PARTICLE_BOOST_START && window.particleSystem) {
+            const particleBoostProgress = (GameState.distance - FINALE_PARTICLE_BOOST_START) / 400;
+            const particleIntensity = 1 + (particleBoostProgress * 0.5); // Up to 50% more particles
+
+            // Increase particle visibility/opacity
+            if (window.particleSystem.material) {
+                window.particleSystem.material.opacity = Math.min(0.8, 0.5 * particleIntensity);
+            }
+        }
     }
 }
 
