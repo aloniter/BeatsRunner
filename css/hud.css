@@ -82,6 +82,7 @@
 /* Main HUD mobile optimization */
 @media (max-width: 768px) {
     #hud {
+        display: none; /* Hide main HUD on mobile */
         gap: 24px;  /* Reduced from 30px to save space */
     }
 
@@ -215,6 +216,9 @@
 /* Mobile responsive */
 @media (max-width: 768px) {
     /* Remove top/right overrides - now handled in JS with safe area insets */
+    .gameplay-hud {
+        display: none; /* Hide performance HUD on mobile */
+    }
 
     .hud-performance-item,
     .hud-star-prediction {
@@ -278,4 +282,3 @@
         font-size: 22px;  /* Smaller in landscape */
     }
 }
-
