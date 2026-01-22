@@ -35,14 +35,21 @@ function startGame() {
     }
 
     startScreen.style.display = 'none';
-    hud.style.display = 'flex';
     beatIndicator.style.display = 'block';
-    pauseBtn.style.display = 'flex';
-    pauseBtn.classList.remove('is-paused');
-    pauseBtn.textContent = 'Ⅱ';
+
+    // Detect mobile device for UI adjustments
+    const device = QualityManager.detectDevice();
+    const isMobile = device.isTouchDevice || device.isSmallScreen;
+
+    // Only show HUD and pause button on desktop
+    if (!isMobile) {
+        hud.style.display = 'flex';
+        pauseBtn.style.display = 'flex';
+        pauseBtn.classList.remove('is-paused');
+        pauseBtn.textContent = 'Ⅱ';
+    }
 
     // Show mobile controls on mobile devices
-    const isMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
     if (isMobile) {
         mobileControls.style.display = 'flex';
     }
@@ -120,14 +127,21 @@ function startStage(stageId) {
 
     // Hide menus, show HUD
     startScreen.style.display = 'none';
-    hud.style.display = 'flex';
     beatIndicator.style.display = 'block';
-    pauseBtn.style.display = 'flex';
-    pauseBtn.classList.remove('is-paused');
-    pauseBtn.textContent = 'Ⅱ';
+
+    // Detect mobile device for UI adjustments
+    const device = QualityManager.detectDevice();
+    const isMobile = device.isTouchDevice || device.isSmallScreen;
+
+    // Only show HUD and pause button on desktop
+    if (!isMobile) {
+        hud.style.display = 'flex';
+        pauseBtn.style.display = 'flex';
+        pauseBtn.classList.remove('is-paused');
+        pauseBtn.textContent = 'Ⅱ';
+    }
 
     // Show mobile controls on mobile devices
-    const isMobile = window.innerWidth <= 768 || 'ontouchstart' in window;
     if (isMobile) {
         mobileControls.style.display = 'flex';
     }

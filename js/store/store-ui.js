@@ -6,10 +6,7 @@ const STORE_CATEGORIES = [
     {
         id: 'skins',
         label: 'Skins',
-        items: [
-            { id: 'disco-ball', name: 'Disco Ball', price: DISCO_PRICE, preview: 'disco', description: 'Light up the rhythm. Pure party energy.' },
-            { id: 'fire-ball', name: 'Fire Ball', price: FIREBALL_PRICE, preview: 'fire', description: 'Feel the heat. A ball of pure rhythmic power.' }
-        ]
+        items: getSkinsByCategory('skins').sort((a, b) => a.order - b.order)
     }
 ];
 
@@ -24,31 +21,25 @@ function refreshStoreUI() {
     storeItemElements.forEach((elements, itemId) => {
         const { status, price, actionBtn } = elements;
 
-        if (itemId === 'disco-ball') {
-            if (!GameState.discoBallOwned) {
-                actionBtn.disabled = GameState.totalOrbs < DISCO_PRICE;
-                actionBtn.textContent = 'Buy';
-                status.textContent = GameState.totalOrbs < DISCO_PRICE ? 'Not enough orbs' : '';
-                price.innerHTML = '<span class="orb-icon"></span> ' + DISCO_PRICE + ' Orbs';
-                return;
-            }
-            status.textContent = GameState.discoBallEquipped ? 'Equipped' : 'Owned';
-            price.textContent = GameState.discoBallEquipped ? 'Equipped' : 'Owned';
-            actionBtn.disabled = GameState.discoBallEquipped;
-            actionBtn.textContent = GameState.discoBallEquipped ? 'Equipped' : 'Equip';
-        } else if (itemId === 'fire-ball') {
-            if (!GameState.fireBallOwned) {
-                actionBtn.disabled = GameState.totalOrbs < FIREBALL_PRICE;
-                actionBtn.textContent = 'Buy';
-                status.textContent = GameState.totalOrbs < FIREBALL_PRICE ? 'Not enough orbs' : '';
-                price.innerHTML = '<span class="orb-icon"></span> ' + FIREBALL_PRICE + ' Orbs';
-                return;
-            }
-            status.textContent = GameState.fireBallEquipped ? 'Equipped' : 'Owned';
-            price.textContent = GameState.fireBallEquipped ? 'Equipped' : 'Owned';
-            actionBtn.disabled = GameState.fireBallEquipped;
-            actionBtn.textContent = GameState.fireBallEquipped ? 'Equipped' : 'Equip';
+        const skin = getSkin(itemId);
+        if (!skin) return;
+
+        const ownedKey = getOwnedKey(itemId);
+        const equippedKey = getEquippedKey(itemId);
+
+        if (!GameState[ownedKey]) {
+            actionBtn.disabled = GameState.totalOrbs < skin.price;
+            actionBtn.textContent = 'Buy';
+            status.textContent = GameState.totalOrbs < skin.price ? 'Not enough orbs' : '';
+            price.innerHTML = '<span class="orb-icon"></span> ' + skin.price + ' Orbs';
+            return;
         }
+
+        const equipped = GameState[equippedKey];
+        status.textContent = equipped ? 'Equipped' : 'Owned';
+        price.textContent = equipped ? 'Equipped' : 'Owned';
+        actionBtn.disabled = equipped;
+        actionBtn.textContent = equipped ? 'Equipped' : 'Equip';
     });
 }
 
@@ -136,24 +127,20 @@ function renderStoreItems() {
 
         storeItemElements.set(item.id, { status, price, actionBtn });
 
-        if (item.id === 'disco-ball') {
-            actionBtn.addEventListener('click', () => {
-                if (!GameState.discoBallOwned) {
-                    purchaseDiscoBall();
-                } else {
-                    toggleDiscoBallEquip();
-                }
-            });
-            setupDiscoPreview(canvas, item.id);
-        } else if (item.id === 'fire-ball') {
-            actionBtn.addEventListener('click', () => {
-                if (!GameState.fireBallOwned) {
-                    purchaseFireBall();
-                } else {
-                    toggleFireBallEquip();
-                }
-            });
-            setupFirePreview(canvas, item.id);
+        // Generic event listener for all skins
+        const ownedKey = getOwnedKey(item.id);
+        actionBtn.addEventListener('click', () => {
+            if (!GameState[ownedKey]) {
+                purchaseSkin(item.id);
+            } else {
+                toggleSkinEquip(item.id);
+            }
+        });
+
+        // Call preview setup dynamically
+        const previewFn = getPreviewFunctionName(item.id);
+        if (typeof window[previewFn] === 'function') {
+            window[previewFn](canvas, item.id);
         }
     });
 }

@@ -227,6 +227,13 @@ const QualityManager = {
 
     // Show temporary quality notification
     showQualityNotification() {
+        // Hide notification on mobile devices to avoid obstructing gameplay
+        const device = this.detectDevice();
+        const isMobile = device.isTouchDevice || device.isSmallScreen;
+        if (isMobile) {
+            return;
+        }
+
         const notification = document.createElement('div');
         notification.style.cssText = `
             position: fixed;

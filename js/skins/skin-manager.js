@@ -2,61 +2,101 @@
 // SKIN MANAGER - State Management and Purchase Logic
 // ========================================
 
-// Price constants
-const DISCO_PRICE = 50;
-const FIREBALL_PRICE = 75;
-
 // ========================================
-// State Loading/Saving
+// State Loading/Saving (Generic)
 // ========================================
 
-function loadDiscoBallState() {
-    GameState.discoBallOwned = Storage.getBoolean(Storage.KEYS.DISCO_OWNED, false);
-    GameState.discoBallEquipped = Storage.getBoolean(Storage.KEYS.DISCO_EQUIPPED, false);
-    if (!GameState.discoBallOwned) {
-        GameState.discoBallEquipped = false;
+/**
+ * Load state for a specific skin from storage
+ * @param {string} skinId - Skin ID (kebab-case)
+ */
+function loadSkinState(skinId) {
+    const ownedKey = getOwnedKey(skinId);
+    const equippedKey = getEquippedKey(skinId);
+    const storageOwnedKey = getStorageOwnedKey(skinId);
+    const storageEquippedKey = getStorageEquippedKey(skinId);
+
+    GameState[ownedKey] = Storage.getBoolean(Storage.KEYS[storageOwnedKey], false);
+    GameState[equippedKey] = Storage.getBoolean(Storage.KEYS[storageEquippedKey], false);
+
+    if (!GameState[ownedKey]) {
+        GameState[equippedKey] = false;
     }
+}
+
+/**
+ * Save state for a specific skin to storage
+ * @param {string} skinId - Skin ID (kebab-case)
+ */
+function saveSkinState(skinId) {
+    const ownedKey = getOwnedKey(skinId);
+    const equippedKey = getEquippedKey(skinId);
+    const storageOwnedKey = getStorageOwnedKey(skinId);
+    const storageEquippedKey = getStorageEquippedKey(skinId);
+
+    Storage.set(Storage.KEYS[storageOwnedKey], GameState[ownedKey]);
+    Storage.set(Storage.KEYS[storageEquippedKey], GameState[equippedKey]);
+}
+
+/**
+ * Load all skin states from storage
+ */
+function loadAllSkinStates() {
+    getAllSkins().forEach(skin => {
+        loadSkinState(skin.id);
+    });
     normalizeEquippedSkins();
+}
+
+// Legacy compatibility functions
+function loadDiscoBallState() {
+    loadSkinState('disco-ball');
 }
 
 function saveDiscoBallState() {
-    Storage.set(Storage.KEYS.DISCO_OWNED, GameState.discoBallOwned);
-    Storage.set(Storage.KEYS.DISCO_EQUIPPED, GameState.discoBallEquipped);
+    saveSkinState('disco-ball');
 }
 
 function loadFireBallState() {
-    GameState.fireBallOwned = Storage.getBoolean(Storage.KEYS.FIREBALL_OWNED, false);
-    GameState.fireBallEquipped = Storage.getBoolean(Storage.KEYS.FIREBALL_EQUIPPED, false);
-    if (!GameState.fireBallOwned) {
-        GameState.fireBallEquipped = false;
-    }
-    normalizeEquippedSkins();
+    loadSkinState('fire-ball');
 }
 
 function saveFireBallState() {
-    Storage.set(Storage.KEYS.FIREBALL_OWNED, GameState.fireBallOwned);
-    Storage.set(Storage.KEYS.FIREBALL_EQUIPPED, GameState.fireBallEquipped);
+    saveSkinState('fire-ball');
 }
 
+/**
+ * Ensure only one skin is equipped at a time
+ */
 function normalizeEquippedSkins() {
     const preferred = Storage.get(Storage.KEYS.EQUIPPED_SKIN);
-    if (GameState.discoBallEquipped && GameState.fireBallEquipped) {
-        if (preferred === 'fire') {
-            GameState.discoBallEquipped = false;
-            saveDiscoBallState();
-        } else {
-            GameState.fireBallEquipped = false;
-            saveFireBallState();
+    let equippedCount = 0;
+    let lastEquipped = null;
+
+    // Count how many skins are equipped
+    getAllSkins().forEach(skin => {
+        const equippedKey = getEquippedKey(skin.id);
+        if (GameState[equippedKey]) {
+            equippedCount++;
+            lastEquipped = skin.id;
         }
+    });
+
+    // If multiple skins are equipped, keep only the preferred one
+    if (equippedCount > 1) {
+        getAllSkins().forEach(skin => {
+            const equippedKey = getEquippedKey(skin.id);
+            if (preferred === skin.id) {
+                GameState[equippedKey] = true;
+            } else {
+                GameState[equippedKey] = false;
+            }
+        });
     }
 
-    if (GameState.discoBallEquipped) {
-        Storage.set(Storage.KEYS.EQUIPPED_SKIN, 'disco');
-    } else if (GameState.fireBallEquipped) {
-        Storage.set(Storage.KEYS.EQUIPPED_SKIN, 'fire');
-    } else {
-        Storage.set(Storage.KEYS.EQUIPPED_SKIN, 'none');
-    }
+    // Update equipped skin in storage
+    const equipped = getAllSkins().find(skin => GameState[getEquippedKey(skin.id)]);
+    Storage.set(Storage.KEYS.EQUIPPED_SKIN, equipped ? equipped.id : 'none');
 
     applySkins();
     refreshStoreUI();
@@ -66,67 +106,102 @@ function normalizeEquippedSkins() {
 // Skin Application
 // ========================================
 
+/**
+ * Apply all skins based on current equipped state
+ */
 function applySkins() {
-    applyDiscoBallSkin();
-    applyFireBallSkin();
+    getAllSkins().forEach(skin => {
+        const applyFn = getApplyFunctionName(skin.id);
+        if (typeof window[applyFn] === 'function') {
+            window[applyFn]();
+        }
+    });
 }
 
 // ========================================
-// Purchase Functions
+// Purchase Functions (Generic)
 // ========================================
 
-function purchaseDiscoBall() {
-    if (GameState.discoBallOwned) return;
-    if (GameState.totalOrbs < DISCO_PRICE) return;
-    if (!spendOrbs(DISCO_PRICE)) return;
-    GameState.discoBallOwned = true;
-    GameState.discoBallEquipped = true;
-    GameState.fireBallEquipped = false;
-    saveDiscoBallState();
-    saveFireBallState();
-    Storage.set(Storage.KEYS.EQUIPPED_SKIN, 'disco');
-    applyDiscoBallSkin();
+/**
+ * Purchase a skin by ID
+ * @param {string} skinId - Skin ID (kebab-case)
+ */
+function purchaseSkin(skinId) {
+    const skin = getSkin(skinId);
+    if (!skin) return;
+
+    const ownedKey = getOwnedKey(skinId);
+    const equippedKey = getEquippedKey(skinId);
+
+    if (GameState[ownedKey]) return;
+    if (GameState.totalOrbs < skin.price) return;
+    if (!spendOrbs(skin.price)) return;
+
+    // Set owned and equipped
+    GameState[ownedKey] = true;
+    GameState[equippedKey] = true;
+
+    // Unequip all other skins
+    getAllSkins().forEach(s => {
+        if (s.id !== skinId) {
+            const key = getEquippedKey(s.id);
+            GameState[key] = false;
+            saveSkinState(s.id);
+        }
+    });
+
+    saveSkinState(skinId);
+    Storage.set(Storage.KEYS.EQUIPPED_SKIN, skinId);
+    applySkins();
     refreshStoreUI();
+}
+
+// Legacy compatibility functions
+function purchaseDiscoBall() {
+    purchaseSkin('disco-ball');
 }
 
 function purchaseFireBall() {
-    if (GameState.fireBallOwned) return;
-    if (GameState.totalOrbs < FIREBALL_PRICE) return;
-    if (!spendOrbs(FIREBALL_PRICE)) return;
-    GameState.fireBallOwned = true;
-    GameState.fireBallEquipped = true;
-    GameState.discoBallEquipped = false;
-    saveFireBallState();
-    saveDiscoBallState();
-    Storage.set(Storage.KEYS.EQUIPPED_SKIN, 'fire');
+    purchaseSkin('fire-ball');
+}
+
+// ========================================
+// Toggle Equip Functions (Generic)
+// ========================================
+
+/**
+ * Toggle equipped state for a skin
+ * @param {string} skinId - Skin ID (kebab-case)
+ */
+function toggleSkinEquip(skinId) {
+    const ownedKey = getOwnedKey(skinId);
+    const equippedKey = getEquippedKey(skinId);
+
+    if (!GameState[ownedKey]) return;
+
+    const willEquip = !GameState[equippedKey];
+    GameState[equippedKey] = willEquip;
+
+    // Unequip all other skins
+    getAllSkins().forEach(s => {
+        if (s.id !== skinId) {
+            const key = getEquippedKey(s.id);
+            GameState[key] = false;
+            saveSkinState(s.id);
+        }
+    });
+
+    saveSkinState(skinId);
+    Storage.set(Storage.KEYS.EQUIPPED_SKIN, willEquip ? skinId : 'none');
     applySkins();
     refreshStoreUI();
 }
 
-// ========================================
-// Toggle Equip Functions
-// ========================================
-
+// Legacy compatibility functions
 function toggleDiscoBallEquip() {
-    if (!GameState.discoBallOwned) return;
-    const willEquip = !GameState.discoBallEquipped;
-    GameState.discoBallEquipped = willEquip;
-    GameState.fireBallEquipped = false;
-    saveDiscoBallState();
-    saveFireBallState();
-    Storage.set(Storage.KEYS.EQUIPPED_SKIN, willEquip ? 'disco' : 'none');
-    applySkins();
-    refreshStoreUI();
+    toggleSkinEquip('disco-ball');
 }
 
 function toggleFireBallEquip() {
-    if (!GameState.fireBallOwned) return;
-    const willEquip = !GameState.fireBallEquipped;
-    GameState.fireBallEquipped = willEquip;
-    GameState.discoBallEquipped = false;
-    saveFireBallState();
-    saveDiscoBallState();
-    Storage.set(Storage.KEYS.EQUIPPED_SKIN, willEquip ? 'fire' : 'none');
-    applySkins();
-    refreshStoreUI();
+    toggleSkinEquip('fire-ball');
 }

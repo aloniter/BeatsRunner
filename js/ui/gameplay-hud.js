@@ -78,6 +78,16 @@ const GameplayHUD = {
     show() {
         if (!GameState.isStageMode || !this.container) return;
 
+        // Hide notification boxes on mobile for cleaner gameplay
+        const device = QualityManager.detectDevice();
+        const isMobile = device.isTouchDevice || device.isSmallScreen;
+
+        if (isMobile) {
+            this.isActive = false;
+            this.container.style.display = 'none';
+            return;
+        }
+
         this.isActive = true;
         this.container.style.display = 'flex';
         this.update(); // Initial update
