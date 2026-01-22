@@ -41,13 +41,11 @@ function startGame() {
     const device = QualityManager.detectDevice();
     const isMobile = device.isTouchDevice || device.isSmallScreen;
 
-    // Only show HUD and pause button on desktop
-    if (!isMobile) {
-        hud.style.display = 'flex';
-        pauseBtn.style.display = 'flex';
-        pauseBtn.classList.remove('is-paused');
-        pauseBtn.textContent = 'Ⅱ';
-    }
+    // Show HUD and pause button on all devices
+    hud.style.display = 'flex';
+    pauseBtn.style.display = 'flex';
+    pauseBtn.classList.remove('is-paused');
+    pauseBtn.textContent = 'Ⅱ';
 
     // Show mobile controls on mobile devices
     if (isMobile) {
@@ -133,13 +131,11 @@ function startStage(stageId) {
     const device = QualityManager.detectDevice();
     const isMobile = device.isTouchDevice || device.isSmallScreen;
 
-    // Only show HUD and pause button on desktop
-    if (!isMobile) {
-        hud.style.display = 'flex';
-        pauseBtn.style.display = 'flex';
-        pauseBtn.classList.remove('is-paused');
-        pauseBtn.textContent = 'Ⅱ';
-    }
+    // Show HUD and pause button on all devices
+    hud.style.display = 'flex';
+    pauseBtn.style.display = 'flex';
+    pauseBtn.classList.remove('is-paused');
+    pauseBtn.textContent = 'Ⅱ';
 
     // Show mobile controls on mobile devices
     if (isMobile) {

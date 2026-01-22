@@ -108,7 +108,8 @@ function applyRainbowOrbSkin() {
     // Only show default if no skin is equipped
     const anyEquipped = equipped ||
         (GameState.discoBallOwned && GameState.discoBallEquipped) ||
-        (GameState.fireBallOwned && GameState.fireBallEquipped);
+        (GameState.fireBallOwned && GameState.fireBallEquipped) ||
+        (GameState.falafelBallOwned && GameState.falafelBallEquipped);
     if (playerCore) playerCore.visible = !anyEquipped;
     if (playerGlow) playerGlow.visible = !anyEquipped;
     if (playerRing) playerRing.visible = !anyEquipped;

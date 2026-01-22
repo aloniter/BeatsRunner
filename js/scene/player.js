@@ -106,6 +106,10 @@ function createPlayer() {
     rainbowOrbSkin.visible = false;
     group.add(rainbowOrbSkin);
 
+    const falafelSkin = createFalafelBallSkin();
+    falafelSkin.visible = false;
+    group.add(falafelSkin);
+
     group.position.set(0, CONFIG.GROUND_Y, 0);
     scene.add(group);
     player = group;

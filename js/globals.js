@@ -13,6 +13,8 @@ let fireBallGroup, fireBallCore, fireBallFlames, fireBallEmbers;
 let fireBallInnerGlow, fireBallOuterGlow;
 let rainbowOrbGroup, rainbowOrbCore, rainbowOrbTrails;
 let rainbowOrbInnerGlow, rainbowOrbOuterGlow;
+let falafelBallGroup, falafelBallCore, falafelBallSesame, falafelBallSteam, falafelBallCrumbs;
+let falafelBallInnerGlow, falafelBallOuterGlow;
 let obstacles = [];
 let collectibles = [];
 let magnetPickups = [];

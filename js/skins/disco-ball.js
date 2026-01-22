@@ -174,7 +174,8 @@ function applyDiscoBallSkin() {
     // Only show default if no skin is equipped
     const anyEquipped = equipped ||
         (GameState.fireBallOwned && GameState.fireBallEquipped) ||
-        (GameState.rainbowOrbOwned && GameState.rainbowOrbEquipped);
+        (GameState.rainbowOrbOwned && GameState.rainbowOrbEquipped) ||
+        (GameState.falafelBallOwned && GameState.falafelBallEquipped);
     if (playerCore) playerCore.visible = !anyEquipped;
     if (playerGlow) playerGlow.visible = !anyEquipped;
     if (playerRing) playerRing.visible = !anyEquipped;

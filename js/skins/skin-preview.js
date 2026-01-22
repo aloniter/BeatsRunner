@@ -113,6 +113,42 @@ function setupRainbowPreview(canvas, itemId) {
     resizeDiscoPreview();
 }
 
+function setupFalafelPreview(canvas, itemId) {
+    if (!canvas) return;
+    const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'low-power'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 20);
+    camera.position.set(0, 0.1, 2.2);
+    camera.lookAt(0, 0, 0);
+
+    const { group, core, sesame, steam, crumbs, innerGlow, outerGlow } = buildFalafelBall(0.45, false);
+    group.scale.set(0.85, 0.85, 0.85);
+    scene.add(group);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambient);
+    const warmLight = new THREE.PointLight(0xff9944, 1.4, 6);
+    warmLight.position.set(-1, 1.2, 2);
+    scene.add(warmLight);
+    const goldenLight = new THREE.PointLight(0xd4a574, 1.2, 6);
+    goldenLight.position.set(1, -1, 2);
+    scene.add(goldenLight);
+
+    previewScenes.set(itemId, {
+        renderer, scene, camera, group, core, sesame, steam, crumbs, innerGlow, outerGlow, canvas,
+        type: 'falafel'
+    });
+    resizeDiscoPreview();
+}
+
 function resizeDiscoPreview() {
     previewScenes.forEach((preview) => {
         const rect = preview.canvas.getBoundingClientRect();
@@ -127,6 +163,8 @@ function renderDiscoPreview(delta, elapsed) {
             renderFirePreviewItem(preview, delta, elapsed);
         } else if (preview.type === 'rainbow') {
             renderRainbowOrbPreviewItem(preview, delta, elapsed);
+        } else if (preview.type === 'falafel') {
+            renderFalafelPreviewItem(preview, delta, elapsed);
         } else {
             renderDiscoPreviewItem(preview, delta, elapsed);
         }
@@ -322,5 +360,60 @@ function renderRainbowOrbPreviewItem(preview, delta, elapsed) {
     if (preview.light2) {
         const nextNextColor = RAINBOW_COLORS[(preview.colorIndex + 3) % RAINBOW_COLORS.length];
         preview.light2.color.copy(new THREE.Color(nextNextColor.hex));
+    }
+}
+
+function renderFalafelPreviewItem(preview, delta, elapsed) {
+    // Slow rotation
+    preview.group.rotation.y += delta * 0.5;
+
+    // Subtle pulse
+    const pulse = 1 + Math.sin(elapsed * 2.2) * 0.02;
+    preview.group.scale.set(0.85 * pulse, 0.85 * pulse, 0.85 * pulse);
+
+    // Static warm colors with beat response
+    const beatPhase = Math.abs(Math.sin(elapsed * 2.2));
+
+    if (preview.core && preview.core.material) {
+        preview.core.material.emissiveIntensity = 0.8 + beatPhase * 0.3;
+    }
+    if (preview.innerGlow && preview.innerGlow.material) {
+        preview.innerGlow.material.opacity = 0.25 + beatPhase * 0.1;
+    }
+    if (preview.outerGlow && preview.outerGlow.material) {
+        preview.outerGlow.material.opacity = 0.15 + beatPhase * 0.08;
+    }
+
+    // Animate steam particles
+    if (preview.steam && preview.steam.geometry) {
+        const positions = preview.steam.geometry.attributes.position.array;
+        const basePositions = preview.steam.geometry.userData.basePositions;
+
+        for (let i = 0; i < positions.length / 3; i++) {
+            positions[i * 3 + 1] += delta * 0.3;
+            if (positions[i * 3 + 1] > basePositions[i * 3 + 1] + 1.2) {
+                positions[i * 3 + 1] = basePositions[i * 3 + 1];
+            }
+        }
+        preview.steam.geometry.attributes.position.needsUpdate = true;
+    }
+
+    // Animate crumb particles
+    if (preview.crumbs && preview.crumbs.geometry) {
+        const positions = preview.crumbs.geometry.attributes.position.array;
+        const basePositions = preview.crumbs.geometry.userData.basePositions;
+        const phases = preview.crumbs.geometry.userData.phases;
+
+        for (let i = 0; i < positions.length / 3; i++) {
+            const phase = phases[i];
+            positions[i * 3 + 1] -= delta * 0.2;
+            positions[i * 3] = basePositions[i * 3] + Math.sin(elapsed * 1.5 + phase) * 0.06;
+            positions[i * 3 + 2] = basePositions[i * 3 + 2] + Math.cos(elapsed * 1.5 + phase) * 0.06;
+
+            if (positions[i * 3 + 1] < basePositions[i * 3 + 1] - 1.0) {
+                positions[i * 3 + 1] = basePositions[i * 3 + 1];
+            }
+        }
+        preview.crumbs.geometry.attributes.position.needsUpdate = true;
     }
 }

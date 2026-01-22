@@ -82,7 +82,6 @@
 /* Main HUD mobile optimization */
 @media (max-width: 768px) {
     #hud {
-        display: none; /* Hide main HUD on mobile */
         gap: 24px;  /* Reduced from 30px to save space */
     }
 

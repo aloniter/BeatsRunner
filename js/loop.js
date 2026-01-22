@@ -111,6 +111,59 @@ function updateGame(delta, elapsed) {
         }
     }
 
+    // Animate Falafel Ball skin
+    if (falafelBallGroup && falafelBallGroup.visible) {
+        falafelBallGroup.rotation.y += delta * 0.5;
+
+        // Update particle positions when quality allows
+        if (QualityManager.shouldUpdateParticles()) {
+            // Update steam particles (rise upward)
+            if (falafelBallSteam && falafelBallSteam.geometry) {
+                const positions = falafelBallSteam.geometry.attributes.position.array;
+                const basePositions = falafelBallSteam.geometry.userData.basePositions;
+
+                for (let i = 0; i < positions.length / 3; i++) {
+                    positions[i * 3 + 1] += delta * 0.3; // Rise upward
+
+                    // Reset if too high
+                    if (positions[i * 3 + 1] > basePositions[i * 3 + 1] + 1.2) {
+                        positions[i * 3 + 1] = basePositions[i * 3 + 1];
+                    }
+                }
+                falafelBallSteam.geometry.attributes.position.needsUpdate = true;
+            }
+
+            // Update crumb particles (fall downward with drift)
+            if (falafelBallCrumbs && falafelBallCrumbs.geometry) {
+                const positions = falafelBallCrumbs.geometry.attributes.position.array;
+                const basePositions = falafelBallCrumbs.geometry.userData.basePositions;
+                const phases = falafelBallCrumbs.geometry.userData.phases;
+
+                for (let i = 0; i < positions.length / 3; i++) {
+                    const phase = phases[i];
+                    positions[i * 3 + 1] -= delta * 0.2; // Fall
+                    positions[i * 3] = basePositions[i * 3] + Math.sin(elapsed * 1.5 + phase) * 0.06;
+                    positions[i * 3 + 2] = basePositions[i * 3 + 2] + Math.cos(elapsed * 1.5 + phase) * 0.06;
+
+                    // Reset if too low
+                    if (positions[i * 3 + 1] < basePositions[i * 3 + 1] - 1.0) {
+                        positions[i * 3 + 1] = basePositions[i * 3 + 1];
+                    }
+                }
+                falafelBallCrumbs.geometry.attributes.position.needsUpdate = true;
+            }
+        }
+
+        // Pulse glow intensity with beat
+        const beatPulse = Math.abs(Math.sin(elapsed * 3));
+        if (falafelBallCore && falafelBallCore.material) {
+            falafelBallCore.material.emissiveIntensity = 0.8 + beatPulse * 0.3;
+        }
+        if (falafelBallInnerGlow && falafelBallInnerGlow.material) {
+            falafelBallInnerGlow.material.opacity = 0.25 + beatPulse * 0.1;
+        }
+    }
+
     // Update distance/score
     if (DevSettings.godMode) {
         const boostSpeed = Math.min(CONFIG.MAX_SPEED, CONFIG.INITIAL_SPEED + 15);

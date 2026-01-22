@@ -26,6 +26,14 @@ const SKIN_REGISTRY = {
         description: 'Leave the trails of a rainbow wherever you roll',
         category: 'skins',
         order: 3
+    },
+    'falafel-ball': {
+        id: 'falafel-ball',
+        name: 'Falafel Ball',
+        price: 75,
+        description: 'Crispy, golden, and surprisingly rhythmic. Fresh from the fryer.',
+        category: 'skins',
+        order: 4
     }
 };
 

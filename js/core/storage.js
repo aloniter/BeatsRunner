@@ -17,6 +17,8 @@ const Storage = {
         FIREBALL_EQUIPPED: 'beat-runner-fireball-equipped',
         RAINBOW_ORB_OWNED: 'beat-runner-rainbow-orb-owned',
         RAINBOW_ORB_EQUIPPED: 'beat-runner-rainbow-orb-equipped',
+        FALAFEL_BALL_OWNED: 'beat-runner-falafel-ball-owned',
+        FALAFEL_BALL_EQUIPPED: 'beat-runner-falafel-ball-equipped',
         EQUIPPED_SKIN: 'beat-runner-equipped-skin'
     },
 
