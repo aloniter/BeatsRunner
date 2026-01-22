@@ -2,13 +2,11 @@
 // DISCO BALL SKIN - 3D Model and Effects
 // ========================================
 
-// Disco color palette: purple, cyan, pink, blue, gold
+// Traditional disco ball color palette: silver/grey/white (no cycling)
 const DISCO_COLORS = [
-    { hex: 0xbb00ff, name: 'purple' },   // Rich purple
-    { hex: 0x00ffff, name: 'cyan' },     // Vibrant cyan
-    { hex: 0xff00aa, name: 'pink' },     // Hot pink
-    { hex: 0x0088ff, name: 'blue' },     // Electric blue
-    { hex: 0xffaa00, name: 'gold' }      // Golden
+    { hex: 0xc0c0c0, name: 'silver' },      // Primary silver
+    { hex: 0xe8e8e8, name: 'light-silver' }, // Light silver
+    { hex: 0xa8a8a8, name: 'grey' }         // Darker grey
 ];
 
 function buildDiscoBall(radius = 1, assignGlobals = false) {
@@ -173,8 +171,10 @@ function applyDiscoBallSkin() {
     if (!player || !discoBallGroup) return;
     const equipped = GameState.discoBallOwned && GameState.discoBallEquipped;
     discoBallGroup.visible = equipped;
-    // Only show default if neither skin is equipped
-    const anyEquipped = equipped || (GameState.fireBallOwned && GameState.fireBallEquipped);
+    // Only show default if no skin is equipped
+    const anyEquipped = equipped ||
+        (GameState.fireBallOwned && GameState.fireBallEquipped) ||
+        (GameState.rainbowOrbOwned && GameState.rainbowOrbEquipped);
     if (playerCore) playerCore.visible = !anyEquipped;
     if (playerGlow) playerGlow.visible = !anyEquipped;
     if (playerRing) playerRing.visible = !anyEquipped;

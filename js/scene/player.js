@@ -102,6 +102,10 @@ function createPlayer() {
     fireSkin.visible = false;
     group.add(fireSkin);
 
+    const rainbowOrbSkin = createRainbowOrbSkin();
+    rainbowOrbSkin.visible = false;
+    group.add(rainbowOrbSkin);
+
     group.position.set(0, CONFIG.GROUND_Y, 0);
     scene.add(group);
     player = group;

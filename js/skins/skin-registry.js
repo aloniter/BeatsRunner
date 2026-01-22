@@ -18,6 +18,14 @@ const SKIN_REGISTRY = {
         description: 'Feel the heat. A ball of pure rhythmic power.',
         category: 'skins',
         order: 2
+    },
+    'rainbow-orb': {
+        id: 'rainbow-orb',
+        name: 'Rainbow Orb',
+        price: 200,
+        description: 'Leave the trails of a rainbow wherever you roll',
+        category: 'skins',
+        order: 3
     }
 };
 

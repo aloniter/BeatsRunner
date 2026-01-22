@@ -15,6 +15,8 @@ const Storage = {
         DISCO_EQUIPPED: 'beat-runner-disco-equipped',
         FIREBALL_OWNED: 'beat-runner-fireball-owned',
         FIREBALL_EQUIPPED: 'beat-runner-fireball-equipped',
+        RAINBOW_ORB_OWNED: 'beat-runner-rainbow-orb-owned',
+        RAINBOW_ORB_EQUIPPED: 'beat-runner-rainbow-orb-equipped',
         EQUIPPED_SKIN: 'beat-runner-equipped-skin'
     },
 

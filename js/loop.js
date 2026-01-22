@@ -73,7 +73,44 @@ function updateGame(delta, elapsed) {
             fireBallInnerGlow.material.opacity = 0.4 + beatPulse * 0.15;
         }
     }
-    
+
+    // Animate Rainbow Orb skin
+    if (rainbowOrbGroup && rainbowOrbGroup.visible) {
+        rainbowOrbGroup.rotation.y += delta * 0.55;
+
+        // Update particle trail positions when quality allows
+        if (QualityManager.shouldUpdateParticles()) {
+            if (rainbowOrbTrails && rainbowOrbTrails.geometry) {
+                const positions = rainbowOrbTrails.geometry.attributes.position.array;
+                const basePositions = rainbowOrbTrails.geometry.userData.basePositions;
+                const phases = rainbowOrbTrails.geometry.userData.phases;
+
+                if (basePositions && phases) {
+                    for (let i = 0; i < positions.length / 3; i++) {
+                        const phase = phases[i];
+                        // Particles flow in circular rainbow trails
+                        positions[i * 3 + 1] = basePositions[i * 3 + 1] +
+                            Math.sin(elapsed * 2 + phase) * 0.18;
+                        positions[i * 3] = basePositions[i * 3] +
+                            Math.sin(elapsed * 2.5 + phase) * 0.08;
+                        positions[i * 3 + 2] = basePositions[i * 3 + 2] +
+                            Math.cos(elapsed * 2.5 + phase) * 0.08;
+                    }
+                    rainbowOrbTrails.geometry.attributes.position.needsUpdate = true;
+                }
+            }
+        }
+
+        // Pulse glow intensity with beat
+        const beatPulse = Math.abs(Math.sin(elapsed * 3));
+        if (rainbowOrbCore && rainbowOrbCore.material) {
+            rainbowOrbCore.material.emissiveIntensity = 1.2 + beatPulse * 0.4;
+        }
+        if (rainbowOrbInnerGlow && rainbowOrbInnerGlow.material) {
+            rainbowOrbInnerGlow.material.opacity = 0.45 + beatPulse * 0.15;
+        }
+    }
+
     // Update distance/score
     if (DevSettings.godMode) {
         const boostSpeed = Math.min(CONFIG.MAX_SPEED, CONFIG.INITIAL_SPEED + 15);

@@ -57,11 +57,14 @@ const BeatManager = {
             setTimeout(() => {
                 if (discoBallGroup) discoBallGroup.scale.set(1, 1, 1);
             }, 90);
+        }
 
-            // Change color every 4 beats (every ~1.875 seconds at 128 BPM)
-            if (this.beatCount % 4 === 0) {
-                discoBallColorIndex = (discoBallColorIndex + 1) % 5; // Cycle through 5 colors
-                discoBallColorTransition = 0;
+        // Rainbow orb beat response
+        if (rainbowOrbGroup && rainbowOrbGroup.visible) {
+            // Change rainbow orb color every 3 beats (faster than disco's 4 beats)
+            if (this.beatCount % 3 === 0) {
+                rainbowOrbColorIndex = (rainbowOrbColorIndex + 1) % 7; // 7 colors
+                rainbowOrbColorTransition = 0;
             }
         }
     },
@@ -81,23 +84,61 @@ const BeatManager = {
             playerGlow.material.opacity = 0.2 + this.intensity * 0.2;
         }
 
-        // Enhanced disco ball visuals
+        // Disco ball - traditional silver appearance with subtle beat response
         if (discoBallGroup && discoBallGroup.visible) {
-            // Smooth color transition (0.5 second transition time)
-            discoBallColorTransition = Math.min(discoBallColorTransition + 0.016, 0.5); // ~16ms per frame
+            const SILVER_COLOR = 0xc0c0c0; // Traditional disco ball silver
 
-            // Get color palette (defined in skins.js)
-            const DISCO_COLORS = [
-                { hex: 0xbb00ff }, // purple
-                { hex: 0x00ffff }, // cyan
-                { hex: 0xff00aa }, // pink
-                { hex: 0x0088ff }, // blue
-                { hex: 0xffaa00 }  // gold
+            // Apply static silver to all components
+            if (discoBallCore && discoBallCore.material) {
+                discoBallCore.material.emissive.setHex(SILVER_COLOR);
+                discoBallCore.material.emissiveIntensity = 0.8 + this.intensity * 0.4; // Subtle pulse
+            }
+
+            if (discoBallTiles && discoBallTiles.material) {
+                discoBallTiles.material.emissive.setHex(SILVER_COLOR);
+                discoBallTiles.material.emissiveIntensity = 0.6 + this.intensity * 0.3;
+            }
+
+            if (discoBallInnerGlow && discoBallInnerGlow.material) {
+                discoBallInnerGlow.material.color.setHex(0xe8e8e8); // Light silver glow
+                discoBallInnerGlow.material.opacity = 0.2 + this.intensity * 0.15;
+            }
+
+            if (discoBallOuterGlow && discoBallOuterGlow.material) {
+                discoBallOuterGlow.material.color.setHex(0xffffff); // White bloom
+                discoBallOuterGlow.material.opacity = 0.12 + this.intensity * 0.1;
+            }
+
+            if (discoBallBeams && discoBallBeams.material) {
+                discoBallBeams.material.color.setHex(0xe8e8e8);
+                discoBallBeams.material.opacity = 0.3 + this.intensity * 0.2;
+            }
+
+            if (discoBallSparkles && discoBallSparkles.material) {
+                discoBallSparkles.material.color.setHex(0xffffff); // White sparkles
+                discoBallSparkles.material.opacity = 0.8 + this.intensity * 0.2;
+            }
+        }
+
+        // Enhanced rainbow orb visuals
+        if (rainbowOrbGroup && rainbowOrbGroup.visible) {
+            // Smooth color transition (0.5 second transition time)
+            rainbowOrbColorTransition = Math.min(rainbowOrbColorTransition + 0.016, 0.5);
+
+            // Use 7-color rainbow palette (defined in rainbow-orb.js)
+            const RAINBOW_COLORS = [
+                { hex: 0xff0000 }, // red
+                { hex: 0xff7f00 }, // orange
+                { hex: 0xffff00 }, // yellow
+                { hex: 0x00ff00 }, // green
+                { hex: 0x0000ff }, // blue
+                { hex: 0x4b0082 }, // indigo
+                { hex: 0x9400d3 }  // violet
             ];
 
-            const currentColor = DISCO_COLORS[discoBallColorIndex];
-            const nextColor = DISCO_COLORS[(discoBallColorIndex + 1) % DISCO_COLORS.length];
-            const t = Math.min(discoBallColorTransition / 0.5, 1); // Normalize to 0-1
+            const currentColor = RAINBOW_COLORS[rainbowOrbColorIndex];
+            const nextColor = RAINBOW_COLORS[(rainbowOrbColorIndex + 1) % RAINBOW_COLORS.length];
+            const t = Math.min(rainbowOrbColorTransition / 0.5, 1);
 
             // Smooth color interpolation
             const lerpedColor = new THREE.Color(currentColor.hex).lerp(
@@ -106,42 +147,27 @@ const BeatManager = {
             );
 
             // Apply to core
-            if (discoBallCore && discoBallCore.material) {
-                discoBallCore.material.emissive.copy(lerpedColor);
-                discoBallCore.material.emissiveIntensity = 1.2 + this.intensity * 1.0;
-            }
-
-            // Apply to tiles
-            if (discoBallTiles && discoBallTiles.material) {
-                discoBallTiles.material.emissive.copy(lerpedColor);
-                discoBallTiles.material.emissiveIntensity = 0.9 + this.intensity * 0.9;
+            if (rainbowOrbCore && rainbowOrbCore.material) {
+                rainbowOrbCore.material.emissive.copy(lerpedColor);
+                rainbowOrbCore.material.emissiveIntensity = 1.2 + this.intensity * 0.6;
             }
 
             // Apply to inner glow
-            if (discoBallInnerGlow && discoBallInnerGlow.material) {
-                discoBallInnerGlow.material.color.copy(lerpedColor);
-                discoBallInnerGlow.material.opacity = 0.35 + this.intensity * 0.2;
+            if (rainbowOrbInnerGlow && rainbowOrbInnerGlow.material) {
+                rainbowOrbInnerGlow.material.color.copy(lerpedColor);
+                rainbowOrbInnerGlow.material.opacity = 0.45 + this.intensity * 0.2;
             }
 
-            // Apply to outer glow (bloom effect)
-            if (discoBallOuterGlow && discoBallOuterGlow.material) {
-                discoBallOuterGlow.material.color.copy(lerpedColor);
-                discoBallOuterGlow.material.opacity = 0.18 + this.intensity * 0.15;
-                // Subtle scale pulse for bloom expansion
-                const bloomScale = 1 + this.intensity * 0.08;
-                discoBallOuterGlow.scale.set(bloomScale, bloomScale, bloomScale);
+            // Apply to outer glow
+            if (rainbowOrbOuterGlow && rainbowOrbOuterGlow.material) {
+                rainbowOrbOuterGlow.material.color.copy(lerpedColor);
+                rainbowOrbOuterGlow.material.opacity = 0.25 + this.intensity * 0.15;
             }
 
-            // Apply to light beams
-            if (discoBallBeams && discoBallBeams.material) {
-                discoBallBeams.material.color.copy(lerpedColor);
-                discoBallBeams.material.opacity = 0.4 + this.intensity * 0.25;
-            }
-
-            // Apply to sparkles
-            if (discoBallSparkles && discoBallSparkles.material) {
-                discoBallSparkles.material.color.copy(lerpedColor);
-                discoBallSparkles.material.opacity = 0.9 + this.intensity * 0.1;
+            // Apply to trail particles
+            if (rainbowOrbTrails && rainbowOrbTrails.material) {
+                rainbowOrbTrails.material.color.copy(lerpedColor);
+                rainbowOrbTrails.material.opacity = 0.85 + this.intensity * 0.15;
             }
         }
     },
@@ -159,7 +185,7 @@ const BeatManager = {
         this.lastBeatTime = 0;
         this.beatCount = 0;
         this.intensity = 1;
-        discoBallColorIndex = 0;
-        discoBallColorTransition = 0;
+        rainbowOrbColorIndex = 0;
+        rainbowOrbColorTransition = 0;
     }
 };

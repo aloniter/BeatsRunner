@@ -68,6 +68,7 @@ const QUALITY_PRESETS = {
             flame: 50,
             ember: 30,
             sparkle: 40,
+            'rainbow-trail': 300,
             skipFrames: 0  // Update every frame
         },
         effects: {
@@ -95,6 +96,7 @@ const QUALITY_PRESETS = {
             flame: 30,
             ember: 15,
             sparkle: 20,
+            'rainbow-trail': 150,
             skipFrames: 1  // Update every other frame
         },
         effects: {
@@ -122,6 +124,7 @@ const QUALITY_PRESETS = {
             flame: 20,
             ember: 10,
             sparkle: 10,
+            'rainbow-trail': 75,
             skipFrames: 2  // Update every third frame
         },
         effects: {
