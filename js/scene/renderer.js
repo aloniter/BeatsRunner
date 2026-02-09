@@ -3,12 +3,24 @@
 // ========================================
 
 function init() {
+    // Show loading progress
+    const loadingBar = document.getElementById('loading-bar');
+    const loadingText = document.getElementById('loading-text');
+    const loadingScreen = document.getElementById('loading-screen');
+
+    function setLoadProgress(pct, msg) {
+        if (loadingBar) loadingBar.style.width = pct + '%';
+        if (loadingText) loadingText.textContent = msg;
+    }
+
+    setLoadProgress(10, 'Loading saved data...');
     loadOrbs();
     loadTopDistance();
     loadDiscoBallState();
     loadFireBallState();
 
     // Initialize quality settings based on device capabilities
+    setLoadProgress(20, 'Detecting device...');
     qualitySettings = QualityManager.init();
 
     // Create scene
@@ -71,13 +83,17 @@ function init() {
     }
 
     // Create game elements
+    setLoadProgress(40, 'Building scene...');
     createLights();
     createFloor();
+    setLoadProgress(55, 'Creating player...');
     createPlayer();
     createSidePillars();
+    setLoadProgress(70, 'Generating particles...');
     createParticles();
 
     // Setup audio
+    setLoadProgress(80, 'Setting up audio...');
     setupAudio();
 
     // Setup background music
@@ -85,6 +101,7 @@ function init() {
     bgMusic.volume = 0.4; // Set volume to 40%
 
     // Setup controls
+    setLoadProgress(90, 'Initializing controls...');
     setupControls();
     setupStore();
 
@@ -98,8 +115,17 @@ function init() {
     document.addEventListener('visibilitychange', onVisibilityChange);
 
     // Start render loop
+    setLoadProgress(100, 'Ready!');
     lastTime = performance.now();
     animate();
+
+    // Fade out loading screen
+    setTimeout(() => {
+        if (loadingScreen) {
+            loadingScreen.classList.add('fade-out');
+            setTimeout(() => loadingScreen.remove(), 600);
+        }
+    }, 300);
 }
 
 // ========================================

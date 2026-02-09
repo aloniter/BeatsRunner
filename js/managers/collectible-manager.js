@@ -2,6 +2,13 @@
 // COLLECTIBLES - Glowing Orbs
 // ========================================
 const CollectibleManager = {
+    disposeOrb(orb) {
+        orb.traverse(child => {
+            if (child.geometry) child.geometry.dispose();
+            if (child.material) child.material.dispose();
+        });
+    },
+
     spawn(x, z) {
         if (GameState.isBonusActive) return;
         const orb = this.createOrb();
@@ -118,6 +125,7 @@ const CollectibleManager = {
             // Remove if behind
             if (orb.position.z < CONFIG.DESPAWN_DISTANCE) {
                 scene.remove(orb);
+                this.disposeOrb(orb);
                 collectibles.splice(i, 1);
             }
         }
@@ -151,6 +159,7 @@ const CollectibleManager = {
                 const orbPos = orb.position.clone();
 
                 scene.remove(orb);
+                this.disposeOrb(orb);
                 collectibles.splice(i, 1);
 
                 playCollectSound();
@@ -177,6 +186,7 @@ const CollectibleManager = {
     reset() {
         for (let i = collectibles.length - 1; i >= 0; i--) {
             scene.remove(collectibles[i]);
+            this.disposeOrb(collectibles[i]);
         }
         collectibles.length = 0;
     }

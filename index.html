@@ -19,7 +19,18 @@
 </head>
 <body>
     <canvas id="game-canvas"></canvas>
-    
+
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <div class="loading-title">Beat Runner</div>
+            <div class="loading-bar-container">
+                <div class="loading-bar" id="loading-bar"></div>
+            </div>
+            <div class="loading-text" id="loading-text">Loading...</div>
+        </div>
+    </div>
+
     <!-- HUD -->
     <div id="hud">
         <div class="hud-item">
@@ -296,6 +307,7 @@
     <script defer src="js/skins/fire-ball.js"></script>
     <script defer src="js/skins/rainbow-orb.js"></script>
     <script defer src="js/skins/falafel-ball.js"></script>
+    <script defer src="js/skins/skin-animator.js"></script>
     <script defer src="js/skins/skin-preview.js"></script>
     <script defer src="js/store/store-ui.js"></script>
 

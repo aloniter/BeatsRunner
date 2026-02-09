@@ -45,9 +45,19 @@ const BeatManager = {
         }
         flashScreen(0.04, flashColor);
 
-        // Speed increase
+        // Speed increase with plateaus (slower ramp at higher speeds)
         if (GameState.speed < CONFIG.MAX_SPEED) {
-            GameState.speed += CONFIG.SPEED_INCREMENT * 0.08;
+            let speedMultiplier;
+            if (GameState.speed < 34) {
+                speedMultiplier = 0.08;       // Normal ramp (28-34)
+            } else if (GameState.speed < 40) {
+                speedMultiplier = 0.04;       // Slower ramp (34-40)
+            } else if (GameState.speed < 48) {
+                speedMultiplier = 0.02;       // Very slow ramp (40-48)
+            } else {
+                speedMultiplier = 0.01;       // Crawl to max (48-55)
+            }
+            GameState.speed += CONFIG.SPEED_INCREMENT * speedMultiplier;
         }
 
         // Enhanced disco ball beat response

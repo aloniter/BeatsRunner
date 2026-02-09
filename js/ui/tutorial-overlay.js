@@ -29,35 +29,73 @@ const TutorialOverlay = {
             id: 'lane-switching',
             message: 'Use ← → Arrow Keys (or swipe) to switch lanes',
             duration: 5000,
-            position: 'top-center',  // Changed to top to not block gameplay
+            position: 'top-center',
             trigger: 'distance',
-            triggerValue: 50  // Show at 50m
+            triggerValue: 50
         },
         {
             id: 'avoid-obstacles',
             message: 'Avoid the pink barriers! They slow you down.',
             duration: 4000,
-            position: 'top-center',  // Changed to top to not block gameplay
+            position: 'top-center',
             trigger: 'distance',
-            triggerValue: 150  // Show at 150m
+            triggerValue: 150
         },
         {
             id: 'collect-orbs',
-            message: 'Collect blue orbs for bonus stars! ⭐',
+            message: 'Collect blue orbs for bonus stars!',
             duration: 4000,
-            position: 'top-center',  // Changed to top to not block gameplay
+            position: 'top-center',
             trigger: 'distance',
-            triggerValue: 300  // Show at 300m
+            triggerValue: 300
         },
         {
             id: 'goal',
             message: 'Reach the finish line to complete the stage!',
             duration: 4000,
-            position: 'top-center',  // Changed to top to not block gameplay
+            position: 'top-center',
             trigger: 'distance',
-            triggerValue: 500  // Show at 500m
+            triggerValue: 500
         }
     ],
+
+    // Tutorial steps for Free Run (first time)
+    freeRunSteps: [
+        {
+            id: 'freerun-welcome',
+            message: 'Use ← → to switch lanes, Space/Up to jump',
+            duration: 4000,
+            position: 'top-center',
+            showOnStart: true
+        },
+        {
+            id: 'freerun-orbs',
+            message: 'Collect orbs to earn currency for the store!',
+            duration: 3500,
+            position: 'top-center',
+            trigger: 'distance',
+            triggerValue: 80
+        },
+        {
+            id: 'freerun-lives',
+            message: 'You have 3 lives - dodge obstacles to survive!',
+            duration: 3500,
+            position: 'top-center',
+            trigger: 'distance',
+            triggerValue: 180
+        },
+        {
+            id: 'freerun-speed',
+            message: 'The track gets faster over time. Stay sharp!',
+            duration: 3500,
+            position: 'top-center',
+            trigger: 'distance',
+            triggerValue: 350
+        }
+    ],
+
+    hasSeenFreeRunTutorial: false,
+    activeSteps: null,  // Which step set is currently active
 
     /**
      * Initialize tutorial system
@@ -96,6 +134,7 @@ const TutorialOverlay = {
     loadTutorialState() {
         const tutorialData = Storage.getJSON('tutorial-completed', null);
         this.hasSeenTutorial = tutorialData && tutorialData['stage-1-intro'];
+        this.hasSeenFreeRunTutorial = tutorialData && tutorialData['free-run'];
     },
 
     /**
@@ -113,22 +152,31 @@ const TutorialOverlay = {
      * @param {string} stageId - Stage ID
      */
     start(stageId) {
-        // Only show tutorial for Stage 1 on first playthrough
-        if (stageId !== 'stage-1-intro' || this.hasSeenTutorial) {
+        // Determine which tutorial to show
+        let stepsToUse = null;
+
+        if (stageId === 'free-run') {
+            if (this.hasSeenFreeRunTutorial) return;
+            stepsToUse = this.freeRunSteps;
+        } else if (stageId === 'stage-1-intro') {
+            if (this.hasSeenTutorial) return;
+            stepsToUse = this.steps;
+        } else {
             return;
         }
 
         this.isActive = true;
         this.currentStep = 0;
+        this.activeSteps = stepsToUse;
         this.container.style.display = 'block';
 
         // Show first step immediately
-        const firstStep = this.steps[0];
+        const firstStep = stepsToUse[0];
         if (firstStep.showOnStart) {
             this.showStep(firstStep);
         }
 
-        console.log('Tutorial started for', stageId);
+        if (DEBUG) console.log('Tutorial started for', stageId);
     },
 
     /**
@@ -138,10 +186,10 @@ const TutorialOverlay = {
      * @param {number} orbs - Current orbs collected
      */
     update(distance, crashes, orbs) {
-        if (!this.isActive) return;
+        if (!this.isActive || !this.activeSteps) return;
 
         // Check if we should trigger next step
-        const nextStep = this.steps[this.currentStep + 1];
+        const nextStep = this.activeSteps[this.currentStep + 1];
         if (!nextStep) return;
 
         // Check trigger condition
@@ -187,7 +235,7 @@ const TutorialOverlay = {
             }, 500);
         }, step.duration);
 
-        console.log('Tutorial step shown:', step.id);
+        if (DEBUG) console.log('Tutorial step shown:', step.id);
     },
 
     /**
@@ -218,15 +266,16 @@ const TutorialOverlay = {
         if (!this.isActive) return;
 
         this.isActive = false;
+        this.activeSteps = null;
         this.container.style.display = 'none';
         this.container.innerHTML = ''; // Clear all steps
 
         // Save completion
-        if (stageId === 'stage-1-intro') {
+        if (stageId === 'stage-1-intro' || stageId === 'free-run') {
             this.saveTutorialState(stageId);
         }
 
-        console.log('Tutorial stopped');
+        if (DEBUG) console.log('Tutorial stopped');
     },
 
     /**
@@ -239,7 +288,7 @@ const TutorialOverlay = {
         this.container.style.display = 'none';
         this.container.innerHTML = '';
 
-        console.log('Tutorial skipped');
+        if (DEBUG) console.log('Tutorial skipped');
     },
 
     /**
@@ -248,7 +297,7 @@ const TutorialOverlay = {
     reset() {
         Storage.remove('tutorial-completed');
         this.hasSeenTutorial = false;
-        console.log('Tutorial state reset');
+        if (DEBUG) console.log('Tutorial state reset');
     }
 };
 

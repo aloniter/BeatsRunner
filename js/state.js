@@ -31,6 +31,13 @@ const GameState = {
     bonusTriggered: false,
     bonusTransitionProgress: 0, // 0 = normal, 1 = full rainbow
 
+    // Lives system (Free Run)
+    lives: 3,
+    maxLives: 3,
+    isInvincible: false,
+    invincibleTimer: 0,
+    INVINCIBLE_DURATION: 1.5, // seconds of invincibility after hit
+
     // Stage Mode (MVP) - Week 1
     isStageMode: false,          // Flag: Stage Mode active (false = Free Run)
     currentStage: null,          // Current stage object (from stage-registry.js)

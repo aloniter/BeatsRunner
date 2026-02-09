@@ -8,160 +8,10 @@ function updateGame(delta, elapsed) {
     
     // Update player
     PlayerController.update(delta, elapsed);
-    if (discoBallGroup && discoBallGroup.visible) {
-        discoBallGroup.rotation.y += delta * 0.9;
-        // Rotate light beams independently for dynamic effect
-        if (discoBallBeams) {
-            discoBallBeams.rotation.y += delta * 1.5;
-        }
-    }
 
-    // Animate Fire Ball skin
-    if (fireBallGroup && fireBallGroup.visible) {
-        fireBallGroup.rotation.y += delta * 0.6;
-
-        // Only update particle positions when quality settings allow (frame skipping)
-        if (QualityManager.shouldUpdateParticles()) {
-            // Animate flames
-            if (fireBallFlames && fireBallFlames.geometry) {
-                const positions = fireBallFlames.geometry.attributes.position.array;
-                const basePositions = fireBallFlames.geometry.userData.basePositions;
-                const phases = fireBallFlames.geometry.userData.phases;
-
-                if (basePositions && phases) {
-                    for (let i = 0; i < positions.length / 3; i++) {
-                        const phase = phases[i];
-                        // Flames rise and flicker
-                        positions[i * 3 + 1] = basePositions[i * 3 + 1] +
-                            Math.sin(elapsed * 5 + phase) * 0.12 +
-                            (elapsed * 0.8 + phase) % 0.6;
-                        // Horizontal wobble
-                        positions[i * 3] = basePositions[i * 3] + Math.sin(elapsed * 4 + phase) * 0.04;
-                        positions[i * 3 + 2] = basePositions[i * 3 + 2] + Math.cos(elapsed * 4 + phase) * 0.04;
-                    }
-                    fireBallFlames.geometry.attributes.position.needsUpdate = true;
-                }
-            }
-
-            // Animate embers
-            if (fireBallEmbers && fireBallEmbers.geometry) {
-                const positions = fireBallEmbers.geometry.attributes.position.array;
-                const basePositions = fireBallEmbers.geometry.userData.basePositions;
-                const phases = fireBallEmbers.geometry.userData.phases;
-
-                if (basePositions && phases) {
-                    for (let i = 0; i < positions.length / 3; i++) {
-                        const phase = phases[i];
-                        // Embers float upward
-                        positions[i * 3 + 1] = basePositions[i * 3 + 1] +
-                            Math.sin(elapsed * 2.5 + phase) * 0.15 +
-                            (elapsed * 0.4 + phase) % 1.0;
-                        positions[i * 3] = basePositions[i * 3] + Math.sin(elapsed * 2 + phase) * 0.08;
-                        positions[i * 3 + 2] = basePositions[i * 3 + 2] + Math.cos(elapsed * 2 + phase) * 0.08;
-                    }
-                    fireBallEmbers.geometry.attributes.position.needsUpdate = true;
-                }
-            }
-        }
-
-        // Pulse the fire ball intensity with beat (keep every frame for visual consistency)
-        const beatPulse = Math.abs(Math.sin(elapsed * 3));
-        if (fireBallCore && fireBallCore.material) {
-            fireBallCore.material.emissiveIntensity = 1.5 + beatPulse * 0.5;
-        }
-        if (fireBallInnerGlow && fireBallInnerGlow.material) {
-            fireBallInnerGlow.material.opacity = 0.4 + beatPulse * 0.15;
-        }
-    }
-
-    // Animate Rainbow Orb skin
-    if (rainbowOrbGroup && rainbowOrbGroup.visible) {
-        rainbowOrbGroup.rotation.y += delta * 0.55;
-
-        // Update particle trail positions when quality allows
-        if (QualityManager.shouldUpdateParticles()) {
-            if (rainbowOrbTrails && rainbowOrbTrails.geometry) {
-                const positions = rainbowOrbTrails.geometry.attributes.position.array;
-                const basePositions = rainbowOrbTrails.geometry.userData.basePositions;
-                const phases = rainbowOrbTrails.geometry.userData.phases;
-
-                if (basePositions && phases) {
-                    for (let i = 0; i < positions.length / 3; i++) {
-                        const phase = phases[i];
-                        // Particles flow in circular rainbow trails
-                        positions[i * 3 + 1] = basePositions[i * 3 + 1] +
-                            Math.sin(elapsed * 2 + phase) * 0.18;
-                        positions[i * 3] = basePositions[i * 3] +
-                            Math.sin(elapsed * 2.5 + phase) * 0.08;
-                        positions[i * 3 + 2] = basePositions[i * 3 + 2] +
-                            Math.cos(elapsed * 2.5 + phase) * 0.08;
-                    }
-                    rainbowOrbTrails.geometry.attributes.position.needsUpdate = true;
-                }
-            }
-        }
-
-        // Pulse glow intensity with beat
-        const beatPulse = Math.abs(Math.sin(elapsed * 3));
-        if (rainbowOrbCore && rainbowOrbCore.material) {
-            rainbowOrbCore.material.emissiveIntensity = 1.2 + beatPulse * 0.4;
-        }
-        if (rainbowOrbInnerGlow && rainbowOrbInnerGlow.material) {
-            rainbowOrbInnerGlow.material.opacity = 0.45 + beatPulse * 0.15;
-        }
-    }
-
-    // Animate Falafel Ball skin
-    if (falafelBallGroup && falafelBallGroup.visible) {
-        falafelBallGroup.rotation.y += delta * 0.5;
-
-        // Update particle positions when quality allows
-        if (QualityManager.shouldUpdateParticles()) {
-            // Update steam particles (rise upward)
-            if (falafelBallSteam && falafelBallSteam.geometry) {
-                const positions = falafelBallSteam.geometry.attributes.position.array;
-                const basePositions = falafelBallSteam.geometry.userData.basePositions;
-
-                for (let i = 0; i < positions.length / 3; i++) {
-                    positions[i * 3 + 1] += delta * 0.3; // Rise upward
-
-                    // Reset if too high
-                    if (positions[i * 3 + 1] > basePositions[i * 3 + 1] + 1.2) {
-                        positions[i * 3 + 1] = basePositions[i * 3 + 1];
-                    }
-                }
-                falafelBallSteam.geometry.attributes.position.needsUpdate = true;
-            }
-
-            // Update crumb particles (fall downward with drift)
-            if (falafelBallCrumbs && falafelBallCrumbs.geometry) {
-                const positions = falafelBallCrumbs.geometry.attributes.position.array;
-                const basePositions = falafelBallCrumbs.geometry.userData.basePositions;
-                const phases = falafelBallCrumbs.geometry.userData.phases;
-
-                for (let i = 0; i < positions.length / 3; i++) {
-                    const phase = phases[i];
-                    positions[i * 3 + 1] -= delta * 0.2; // Fall
-                    positions[i * 3] = basePositions[i * 3] + Math.sin(elapsed * 1.5 + phase) * 0.06;
-                    positions[i * 3 + 2] = basePositions[i * 3 + 2] + Math.cos(elapsed * 1.5 + phase) * 0.06;
-
-                    // Reset if too low
-                    if (positions[i * 3 + 1] < basePositions[i * 3 + 1] - 1.0) {
-                        positions[i * 3 + 1] = basePositions[i * 3 + 1];
-                    }
-                }
-                falafelBallCrumbs.geometry.attributes.position.needsUpdate = true;
-            }
-        }
-
-        // Pulse glow intensity with beat
-        const beatPulse = Math.abs(Math.sin(elapsed * 3));
-        if (falafelBallCore && falafelBallCore.material) {
-            falafelBallCore.material.emissiveIntensity = 0.8 + beatPulse * 0.3;
-        }
-        if (falafelBallInnerGlow && falafelBallInnerGlow.material) {
-            falafelBallInnerGlow.material.opacity = 0.25 + beatPulse * 0.1;
-        }
+    // Update skin animations (centralized in SkinAnimator)
+    if (typeof SkinAnimator !== 'undefined') {
+        SkinAnimator.update(delta, elapsed);
     }
 
     // Update distance/score
@@ -200,21 +50,26 @@ function updateGame(delta, elapsed) {
         }
     }
 
+    // Update Free Run tutorial overlay
+    if (!GameState.isStageMode && typeof TutorialOverlay !== 'undefined') {
+        TutorialOverlay.update(GameState.distance, GameState.crashes, GameState.orbs);
+    }
+
     // Bonus Mode only in Free Run (disabled in Stage Mode)
     if (!GameState.isStageMode && !GameState.bonusTriggered && GameState.distance >= CONFIG.BONUS_START_DISTANCE) {
         enterBonusMode();
-        console.log('BONUS START (1000)');
+        if (DEBUG) console.log('BONUS START (1000)');
     }
 
     // Spawn exit boosters before bonus ends (at 1195) so they're visible
     if (GameState.isBonusActive && !ExitBoosterManager.spawned && GameState.distance >= 1195) {
         ExitBoosterManager.spawn();
-        console.log('EXIT BOOSTERS SPAWNED (1195)');
+        if (DEBUG) console.log('EXIT BOOSTERS SPAWNED (1195)');
     }
 
     if (GameState.isBonusActive && GameState.distance >= CONFIG.BONUS_END_DISTANCE) {
         exitBonusMode();
-        console.log('BONUS END (1250)');
+        if (DEBUG) console.log('BONUS END (1250)');
     }
 
     // Update bonus mode visual transition (0.75 second fade)
@@ -256,8 +111,35 @@ function updateGame(delta, elapsed) {
     // Update exit boosters
     ExitBoosterManager.update(delta, elapsed);
 
+    // Update invincibility timer (Free Run)
+    if (!GameState.isStageMode && GameState.isInvincible) {
+        GameState.invincibleTimer -= delta;
+        if (GameState.invincibleTimer <= 0) {
+            GameState.isInvincible = false;
+            GameState.invincibleTimer = 0;
+            // Restore player opacity
+            if (player) player.traverse(child => {
+                if (child.material && child.material._savedOpacity !== undefined) {
+                    child.material.opacity = child.material._savedOpacity;
+                    delete child.material._savedOpacity;
+                }
+            });
+        } else {
+            // Blink player during invincibility
+            const blinkRate = Math.sin(GameState.invincibleTimer * 15);
+            if (player) player.traverse(child => {
+                if (child.material) {
+                    if (child.material._savedOpacity === undefined) {
+                        child.material._savedOpacity = child.material.opacity;
+                    }
+                    child.material.opacity = blinkRate > 0 ? child.material._savedOpacity : 0.15;
+                }
+            });
+        }
+    }
+
     // Check collision
-    if (!GameState.isBonusActive && !DevSettings.godMode && ObstacleManager.checkCollision()) {
+    if (!GameState.isBonusActive && !DevSettings.godMode && !GameState.isInvincible && ObstacleManager.checkCollision()) {
         if (GameState.isStageMode) {
             // Stage Mode: Count crash, don't end game
             GameState.crashes++;
@@ -279,8 +161,34 @@ function updateGame(delta, elapsed) {
 
             // Continue playing - no gameOver()
         } else {
-            // Free Run: Game over as usual
-            gameOver();
+            // Free Run: Lives system
+            GameState.lives--;
+            GameState.crashes++;
+
+            // Impact feedback
+            flashScreen(0.2, '#ff0066');
+            if (cameraShake) cameraShake.addTrauma(0.7);
+            if (typeof createParticleBurst === 'function') {
+                const burstCount = qualitySettings?.effects?.particleBurstCounts?.collision || 15;
+                createParticleBurst(player.position, {
+                    count: burstCount,
+                    color: 0xff3333,
+                    spread: 1.5
+                });
+            }
+            if (typeof hapticFeedback !== 'undefined') {
+                hapticFeedback.crash();
+            }
+
+            if (GameState.lives <= 0) {
+                gameOver();
+            } else {
+                // Activate invincibility frames
+                GameState.isInvincible = true;
+                GameState.invincibleTimer = GameState.INVINCIBLE_DURATION;
+                // Update lives HUD
+                if (hitsValue) hitsValue.textContent = GameState.lives;
+            }
         }
         return;
     }
@@ -339,7 +247,12 @@ function updateGame(delta, elapsed) {
     // Update HUD
     distanceValue.textContent = Math.floor(GameState.distance);
     orbsValue.textContent = GameState.orbs;
-    hitsValue.textContent = GameState.crashes;
+    // In Free Run show remaining lives, in Stage Mode show crash count
+    if (GameState.isStageMode) {
+        hitsValue.textContent = GameState.crashes;
+    } else {
+        hitsValue.textContent = GameState.lives;
+    }
     scoreValue.textContent = GameState.score;
 }
 

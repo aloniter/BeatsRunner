@@ -11,17 +11,62 @@ const ObstacleManager = {
         [0, 1], [1, 2], [0, 2],  // Double lane blocks
     ],
 
+    /**
+     * Get Free Run difficulty settings based on current distance.
+     * Progressively introduces harder obstacle patterns:
+     * - 0-200m: Single-lane only, no jumps, wide gaps (learn to move)
+     * - 200-500m: Add double-lane blocks, introduce jumps, tighter gaps
+     * - 500-800m: Full patterns, moderate jump freq, normal gaps
+     * - 800m+: Everything, high density
+     */
+    getFreeRunDifficulty() {
+        const d = GameState.distance;
+        if (d < 200) {
+            return {
+                patterns: [[0], [1], [2]],   // Single lane only
+                jumpChance: 0,               // No jumps yet
+                minGap: 24,                  // Wide spacing
+                extraRandom: 16
+            };
+        } else if (d < 500) {
+            return {
+                patterns: [[0], [1], [2], [0, 1], [1, 2], [0, 2]],
+                jumpChance: 0.15,            // Rare jumps
+                minGap: 20,                  // Moderate spacing
+                extraRandom: 14
+            };
+        } else if (d < 800) {
+            return {
+                patterns: this.patterns,     // All patterns
+                jumpChance: 0.25,
+                minGap: CONFIG.OBSTACLE_MIN_GAP,
+                extraRandom: 12
+            };
+        } else {
+            return {
+                patterns: this.patterns,
+                jumpChance: 0.35,            // Full difficulty
+                minGap: CONFIG.OBSTACLE_MIN_GAP - 2,
+                extraRandom: 10
+            };
+        }
+    },
+
     spawn() {
         // Get stage-specific settings (or defaults for Free Run)
         const stage = GameState.isStageMode ? GameState.currentStage : null;
         const pool = stage ? getPatternPool(stage) : null;
 
-        // Calculate gap based on stage tier (or use default for Free Run)
-        const minGap = pool ? pool.gap : CONFIG.OBSTACLE_MIN_GAP;
-        const z = this.lastSpawnZ + minGap + Math.random() * 12;
+        // Free Run: use distance-based difficulty curve
+        const freeRunDiff = (!stage) ? this.getFreeRunDifficulty() : null;
 
-        // Determine jump frequency based on stage
-        const jumpChance = pool ? pool.jumpFrequency : 0.35;
+        // Calculate gap based on stage tier or Free Run difficulty
+        const minGap = pool ? pool.gap : (freeRunDiff ? freeRunDiff.minGap : CONFIG.OBSTACLE_MIN_GAP);
+        const extraRandom = freeRunDiff ? freeRunDiff.extraRandom : 12;
+        const z = this.lastSpawnZ + minGap + Math.random() * extraRandom;
+
+        // Determine jump frequency based on stage or difficulty
+        const jumpChance = pool ? pool.jumpFrequency : (freeRunDiff ? freeRunDiff.jumpChance : 0.35);
         const useJumpObstacle = Math.random() < jumpChance;
 
         if (useJumpObstacle) {
@@ -32,12 +77,14 @@ const ObstacleManager = {
             scene.add(obstacle);
             obstacles.push(obstacle);
         } else {
-            // Select pattern from stage pool (or use default patterns for Free Run)
+            // Select pattern from stage pool or Free Run difficulty
             let pattern;
             if (pool) {
                 pattern = selectRandomPattern(pool);
+            } else if (freeRunDiff) {
+                const patternIndex = Math.floor(Math.random() * freeRunDiff.patterns.length);
+                pattern = freeRunDiff.patterns[patternIndex];
             } else {
-                // Free Run: use existing hardcoded patterns
                 const patternIndex = Math.floor(Math.random() * this.patterns.length);
                 pattern = this.patterns[patternIndex];
             }
@@ -179,6 +226,22 @@ const ObstacleManager = {
         return group;
     },
 
+    /**
+     * Dispose all geometries and materials in a group to prevent memory leaks
+     */
+    disposeObject(obj) {
+        obj.traverse(child => {
+            if (child.geometry) child.geometry.dispose();
+            if (child.material) {
+                if (Array.isArray(child.material)) {
+                    child.material.forEach(m => m.dispose());
+                } else {
+                    child.material.dispose();
+                }
+            }
+        });
+    },
+
     update(delta) {
         const moveAmount = GameState.speed * delta;
 
@@ -189,6 +252,7 @@ const ObstacleManager = {
 
             if (obstacle.position.z < CONFIG.DESPAWN_DISTANCE) {
                 scene.remove(obstacle);
+                this.disposeObject(obstacle);
                 obstacles.splice(i, 1);
             }
         }
@@ -261,6 +325,7 @@ const ObstacleManager = {
     reset() {
         for (let i = obstacles.length - 1; i >= 0; i--) {
             scene.remove(obstacles[i]);
+            this.disposeObject(obstacles[i]);
         }
         obstacles.length = 0;
         this.lastSpawnZ = 60;
@@ -269,6 +334,7 @@ const ObstacleManager = {
     clearForBonus() {
         for (let i = obstacles.length - 1; i >= 0; i--) {
             scene.remove(obstacles[i]);
+            this.disposeObject(obstacles[i]);
         }
         obstacles.length = 0;
         this.lastSpawnZ = CONFIG.SPAWN_DISTANCE;

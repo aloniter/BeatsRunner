@@ -17,6 +17,11 @@ function startGame() {
     GameState.bonusTriggered = false;
     GameState.bonusTransitionProgress = DevSettings.forceBonus ? 1 : 0;
 
+    // Reset lives system
+    GameState.lives = GameState.maxLives;
+    GameState.isInvincible = false;
+    GameState.invincibleTimer = 0;
+
     PlayerController.reset();
     BeatManager.reset();
     MagnetManager.reset();
@@ -47,6 +52,11 @@ function startGame() {
     pauseBtn.classList.remove('is-paused');
     pauseBtn.textContent = 'Ⅱ';
 
+    // Set HUD label for Free Run (lives)
+    const hitsLabel = document.querySelector('.hud-item-hits .hud-label');
+    if (hitsLabel) hitsLabel.textContent = 'Lives';
+    if (hitsValue) hitsValue.textContent = GameState.lives;
+
     // Show mobile controls on mobile devices
     if (isMobile) {
         mobileControls.style.display = 'flex';
@@ -59,6 +69,11 @@ function startGame() {
     }
 
     lastTime = performance.now();
+
+    // Start Free Run tutorial for first-time players
+    if (typeof TutorialOverlay !== 'undefined') {
+        TutorialOverlay.start('free-run');
+    }
 }
 
 // ========================================
@@ -137,6 +152,11 @@ function startStage(stageId) {
     pauseBtn.classList.remove('is-paused');
     pauseBtn.textContent = 'Ⅱ';
 
+    // Set HUD label for Stage Mode (hits)
+    const hitsLabel = document.querySelector('.hud-item-hits .hud-label');
+    if (hitsLabel) hitsLabel.textContent = 'Hits';
+    if (hitsValue) hitsValue.textContent = '0';
+
     // Show mobile controls on mobile devices
     if (isMobile) {
         mobileControls.style.display = 'flex';
@@ -165,7 +185,7 @@ function startStage(stageId) {
         GameplayHUD.show();
     }
 
-    console.log(`Starting Stage: ${stage.name} (${stage.distance}m, speed ${stage.speed})`);
+    if (DEBUG) console.log(`Starting Stage: ${stage.name} (${stage.distance}m, speed ${stage.speed})`);
 }
 
 /**
@@ -223,6 +243,11 @@ function exitBonusMode() {
 function gameOver() {
     GameState.isPlaying = false;
 
+    // Stop Free Run tutorial if active
+    if (typeof TutorialOverlay !== 'undefined') {
+        TutorialOverlay.stop('free-run');
+    }
+
     playGameOverSound();
     flashScreen(0.4, '#ff0066');
 
@@ -241,13 +266,15 @@ function gameOver() {
     finalScore.textContent = finalScoreValue;
     finalTopDistance.textContent = GameState.topDistance;
 
-    // Show game over after brief delay
+    // Show game over after brief delay with transition
     setTimeout(() => {
         hud.style.display = 'none';
         beatIndicator.style.display = 'none';
         mobileControls.style.display = 'none';
         pauseBtn.style.display = 'none';
         gameoverScreen.style.display = 'flex';
+        gameoverScreen.classList.add('screen-fade-in');
+        setTimeout(() => gameoverScreen.classList.remove('screen-fade-in'), 350);
     }, 400);
 }
 
@@ -348,9 +375,11 @@ function goToMainMenu() {
         bgMusic.pause();
     }
 
-    // Hide game over and show start screen
+    // Hide game over and show start screen with transition
     gameoverScreen.style.display = 'none';
     startScreen.style.display = 'flex';
+    startScreen.classList.add('screen-fade-in');
+    setTimeout(() => startScreen.classList.remove('screen-fade-in'), 350);
     pauseBtn.style.display = 'none';
 }
 

@@ -7,6 +7,9 @@
 // ========================================
 // CONFIGURATION
 // ========================================
+// Debug flag - set to true to enable verbose logging
+const DEBUG = false;
+
 const CONFIG = {
     // Game settings - lanes ordered LEFT to RIGHT
     LANE_WIDTH: 3,
