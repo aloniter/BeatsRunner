@@ -5,8 +5,12 @@ const BeatManager = {
     lastBeatTime: 0,
     beatCount: 0,
     intensity: 1,
+    currentElapsed: 0,     // Track elapsed for timing queries
+    spawnFlag: false,      // Set true on beats that should trigger obstacle spawn
 
     update(elapsed) {
+        this.currentElapsed = elapsed;
+        this.spawnFlag = false;
         const beatInterval = CONFIG.BEAT_INTERVAL;
         const timeSinceBeat = elapsed - this.lastBeatTime;
 
@@ -22,6 +26,35 @@ const BeatManager = {
 
         // Update visuals
         this.updateVisuals();
+    },
+
+    /**
+     * Get time distance from nearest beat (0 = exactly on beat)
+     * Returns value in seconds, always positive
+     */
+    getTimeSinceNearestBeat() {
+        const beatInterval = CONFIG.BEAT_INTERVAL;
+        const timeSinceLast = this.currentElapsed - this.lastBeatTime;
+        const timeToNext = beatInterval - timeSinceLast;
+        return Math.min(Math.abs(timeSinceLast), Math.abs(timeToNext));
+    },
+
+    /**
+     * Check if current moment is "on beat" within tolerance
+     */
+    isOnBeat(tolerance) {
+        return this.getTimeSinceNearestBeat() <= tolerance;
+    },
+
+    /**
+     * Get collection rating based on timing relative to beat
+     * @returns {'perfect'|'good'|null}
+     */
+    getCollectionRating() {
+        const timeDiff = this.getTimeSinceNearestBeat();
+        if (timeDiff <= CONFIG.COMBO_PERFECT_WINDOW) return 'perfect';
+        if (timeDiff <= CONFIG.COMBO_GOOD_WINDOW) return 'good';
+        return null;
     },
 
     onBeat() {
@@ -77,6 +110,24 @@ const BeatManager = {
                 rainbowOrbColorTransition = 0;
             }
         }
+
+        // Beat-synced obstacle spawning flag
+        // Spawn interval decreases with difficulty (every 4 beats -> every 2 beats)
+        const spawnInterval = this.getBeatSpawnInterval();
+        if (this.beatCount > 0 && this.beatCount % spawnInterval === 0) {
+            this.spawnFlag = true;
+        }
+    },
+
+    /**
+     * Get beat spawn interval based on difficulty/distance
+     */
+    getBeatSpawnInterval() {
+        const d = GameState.distance;
+        if (d < 200) return 5;   // Easy: every 5 beats (~2.3s)
+        if (d < 500) return 4;   // Medium: every 4 beats (~1.9s)
+        if (d < 800) return 3;   // Hard: every 3 beats (~1.4s)
+        return 2;                 // Expert: every 2 beats (~0.9s)
     },
 
     updateVisuals() {
@@ -195,6 +246,8 @@ const BeatManager = {
         this.lastBeatTime = 0;
         this.beatCount = 0;
         this.intensity = 1;
+        this.currentElapsed = 0;
+        this.spawnFlag = false;
         rainbowOrbColorIndex = 0;
         rainbowOrbColorTransition = 0;
     }

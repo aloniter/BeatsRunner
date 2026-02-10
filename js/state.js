@@ -38,6 +38,13 @@ const GameState = {
     invincibleTimer: 0,
     INVINCIBLE_DURATION: 1.5, // seconds of invincibility after hit
 
+    // Combo system
+    combo: 0,                    // Current combo count
+    maxCombo: 0,                 // Best combo this run
+    comboTimer: 0,               // Time remaining before combo decays
+    scoreMultiplier: 1.0,        // Current score multiplier from combo
+    lastCollectRating: null,     // 'perfect' | 'good' | null
+
     // Stage Mode (MVP) - Week 1
     isStageMode: false,          // Flag: Stage Mode active (false = Free Run)
     currentStage: null,          // Current stage object (from stage-registry.js)

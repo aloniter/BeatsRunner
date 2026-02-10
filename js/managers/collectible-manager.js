@@ -146,9 +146,31 @@ const CollectibleManager = {
             const dist = Math.sqrt(dx * dx + dz * dz);
 
             if (dist < collectRadius) {
+                // Check on-beat timing for combo system
+                const rating = BeatManager.getCollectionRating();
+                let scoreBonus = 100; // Base orb score
+
+                if (rating === 'perfect') {
+                    scoreBonus += CONFIG.COMBO_PERFECT_BONUS;
+                    GameState.lastCollectRating = 'perfect';
+                } else if (rating === 'good') {
+                    scoreBonus += CONFIG.COMBO_GOOD_BONUS;
+                    GameState.lastCollectRating = 'good';
+                } else {
+                    GameState.lastCollectRating = null;
+                }
+
+                // Apply combo multiplier to score
+                scoreBonus = Math.floor(scoreBonus * GameState.scoreMultiplier);
+
                 GameState.orbs++;
-                GameState.score += 100;
+                GameState.score += scoreBonus;
                 addOrbs(1);
+
+                // Notify combo system
+                if (typeof ComboSystem !== 'undefined') {
+                    ComboSystem.onCollect(rating);
+                }
 
                 // Track orbs for Stage Mode star calculation
                 if (GameState.isStageMode) {
@@ -162,22 +184,36 @@ const CollectibleManager = {
                 this.disposeOrb(orb);
                 collectibles.splice(i, 1);
 
-                playCollectSound();
-                flashScreen(0.08, '#00ffff');
+                // Play sound (higher pitch for on-beat)
+                if (rating === 'perfect') {
+                    playPerfectCollectSound();
+                } else {
+                    playCollectSound();
+                }
+
+                // Flash color based on rating
+                const flashColor = rating === 'perfect' ? '#ffff00' : rating === 'good' ? '#00ffaa' : '#00ffff';
+                flashScreen(rating ? 0.12 : 0.08, flashColor);
 
                 // Add collection feedback
-                if (cameraShake) cameraShake.addTrauma(0.15);
+                if (cameraShake) cameraShake.addTrauma(rating === 'perfect' ? 0.25 : 0.15);
                 if (typeof createParticleBurst === 'function') {
                     const burstCount = qualitySettings?.effects?.particleBurstCounts?.collect || 8;
+                    const burstMultiplier = rating === 'perfect' ? 2 : rating === 'good' ? 1.5 : 1;
                     createParticleBurst(orbPos, {
-                        count: burstCount,
-                        color: 0x00ffaa,
-                        spread: 0.8,
+                        count: Math.floor(burstCount * burstMultiplier),
+                        color: rating === 'perfect' ? 0xffff00 : 0x00ffaa,
+                        spread: rating === 'perfect' ? 1.2 : 0.8,
                         duration: 0.5
                     });
                 }
                 if (typeof hapticFeedback !== 'undefined') {
                     hapticFeedback.collect();
+                }
+
+                // Show rating popup
+                if (typeof ComboSystem !== 'undefined' && rating) {
+                    ComboSystem.showRating(rating, orbPos);
                 }
             }
         }

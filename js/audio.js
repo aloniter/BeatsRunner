@@ -42,23 +42,80 @@ function playBeatSound() {
 
 function playCollectSound() {
     if (!audioContext) return;
-    
+
     try {
         const osc = audioContext.createOscillator();
         const gain = audioContext.createGain();
-        
+
         osc.connect(gain);
         gain.connect(audioContext.destination);
-        
+
         osc.type = 'sine';
         osc.frequency.setValueAtTime(880, audioContext.currentTime);
         osc.frequency.exponentialRampToValueAtTime(1760, audioContext.currentTime + 0.1);
-        
+
         gain.gain.setValueAtTime(0.2, audioContext.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.12);
-        
+
         osc.start(audioContext.currentTime);
         osc.stop(audioContext.currentTime + 0.12);
+    } catch (e) {}
+}
+
+/**
+ * Play enhanced collect sound for perfect on-beat collection
+ * Two-note chord with sparkle - feels rewarding
+ */
+function playPerfectCollectSound() {
+    if (!audioContext) return;
+
+    try {
+        // Main note - higher and brighter
+        const osc1 = audioContext.createOscillator();
+        const gain1 = audioContext.createGain();
+        osc1.connect(gain1);
+        gain1.connect(audioContext.destination);
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(1047, audioContext.currentTime); // C6
+        osc1.frequency.exponentialRampToValueAtTime(2093, audioContext.currentTime + 0.12);
+        gain1.gain.setValueAtTime(0.22, audioContext.currentTime);
+        gain1.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.15);
+        osc1.start(audioContext.currentTime);
+        osc1.stop(audioContext.currentTime + 0.15);
+
+        // Harmony note - adds richness
+        const osc2 = audioContext.createOscillator();
+        const gain2 = audioContext.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioContext.destination);
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(1319, audioContext.currentTime); // E6
+        gain2.gain.setValueAtTime(0.12, audioContext.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.1);
+        osc2.start(audioContext.currentTime);
+        osc2.stop(audioContext.currentTime + 0.1);
+    } catch (e) {}
+}
+
+/**
+ * Play combo milestone sound (at 5, 10, 20 combo)
+ */
+function playComboSound(tier) {
+    if (!audioContext) return;
+
+    try {
+        const baseFreq = tier === 3 ? 784 : tier === 2 ? 659 : 523; // G5, E5, C5
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(baseFreq, audioContext.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(baseFreq * 2, audioContext.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.18, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.2);
+        osc.start(audioContext.currentTime);
+        osc.stop(audioContext.currentTime + 0.2);
     } catch (e) {}
 }
 

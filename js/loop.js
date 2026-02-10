@@ -111,6 +111,11 @@ function updateGame(delta, elapsed) {
     // Update exit boosters
     ExitBoosterManager.update(delta, elapsed);
 
+    // Update combo system
+    if (typeof ComboSystem !== 'undefined') {
+        ComboSystem.update(delta);
+    }
+
     // Update invincibility timer (Free Run)
     if (!GameState.isStageMode && GameState.isInvincible) {
         GameState.invincibleTimer -= delta;
@@ -140,6 +145,11 @@ function updateGame(delta, elapsed) {
 
     // Check collision
     if (!GameState.isBonusActive && !DevSettings.godMode && !GameState.isInvincible && ObstacleManager.checkCollision()) {
+        // Break combo on any collision
+        if (typeof ComboSystem !== 'undefined') {
+            ComboSystem.onCrash();
+        }
+
         if (GameState.isStageMode) {
             // Stage Mode: Count crash, don't end game
             GameState.crashes++;

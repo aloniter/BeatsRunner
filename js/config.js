@@ -37,6 +37,14 @@ const CONFIG = {
     BONUS_START_DISTANCE: 1000,
     BONUS_END_DISTANCE: 1250,  // Extended from 1150 for longer bonus with more orbs
 
+    // Combo / Rhythm settings
+    COMBO_PERFECT_WINDOW: 0.08, // ±80ms from beat for "PERFECT"
+    COMBO_GOOD_WINDOW: 0.18,    // ±180ms from beat for "GOOD"
+    COMBO_DECAY_TIME: 2.5,      // Seconds before combo resets without action
+    COMBO_PERFECT_BONUS: 200,   // Score bonus for perfect on-beat collection
+    COMBO_GOOD_BONUS: 50,       // Score bonus for good on-beat collection
+    BEAT_SPAWN_INTERVAL: 4,     // Spawn obstacle every N beats (base)
+
     // Visual settings
     FOG_NEAR: 25,
     FOG_FAR: 120,

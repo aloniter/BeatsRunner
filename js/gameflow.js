@@ -28,6 +28,11 @@ function startGame() {
     ShieldManager.reset();
     SpeedBoostManager.reset();
 
+    // Reset combo system
+    if (typeof ComboSystem !== 'undefined') {
+        ComboSystem.reset();
+    }
+
     if (DevSettings.forceBonus) {
         enterBonusMode();
     }
@@ -137,6 +142,11 @@ function startStage(stageId) {
     SpeedBoostManager.reset();
     BonusOrbManager.reset();
     ExitBoosterManager.reset();
+
+    // Reset combo system
+    if (typeof ComboSystem !== 'undefined') {
+        ComboSystem.reset();
+    }
 
     // Hide menus, show HUD
     startScreen.style.display = 'none';
@@ -248,6 +258,11 @@ function gameOver() {
         TutorialOverlay.stop('free-run');
     }
 
+    // Hide combo display
+    if (typeof ComboSystem !== 'undefined') {
+        ComboSystem.hide();
+    }
+
     playGameOverSound();
     flashScreen(0.4, '#ff0066');
 
@@ -265,6 +280,17 @@ function gameOver() {
     finalOrbs.textContent = GameState.orbs;
     finalScore.textContent = finalScoreValue;
     finalTopDistance.textContent = GameState.topDistance;
+
+    // Update max combo display
+    const maxComboEl = document.getElementById('final-max-combo');
+    if (maxComboEl) {
+        maxComboEl.textContent = GameState.maxCombo;
+        // Only show if player achieved a combo
+        const comboRow = maxComboEl.closest('.final-score');
+        if (comboRow) {
+            comboRow.style.display = GameState.maxCombo >= 2 ? '' : 'none';
+        }
+    }
 
     // Show game over after brief delay with transition
     setTimeout(() => {

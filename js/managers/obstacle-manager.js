@@ -4,6 +4,7 @@
 const ObstacleManager = {
     lastSpawnZ: 60,
     spawnQueue: [],
+    dodgeCount: 0,         // Obstacles successfully dodged this run
 
     // Patterns: array of lane indices to block
     patterns: [
@@ -244,11 +245,24 @@ const ObstacleManager = {
 
     update(delta) {
         const moveAmount = GameState.speed * delta;
+        const playerZ = player ? player.position.z : 0;
 
-        // Move and cleanup obstacles
+        // Move and cleanup obstacles, track dodges
         for (let i = obstacles.length - 1; i >= 0; i--) {
             const obstacle = obstacles[i];
             obstacle.position.z -= moveAmount;
+
+            // Check if obstacle has been dodged (passed behind player)
+            if (!obstacle.userData.dodgeCounted && !obstacle.userData.hasBeenHit &&
+                obstacle.position.z < playerZ - 1.5) {
+                obstacle.userData.dodgeCounted = true;
+                this.dodgeCount++;
+
+                // Notify combo system
+                if (typeof ComboSystem !== 'undefined') {
+                    ComboSystem.onDodge();
+                }
+            }
 
             if (obstacle.position.z < CONFIG.DESPAWN_DISTANCE) {
                 scene.remove(obstacle);
@@ -329,6 +343,7 @@ const ObstacleManager = {
         }
         obstacles.length = 0;
         this.lastSpawnZ = 60;
+        this.dodgeCount = 0;
     },
 
     clearForBonus() {
