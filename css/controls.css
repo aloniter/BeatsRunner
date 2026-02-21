@@ -1,0 +1,519 @@
+/* PWA standalone mode mobile adjustments */
+@media (max-width: 768px) and (display-mode: standalone) {
+    .store-overlay {
+        background: radial-gradient(ellipse at center, rgba(10, 0, 25, 0.99) 0%, rgba(0, 0, 0, 1) 100%);
+    }
+
+    .store-panel {
+        background: rgba(8, 2, 20, 0.98);
+    }
+}
+
+@media (max-width: 380px) {
+    .store-panel {
+        padding: 14px 10px;
+    }
+
+    .store-title-main {
+        font-size: 15px;
+        letter-spacing: 4px;
+    }
+
+    .store-close {
+        width: 38px;
+        height: 38px;
+        font-size: 18px;
+    }
+
+    .store-grid {
+        gap: 8px;
+    }
+
+    .store-card {
+        padding: 7px;
+        gap: 5px;
+    }
+
+    .store-preview {
+        height: 65px;
+    }
+
+    .store-preview canvas {
+        width: 55px;
+        height: 55px;
+    }
+
+    .store-title {
+        font-size: 12px;
+    }
+
+    .store-description {
+        font-size: 8px;
+        min-height: 22px;
+        line-height: 1.3;
+    }
+
+    .store-price {
+        font-size: 10px;
+    }
+
+    .store-status {
+        font-size: 8px;
+    }
+
+    .store-btn {
+        padding: 7px 8px;
+        font-size: 9px;
+        letter-spacing: 1px;
+    }
+}
+
+@media (max-width: 520px) {
+    .store-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .store-card {
+        flex-direction: row;
+        align-items: center;
+        padding: 10px;
+        gap: 12px;
+    }
+
+    .store-preview {
+        width: 88px;
+        height: 88px;
+        flex: 0 0 88px;
+    }
+
+    .store-preview canvas {
+        width: 70px;
+        height: 70px;
+    }
+
+    .store-info {
+        gap: 4px;
+    }
+
+    .store-title {
+        font-size: 14px;
+    }
+
+    .store-description {
+        font-size: 10px;
+        min-height: 0;
+    }
+
+    .store-actions {
+        margin-top: 2px;
+    }
+}
+
+@media (min-width: 769px) {
+    .store-grid {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .store-card {
+        padding: 14px;
+    }
+
+    .store-preview {
+        height: 110px;
+    }
+
+    .store-preview canvas {
+        width: 100px;
+        height: 100px;
+    }
+
+    .store-title {
+        font-size: 16px;
+    }
+
+    .store-description {
+        font-size: 12px;
+        min-height: 34px;
+    }
+}
+
+        /* Game Over Screen */
+        #gameover-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(ellipse at center, rgba(40, 0, 20, 0.95) 0%, rgba(0, 0, 0, 0.98) 100%);
+            z-index: 200;
+            padding: calc(var(--safe-area-inset-top) + 20px) calc(var(--safe-area-inset-right) + 20px) calc(var(--safe-area-inset-bottom) + 20px) calc(var(--safe-area-inset-left) + 20px);
+        }
+
+        #gameover-screen h2 {
+            font-size: 48px;
+            color: #ff0066;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            margin-bottom: 25px;
+            text-shadow: 0 0 20px #ff0066, 0 0 40px #ff0066;
+        }
+
+        .final-score {
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .final-score:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .final-score span {
+            color: #00ffff;
+            font-size: 28px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        /* Beat Indicator */
+        #beat-indicator {
+            position: fixed;
+            bottom: calc(140px + var(--safe-area-inset-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #ff00ff;
+            opacity: 0.4;
+            transition: transform 0.08s ease-out, opacity 0.08s ease-out, box-shadow 0.08s ease-out;
+            z-index: 100;
+            display: none;
+            pointer-events: none;
+        }
+
+        #beat-indicator.pulse {
+            transform: translateX(-50%) scale(1.2);
+            opacity: 0.8;
+            box-shadow: 0 0 20px #ff00ff, 0 0 40px #00ffff;
+        }
+
+        /* Screen Flash Effect */
+        #screen-flash {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 50;
+            transition: opacity 0.05s ease-out;
+        }
+
+        /* Mobile Controls */
+        #mobile-controls {
+            position: fixed;
+            bottom: calc(20px + var(--safe-area-inset-bottom));
+            left: var(--safe-area-inset-left);
+            right: var(--safe-area-inset-right);
+            display: none;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 20px;
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        .mobile-btn {
+            width: 85px;
+            height: 85px;
+            border: 2px solid rgba(255, 0, 255, 0.5);
+            border-radius: 50%;
+            background: rgba(255, 0, 255, 0.12);
+            color: #ff00ff;
+            font-size: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: all 0.1s ease;
+            box-shadow: 0 3px 10px rgba(255, 0, 255, 0.25);
+            font-weight: bold;
+        }
+
+        .mobile-btn-jump {
+            border-color: rgba(0, 255, 255, 0.5);
+            color: #00ffff;
+            background: rgba(0, 255, 255, 0.12);
+            box-shadow: 0 3px 10px rgba(0, 255, 255, 0.25);
+            margin-bottom: 20px;
+        }
+
+        .mobile-btn:active {
+            background: rgba(255, 0, 255, 0.45);
+            transform: scale(0.92);
+            box-shadow: 0 2px 8px rgba(255, 0, 255, 0.5);
+        }
+
+        .mobile-btn-jump:active {
+            background: rgba(0, 255, 255, 0.45);
+            box-shadow: 0 2px 8px rgba(0, 255, 255, 0.5);
+        }
+
+        /* Desktop styles */
+        @media (min-width: 769px) {
+            #start-screen h1 {
+                font-size: 72px;
+                letter-spacing: 10px;
+            }
+            
+            #start-screen .subtitle {
+                font-size: 18px;
+                letter-spacing: 5px;
+            }
+
+            .credit {
+                font-size: 16px;
+                margin-bottom: 50px;
+            }
+            
+            .btn {
+                padding: 20px 60px;
+                font-size: 24px;
+                letter-spacing: 5px;
+            }
+
+            .btn-group {
+                flex-direction: row;
+                gap: 20px;
+                margin-top: 40px;
+            }
+
+            #gameover-screen h2 {
+                font-size: 56px;
+                letter-spacing: 8px;
+            }
+
+            .final-score {
+                font-size: 24px;
+            }
+
+            .final-score span {
+                font-size: 36px;
+            }
+            
+            .hud-value {
+                font-size: 28px;
+            }
+
+            .hud-label {
+                font-size: 12px;
+                letter-spacing: 2px;
+            }
+
+            #hud {
+                gap: 40px;
+            }
+
+            #beat-indicator {
+                width: 60px;
+                height: 60px;
+                bottom: 30px;
+            }
+        }
+
+        /* Mobile-specific optimizations */
+        @media (max-width: 768px) {
+            #mobile-controls {
+                display: flex;
+            }
+
+            /* Extra small phones */
+            @media (max-height: 667px) {
+                #start-screen h1 {
+                    font-size: 42px;
+                    letter-spacing: 5px;
+                }
+                
+                #start-screen .subtitle {
+                    font-size: 13px;
+                    margin-bottom: 10px;
+                }
+
+                .credit {
+                    font-size: 12px;
+                    margin-bottom: 25px;
+                }
+
+                .controls-info {
+                    margin-top: 25px;
+                    font-size: 11px;
+                }
+
+                .btn {
+                    padding: 14px 35px;
+                    font-size: 16px;
+                    min-height: 50px;
+                }
+
+                .btn-group {
+                    gap: 12px;
+                    margin-top: 25px;
+                }
+
+                .mobile-btn {
+                    width: 75px;
+                    height: 75px;
+                    font-size: 30px;
+                }
+
+                .mobile-btn-jump {
+                    margin-bottom: 15px;
+                }
+
+                #gameover-screen h2 {
+                    font-size: 36px;
+                }
+
+                .final-score {
+                    font-size: 15px;
+                    margin-bottom: 8px;
+                }
+
+                .final-score span {
+                    font-size: 22px;
+                }
+
+                #beat-indicator {
+                    width: 35px;
+                    height: 35px;
+                }
+            }
+
+            /* Tall phones (like iPhone 16 Pro) */
+            @media (min-height: 800px) {
+                #start-screen h1 {
+                    font-size: 64px;
+                    letter-spacing: 8px;
+                }
+
+                .credit {
+                    font-size: 15px;
+                    margin-bottom: 45px;
+                }
+
+                .btn {
+                    padding: 20px 55px;
+                    font-size: 22px;
+                    min-height: 60px;
+                }
+
+                .btn-group {
+                    gap: 18px;
+                    margin-top: 35px;
+                }
+
+                .mobile-btn {
+                    width: 90px;
+                    height: 90px;
+                    font-size: 36px;
+                }
+
+                .mobile-btn-jump {
+                    margin-bottom: 25px;
+                }
+
+                .hud-value {
+                    font-size: 26px;
+                }
+
+                #beat-indicator {
+                    width: 45px;
+                    height: 45px;
+                }
+            }
+
+            /* Landscape orientation */
+            @media (orientation: landscape) {
+                #start-screen h1 {
+                    font-size: 36px;
+                    letter-spacing: 4px;
+                    margin-bottom: 5px;
+                }
+
+                #start-screen .subtitle {
+                    font-size: 12px;
+                    margin-bottom: 8px;
+                }
+
+                .credit {
+                    font-size: 11px;
+                    margin-bottom: 20px;
+                }
+
+                .btn {
+                    padding: 12px 35px;
+                    font-size: 16px;
+                    min-height: 45px;
+                }
+
+                .btn-group {
+                    gap: 10px;
+                    margin-top: 20px;
+                }
+
+                .controls-info {
+                    margin-top: 20px;
+                    font-size: 11px;
+                }
+
+                #mobile-controls {
+                    bottom: calc(10px + var(--safe-area-inset-bottom));
+                }
+
+                .mobile-btn {
+                    width: 70px;
+                    height: 70px;
+                    font-size: 28px;
+                }
+
+                .mobile-btn-jump {
+                    margin-bottom: 10px;
+                }
+
+                #hud {
+                    top: calc(10px + var(--safe-area-inset-top));
+                    gap: 20px;
+                }
+
+                .hud-value {
+                    font-size: 20px;
+                }
+
+                .hud-label {
+                    font-size: 10px;
+                }
+
+                #beat-indicator {
+                    display: none !important;
+                }
+            }
+        }
+
+        /* Prevent overscroll bounce on iOS */
+        body {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+

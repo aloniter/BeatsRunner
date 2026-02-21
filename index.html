@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#ff00ff">
+    <link rel="icon" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <title>Beat Runner - Neon Rhythm Game</title>
+    <!-- CSS Modules (split from styles.css) -->
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/hud.css">
+    <link rel="stylesheet" href="css/screens.css">
+    <link rel="stylesheet" href="css/store.css">
+    <link rel="stylesheet" href="css/controls.css">
+    <link rel="stylesheet" href="css/overlays.css">
+</head>
+<body>
+    <canvas id="game-canvas"></canvas>
+
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <div class="loading-title">Beat Runner</div>
+            <div class="loading-bar-container">
+                <div class="loading-bar" id="loading-bar"></div>
+            </div>
+            <div class="loading-text" id="loading-text">Loading...</div>
+        </div>
+    </div>
+
+    <!-- HUD -->
+    <div id="hud">
+        <div class="hud-item">
+            <div class="hud-label">Distance</div>
+            <div class="hud-value" id="distance-value">0</div>
+        </div>
+        <div class="hud-item">
+            <div class="hud-label">Orbs</div>
+            <div class="hud-value" id="orbs-value">0</div>
+        </div>
+        <div class="hud-item hud-item-hits">
+            <div class="hud-label">Hits</div>
+            <div class="hud-value" id="hits-value">0</div>
+        </div>
+        <div class="hud-item is-hidden">
+            <div class="hud-label">Score</div>
+            <div class="hud-value" id="score-value">0</div>
+        </div>
+    </div>
+    <button class="pause-btn" id="pause-btn" aria-label="Pause">Ⅱ</button>
+
+    <!-- Mobile Controls -->
+    <div id="mobile-controls">
+        <div class="mobile-btn" id="left-btn">◀</div>
+        <div class="mobile-btn mobile-btn-jump" id="jump-btn">▲</div>
+        <div class="mobile-btn" id="right-btn">▶</div>
+    </div>
+
+    <!-- Start Screen -->
+    <div id="start-screen">
+        <div class="top-bar" aria-label="Main Menu Stats">
+            <div class="top-bar-inner">
+                <div class="top-bar-stats">
+                    <div class="menu-stars" id="menu-stars">
+                        <span class="star-icon">⭐</span>
+                        <span class="stars-value" id="menu-total-stars">0</span>
+                        <span class="stars-max">/45</span>
+                    </div>
+                    <div class="menu-orbs" aria-label="Orbs">
+                        <span class="orb-icon" aria-hidden="true"></span>
+                        <span class="orb-label">Orbs</span>
+                        <span class="orb-value" id="menu-orbs-value">0</span>
+                    </div>
+                    <div class="menu-top-distance" aria-label="Top Distance">
+                        <span class="top-distance-label">Top Distance</span>
+                        <span class="top-distance-value" id="menu-top-distance-value">0</span>
+                        <span class="top-distance-unit">m</span>
+                    </div>
+                </div>
+                <div class="top-bar-actions">
+                    <button class="store-btn-lite" id="store-btn" aria-label="Open Store">
+                        <span class="store-icon" aria-hidden="true">🛍</span>
+                    </button>
+                    <div class="dev-tools-panel" id="dev-tools-panel" aria-label="Developer Tools">
+                        <button class="dev-tools-toggle-btn" id="dev-tools-toggle" aria-expanded="false" aria-label="Settings">
+                            <span class="dev-tools-toggle-icon" aria-hidden="true">⚙</span>
+                        </button>
+                        <div class="dev-tools" id="dev-tools" aria-hidden="true">
+                            <div class="dev-tools-title">Settings</div>
+                            <div class="dev-tools-row">
+                                <div class="dev-tools-label">Graphics Quality</div>
+                                <div class="dev-tools-actions">
+                                    <select class="dev-tools-select" id="quality-select">
+                                        <option value="AUTO">Auto (Recommended)</option>
+                                        <option value="HIGH">High</option>
+                                        <option value="MEDIUM">Medium</option>
+                                        <option value="LOW">Low</option>
+                                    </select>
+                                    <button class="dev-tools-btn" id="quality-apply">Apply</button>
+                                </div>
+                            </div>
+                            <div class="dev-tools-row">
+                                <div class="dev-tools-label">Orbs</div>
+                                <div class="dev-tools-actions">
+                                    <button class="dev-tools-btn" data-dev-action="orbs-add" data-amount="10">+10</button>
+                                    <button class="dev-tools-btn" data-dev-action="orbs-remove" data-amount="10">-10</button>
+                                    <button class="dev-tools-btn" data-dev-action="orbs-reset">Reset</button>
+                                    <input class="dev-tools-input" id="dev-orbs-input" type="number" min="0" step="10" value="50">
+                                    <button class="dev-tools-btn" data-dev-action="orbs-set">Set</button>
+                                </div>
+                            </div>
+                            <div class="dev-tools-row">
+                                <div class="dev-tools-label">Start With</div>
+                                <div class="dev-tools-actions">
+                                    <label class="dev-tools-toggle">
+                                        <input type="checkbox" id="dev-start-shield">
+                                        Shield
+                                    </label>
+                                    <label class="dev-tools-toggle">
+                                        <input type="checkbox" id="dev-start-magnet">
+                                        Magnet
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="dev-tools-row">
+                                <div class="dev-tools-label">Bonus Mode (1000-1250)</div>
+                                <div class="dev-tools-actions">
+                                    <label class="dev-tools-toggle">
+                                        <input type="checkbox" id="dev-force-bonus">
+                                        Force
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="dev-tools-row">
+                                <div class="dev-tools-label">God Mode</div>
+                                <div class="dev-tools-actions">
+                                    <label class="dev-tools-toggle">
+                                        <input type="checkbox" id="dev-god-mode">
+                                        On
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <h1>Beat Runner</h1>
+        <div class="subtitle">Neon Rhythm Experience</div>
+        <div class="credit">By Alon Iter</div>
+        <button class="btn btn-stage-mode" id="stage-mode-btn">Stage Mode</button>
+        <button class="btn" id="start-btn">Free Run</button>
+    </div>
+
+    <div class="store-overlay" id="store-overlay" aria-hidden="true">
+        <div class="store-panel">
+            <div class="store-panel-header">
+                <div class="store-title-main">STORE</div>
+                <button class="store-close" id="store-close" aria-label="Close Store">✕</button>
+            </div>
+            <div class="store-tabs" id="store-tabs"></div>
+            <div class="store-section-title" id="store-section-title">ITEMS</div>
+            <div class="store-grid" id="store-grid"></div>
+        </div>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameover-screen">
+        <h2>Game Over</h2>
+        <div class="final-score">Distance: <span id="final-distance">0</span>m</div>
+        <div class="final-score">Top Distance: <span id="final-top-distance">0</span>m</div>
+        <div class="final-score">Orbs Collected: <span id="final-orbs">0</span></div>
+        <div class="final-score is-hidden">Final Score: <span id="final-score">0</span></div>
+        <div class="btn-group">
+            <button class="btn" id="restart-btn">Play Again</button>
+            <button class="btn btn-secondary" id="mainmenu-btn">Main Menu</button>
+        </div>
+    </div>
+
+    <!-- Level Select Screen (Stage Mode) -->
+    <div class="overlay" id="level-select-overlay" aria-hidden="true">
+        <div class="overlay-panel level-select-panel">
+            <div class="overlay-header">
+                <button class="back-btn" id="level-select-back" aria-label="Back">←</button>
+                <div class="overlay-title">NEON DISTRICT</div>
+                <div class="header-stars">
+                    <span class="star-icon">⭐</span>
+                    <span id="level-select-total-stars">0</span>/45
+                </div>
+            </div>
+            <div class="stage-path" id="stage-path">
+                <!-- Stage nodes generated by JavaScript -->
+            </div>
+            <div class="stage-info-bar" id="stage-info-bar">
+                <!-- Locked hint text displayed here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Stage Info Card Modal (Stage Mode) -->
+    <div class="overlay" id="stage-info-overlay" aria-hidden="true">
+        <div class="overlay-panel stage-info-card">
+            <div class="stage-info-header">
+                <div class="stage-number" id="card-stage-number">1</div>
+                <div class="stage-name" id="card-stage-name">Neon Intro</div>
+                <div class="stage-description" id="card-stage-description"></div>
+            </div>
+            <div class="stage-info-stats">
+                <div class="stat-row">
+                    <span class="stat-label">Distance</span>
+                    <span class="stat-value" id="card-distance">1000m</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Best</span>
+                    <span class="stat-value" id="card-best-stars">--</span>
+                </div>
+            </div>
+            <div class="stage-star-goals">
+                <div class="star-goal">
+                    <span class="star-tier">⭐</span>
+                    <span class="star-requirement">Complete Stage</span>
+                </div>
+                <div class="star-goal">
+                    <span class="star-tier">⭐⭐</span>
+                    <span class="star-requirement" id="card-star2-req">≤5 crashes, 40% orbs</span>
+                </div>
+                <div class="star-goal">
+                    <span class="star-tier">⭐⭐⭐</span>
+                    <span class="star-requirement" id="card-star3-req">≤2 crashes, 60% orbs</span>
+                </div>
+            </div>
+            <div class="stage-info-buttons">
+                <button class="btn btn-secondary" id="card-back-btn">BACK</button>
+                <button class="btn" id="card-play-btn">PLAY</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Results Screen (Stage Mode) -->
+    <div class="overlay" id="results-overlay" aria-hidden="true">
+        <div class="overlay-panel results-panel">
+            <div class="results-header">
+                <div class="results-message" id="results-message">STAGE COMPLETE!</div>
+                <div class="results-stars" id="results-stars">
+                    <!-- Stars rendered by JavaScript -->
+                </div>
+            </div>
+            <div class="results-stats">
+                <div class="results-stat">
+                    <span class="stat-label">Orbs Collected</span>
+                    <span class="stat-value" id="results-orbs">0/0 (0%)</span>
+                </div>
+                <div class="results-stat">
+                    <span class="stat-label">Crashes</span>
+                    <span class="stat-value" id="results-crashes">0</span>
+                </div>
+            </div>
+            <div class="results-tip" id="results-tip"></div>
+            <div class="results-progress">
+                <span class="progress-label">Total Stars</span>
+                <div class="progress-bar results-progress-bar">
+                    <div class="progress-fill" id="results-progress-fill"></div>
+                </div>
+                <span class="progress-text" id="results-progress-text">⭐ 0/45</span>
+            </div>
+            <div class="results-buttons">
+                <button class="btn btn-secondary" id="results-menu-btn">MENU</button>
+                <button class="btn btn-secondary" id="results-replay-btn">REPLAY</button>
+                <button class="btn" id="results-next-btn">NEXT STAGE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Beat Indicator -->
+    <div id="beat-indicator"></div>
+
+    <!-- Combo HUD -->
+    <div id="combo-display">
+        <div id="combo-count"></div>
+        <div id="combo-multiplier"></div>
+    </div>
+    <div id="timing-feedback"></div>
+
+    <!-- Booster pickup announcement (floating, center-screen) -->
+    <div id="booster-announcement"></div>
+
+    <!-- Active booster status badges (persistent, bottom-left) -->
+    <div id="booster-status"></div>
+
+    <!-- Screen Flash -->
+    <div id="screen-flash"></div>
+
+    <!-- Background Music -->
+    <audio id="bg-music" loop>
+        <source src="Lights on.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Three.js Library -->
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+
+    <!-- Post-Processing Bundle (local) -->
+    <script defer src="js/postprocessing-bundle.js"></script>
+
+    <!-- Game Scripts -->
+    <script defer src="js/core/storage.js"></script>
+    <script defer src="js/core/object-pool.js"></script>
+    <script defer src="js/core/geometry-cache.js"></script>
+    <script defer src="js/config.js"></script>
+    <script defer src="js/state.js"></script>
+    <script defer src="js/globals.js"></script>
+    <script defer src="js/haptics.js"></script>
+    <script defer src="js/orbs.js"></script>
+    <script defer src="js/top-distance.js"></script>
+    <!-- Skins & Store (split from skins.js) -->
+    <script defer src="js/skins/skin-registry.js"></script>
+    <script defer src="js/skins/skin-manager.js"></script>
+    <script defer src="js/skins/disco-ball.js"></script>
+    <script defer src="js/skins/fire-ball.js"></script>
+    <script defer src="js/skins/rainbow-orb.js"></script>
+    <script defer src="js/skins/falafel-ball.js"></script>
+    <script defer src="js/skins/skin-animator.js"></script>
+    <script defer src="js/skins/skin-preview.js"></script>
+    <script defer src="js/store/store-ui.js"></script>
+
+    <!-- Stage Mode (MVP) - Week 1 -->
+    <script defer src="js/data/stage-registry.js"></script>
+    <script defer src="js/data/stage-progress.js"></script>
+    <script defer src="js/data/star-calculator.js"></script>
+    <script defer src="js/gameplay/finish-line.js"></script>
+
+    <!-- Stage Mode (MVP) - Week 2 -->
+    <script defer src="js/data/stage-patterns.js"></script>
+
+    <!-- Stage Mode (MVP) - Week 3 UI -->
+    <script defer src="js/ui/level-select.js"></script>
+    <script defer src="js/ui/stage-info-card.js"></script>
+    <script defer src="js/ui/results-screen.js"></script>
+    <script defer src="js/ui/tutorial-overlay.js"></script>
+    <script defer src="js/ui/gameplay-hud.js"></script>
+    <script defer src="js/ui/settings-screen.js"></script>
+    <script defer src="js/ui/timing-feedback.js"></script>
+    <script defer src="js/ui/booster-hud.js"></script>
+
+    <!-- Scene Components (split from scene.js) -->
+    <script defer src="js/scene/floor.js"></script>
+    <script defer src="js/scene/pillars.js"></script>
+    <script defer src="js/scene/particles.js"></script>
+    <script defer src="js/scene/player.js"></script>
+    <script defer src="js/scene/renderer.js"></script>
+
+    <!-- Game Managers (split from gameplay.js) -->
+    <script defer src="js/managers/player-controller.js"></script>
+    <script defer src="js/managers/beat-manager.js"></script>
+    <script defer src="js/managers/magnet-manager.js"></script>
+    <script defer src="js/managers/shield-manager.js"></script>
+    <script defer src="js/managers/collectible-manager.js"></script>
+    <script defer src="js/managers/obstacle-manager.js"></script>
+    <script defer src="js/managers/speed-boost-manager.js"></script>
+    <script defer src="js/managers/exit-booster-manager.js"></script>
+    <script defer src="js/managers/bonus-orb-manager.js"></script>
+
+    <script defer src="js/audio.js"></script>
+    <script defer src="js/controls.js"></script>
+    <script defer src="js/gameflow.js"></script>
+    <script defer src="js/loop.js"></script>
+    <script defer src="js/main.js"></script>
+
+</body>
+</html>

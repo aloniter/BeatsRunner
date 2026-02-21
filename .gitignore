@@ -1,0 +1,24 @@
+# Dependencies
+node_modules/
+
+# Build files
+build-postprocessing.js
+rollup.config.js
+
+# Testing
+test-week1.js
+tests/
+playwright.config.js
+playwright-report/
+test-results/
+
+# Documentation
+docs/
+*.md
+
+# System files
+.DS_Store
+.claude/
+
+# Package manager
+package-lock.json
