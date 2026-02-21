@@ -191,12 +191,12 @@ class CameraShake {
 // ========================================
 function createLights() {
     // Hemisphere light for a baseline neon-style ambient gradient
-    const hemiLight = new THREE.HemisphereLight(0x2233aa, 0x110033, 1.2);
+    const hemiLight = new THREE.HemisphereLight(0x2233aa, 0x110033, 1.0);
     hemiLight.position.set(0, 10, 0);
     scene.add(hemiLight);
 
     // Key directional light for strong form definition on orbs and pillars
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.8);
     keyLight.position.set(5, 8, -5); // Positioned high, front-right relative to player
     keyLight.castShadow = true;
 
@@ -214,7 +214,7 @@ function createLights() {
     scene.add(keyLight);
 
     // Optional rim light from behind (cyan/pink)
-    const rimLight = new THREE.DirectionalLight(0xff00ff, 1.5);
+    const rimLight = new THREE.DirectionalLight(0xff00ff, 1.2);
     rimLight.position.set(-5, 3, 10); // Behind the player
     scene.add(rimLight);
 }

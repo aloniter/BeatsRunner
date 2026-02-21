@@ -88,8 +88,8 @@ const CONFIG = {
     BEAT: {
         TIMING: {
             PERFECT: 0.15,  // Beat distance fraction for PERFECT rating  (3x multiplier)
-            GOOD:    0.35,  // Beat distance fraction for GOOD rating      (2x multiplier)
-            OK:      0.65   // Beat distance fraction for OK rating        (1.5x multiplier)
+            GOOD: 0.35,  // Beat distance fraction for GOOD rating      (2x multiplier)
+            OK: 0.65   // Beat distance fraction for OK rating        (1.5x multiplier)
         },
         // Speed ramp breakpoints for onBeat() (speed units → multiplier)
         SPEED_RAMP: [
@@ -102,12 +102,12 @@ const CONFIG = {
 
     // Orb visual tuning
     ORB_VISUALS: {
-        exposure: 1.1,                 // Tone mapping exposure
+        exposure: 0.95,                // Lowered exposure slightly
         toneMapping: THREE.ACESFilmicToneMapping, // Tone mapping algorithm
         roughnessRange: [0.15, 0.85],  // Clamped roughness range
         metalnessRange: [0.0, 0.6],    // Clamped metalness range
-        emissiveTint: 0x222222,        // Base emissive tint applied to all Standard/Physical orb materials
-        emissiveIntensity: 0.8         // Multiplier for the emissive glow
+        emissiveTint: 0x1a1a1a,        // Reduced base emissive tint 
+        emissiveIntensity: 0.6         // Lowered emissive glow multiplier
     },
 
     // Gameflow timing (milliseconds unless noted)
