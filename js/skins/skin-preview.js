@@ -165,7 +165,7 @@ function setupPokeballPreview(canvas, itemId) {
     camera.position.set(0, 0.1, 2.2);
     camera.lookAt(0, 0, 0);
 
-    const { group, innerGlow, outerGlow } = buildPokeballSkin(0.45, false);
+    const { group, innerGlow, outerGlow, sparks } = buildPokeballSkin(0.45, false);
     group.scale.set(0.85, 0.85, 0.85);
     scene.add(group);
 
@@ -179,7 +179,7 @@ function setupPokeballPreview(canvas, itemId) {
     scene.add(whiteLight);
 
     previewScenes.set(itemId, {
-        renderer, scene, camera, group, innerGlow, outerGlow, canvas,
+        renderer, scene, camera, group, innerGlow, outerGlow, sparks, canvas,
         type: 'pokeball'
     });
     resizeDiscoPreview();
@@ -467,9 +467,29 @@ function renderPokeballPreviewItem(preview, delta, elapsed) {
     // Glow pulse
     const beatPhase = Math.abs(Math.sin(elapsed * 2.4));
     if (preview.innerGlow && preview.innerGlow.material) {
-        preview.innerGlow.material.opacity = 0.2 + beatPhase * 0.1;
+        preview.innerGlow.material.opacity = 0.22 + beatPhase * 0.12;
     }
     if (preview.outerGlow && preview.outerGlow.material) {
-        preview.outerGlow.material.opacity = 0.1 + beatPhase * 0.05;
+        preview.outerGlow.material.opacity = 0.12 + beatPhase * 0.06;
+    }
+
+    // Animate energy sparks in preview
+    if (preview.sparks && preview.sparks.geometry && preview.sparks.geometry.userData.basePositions) {
+        const positions = preview.sparks.geometry.attributes.position.array;
+        const basePositions = preview.sparks.geometry.userData.basePositions;
+        const phases = preview.sparks.geometry.userData.phases;
+
+        for (let i = 0; i < positions.length / 3; i++) {
+            const phase = phases[i];
+            positions[i * 3]     = basePositions[i * 3] + Math.sin(elapsed * 2.5 + phase) * 0.08;
+            positions[i * 3 + 1] = basePositions[i * 3 + 1] + Math.sin(elapsed * 2 + phase) * 0.1;
+            positions[i * 3 + 2] = basePositions[i * 3 + 2] + Math.cos(elapsed * 2.5 + phase) * 0.08;
+        }
+        preview.sparks.geometry.attributes.position.needsUpdate = true;
+    }
+
+    // Update AnimationMixer if GLB has embedded animations
+    if (preview.group.userData.mixer) {
+        preview.group.userData.mixer.update(delta);
     }
 }

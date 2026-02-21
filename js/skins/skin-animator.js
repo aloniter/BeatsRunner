@@ -165,24 +165,69 @@ const SkinAnimator = {
 
     // --- Pokeball ---
     /**
-     * Spin the Pokéball and pulse its glow layers with the beat.
-     * Glow meshes are always children[0] (innerGlow) and children[1] (outerGlow);
-     * the GLB model, if loaded, is children[2+].
+     * Spin the Pokéball, pulse glow layers, animate energy sparks, update
+     * AnimationMixer (if the GLB has embedded clips), and wobble on the beat.
+     * children[0]=innerGlow, children[1]=outerGlow, children[2]=sparks,
+     * children[3+]=GLB model (when loaded).
      * @param {number} delta - Seconds since last frame
      * @param {number} elapsed - Total elapsed seconds
      */
     updatePokeball(delta, elapsed) {
         if (!pokeballGroup || !pokeballGroup.visible) return;
+
+        // Rotation
         pokeballGroup.rotation.y += delta * 1.2;
 
+        // Update embedded GLB animations if present
+        if (pokeballGroup.userData.mixer) {
+            pokeballGroup.userData.mixer.update(delta);
+        }
+
+        // Glow pulse
         const beatPulse = Math.abs(Math.sin(elapsed * 3));
         const innerGlow = pokeballGroup.children[0];
         const outerGlow = pokeballGroup.children[1];
         if (innerGlow && innerGlow.material) {
-            innerGlow.material.opacity = 0.18 + beatPulse * 0.12;
+            innerGlow.material.opacity = 0.18 + beatPulse * 0.14;
         }
         if (outerGlow && outerGlow.material) {
-            outerGlow.material.opacity = 0.08 + beatPulse * 0.06;
+            outerGlow.material.opacity = 0.08 + beatPulse * 0.08;
+        }
+
+        // Animate energy sparks (children[2] = Points)
+        if (QualityManager.shouldUpdateParticles()) {
+            const sparks = pokeballGroup.children[2];
+            if (sparks && sparks.geometry && sparks.geometry.userData.basePositions) {
+                const positions = sparks.geometry.attributes.position.array;
+                const basePositions = sparks.geometry.userData.basePositions;
+                const phases = sparks.geometry.userData.phases;
+
+                for (let i = 0; i < positions.length / 3; i++) {
+                    const phase = phases[i];
+                    // Orbit around the ball
+                    positions[i * 3]     = basePositions[i * 3] + Math.sin(elapsed * 3 + phase) * 0.1;
+                    positions[i * 3 + 1] = basePositions[i * 3 + 1] + Math.sin(elapsed * 2 + phase) * 0.12;
+                    positions[i * 3 + 2] = basePositions[i * 3 + 2] + Math.cos(elapsed * 3 + phase) * 0.1;
+                }
+                sparks.geometry.attributes.position.needsUpdate = true;
+
+                // Red ↔ white color cycling
+                const colorT = (Math.sin(elapsed * 2) + 1) * 0.5;
+                sparks.material.color.lerpColors(
+                    new THREE.Color(0xff2222),
+                    new THREE.Color(0xffffff),
+                    colorT
+                );
+            }
+        }
+
+        // Subtle scale wobble on the model mesh
+        if (pokeballGroup.userData.model) {
+            const m = pokeballGroup.userData.model;
+            if (!m.userData.baseScale) m.userData.baseScale = m.scale.x;
+            const wobble = 1 + Math.sin(elapsed * 3) * 0.015;
+            const s = m.userData.baseScale * wobble;
+            m.scale.set(s, s, s);
         }
     }
 };

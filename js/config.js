@@ -129,6 +129,7 @@ const QUALITY_PRESETS = {
             ember: 30,
             sparkle: 40,
             'rainbow-trail': 300,
+            'pokeball-spark': 30,
             skipFrames: 0  // Update every frame
         },
         effects: {
@@ -157,6 +158,7 @@ const QUALITY_PRESETS = {
             ember: 15,
             sparkle: 20,
             'rainbow-trail': 150,
+            'pokeball-spark': 18,
             skipFrames: 1  // Update every other frame
         },
         effects: {
@@ -185,6 +187,7 @@ const QUALITY_PRESETS = {
             ember: 10,
             sparkle: 10,
             'rainbow-trail': 75,
+            'pokeball-spark': 10,
             skipFrames: 2  // Update every third frame
         },
         effects: {

@@ -87,6 +87,10 @@ function init() {
     createLights();
     createFloor();
     setLoadProgress(55, 'Creating player...');
+    // Preload GLB models early so they're cached before skins are built
+    if (typeof GLBLoader !== 'undefined') {
+        GLBLoader.preload('pokeball.glb');
+    }
     createPlayer();
     createSidePillars();
     setLoadProgress(70, 'Generating particles...');
