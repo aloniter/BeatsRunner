@@ -21,6 +21,14 @@ const Storage = {
         FALAFEL_BALL_EQUIPPED: 'beat-runner-falafel-ball-equipped',
         POKEBALL_OWNED: 'beat-runner-pokeball-owned',
         POKEBALL_EQUIPPED: 'beat-runner-pokeball-equipped',
+        EYE_BALL_OWNED: 'beat-runner-eye-ball-owned',
+        EYE_BALL_EQUIPPED: 'beat-runner-eye-ball-equipped',
+        SOCCER_BALL_OWNED: 'beat-runner-soccer-ball-owned',
+        SOCCER_BALL_EQUIPPED: 'beat-runner-soccer-ball-equipped',
+        BASKETBALL_OWNED: 'beat-runner-basketball-owned',
+        BASKETBALL_EQUIPPED: 'beat-runner-basketball-equipped',
+        FURRY_BALL_OWNED: 'beat-runner-furry-ball-owned',
+        FURRY_BALL_EQUIPPED: 'beat-runner-furry-ball-equipped',
         EQUIPPED_SKIN: 'beat-runner-equipped-skin'
     },
 

@@ -3,6 +3,8 @@
 // ========================================
 
 const previewScenes = new Map();
+const PREVIEW_FULL_TURN = Math.PI * 2;
+const PREVIEW_EYE_SPIN_SPEED = PREVIEW_FULL_TURN / 2.4;
 
 function setupDiscoPreview(canvas, itemId) {
     if (!canvas) return;
@@ -14,28 +16,30 @@ function setupDiscoPreview(canvas, itemId) {
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.92;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 20);
     camera.position.set(0, 0.1, 2.2);
     camera.lookAt(0, 0, 0);
 
-    const { group, core, tiles, innerGlow, outerGlow, beams } = buildDiscoBall(0.45, false);
+    const { group } = buildDiscoBall(0.45, false);
     group.scale.set(0.85, 0.85, 0.85);
     scene.add(group);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 1.0);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.82);
     scene.add(ambient);
-    const pinkLight = new THREE.PointLight(0xff66ff, 1.4, 6);
+    const pinkLight = new THREE.PointLight(0xff66ff, 1.02, 8);
     pinkLight.position.set(-1, 1.2, 2);
     scene.add(pinkLight);
-    const cyanLight = new THREE.PointLight(0x66ffff, 1.4, 6);
+    const cyanLight = new THREE.PointLight(0x66ffff, 0.98, 8);
     cyanLight.position.set(1, -1, 2);
     scene.add(cyanLight);
 
     previewScenes.set(itemId, {
-        renderer, scene, camera, group, core, tiles, innerGlow, outerGlow, beams, canvas,
-        colorIndex: 0, colorTransition: 0, type: 'disco'
+        renderer, scene, camera, group, canvas,
+        type: 'disco'
     });
     resizeDiscoPreview();
 }
@@ -50,6 +54,8 @@ function setupFirePreview(canvas, itemId) {
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.92;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 20);
@@ -86,6 +92,8 @@ function setupRainbowPreview(canvas, itemId) {
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.92;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 20);
@@ -123,6 +131,8 @@ function setupFalafelPreview(canvas, itemId) {
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.92;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 20);
@@ -159,6 +169,8 @@ function setupPokeballPreview(canvas, itemId) {
     });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.92;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 20);
@@ -169,18 +181,170 @@ function setupPokeballPreview(canvas, itemId) {
     group.scale.set(0.85, 0.85, 0.85);
     scene.add(group);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 1.0);
+    const ambient = new THREE.AmbientLight(0xffffff, 0.95);
     scene.add(ambient);
-    const redLight = new THREE.PointLight(0xff2222, 1.6, 6);
+    const redLight = new THREE.PointLight(0xff4444, 1.18, 8);
     redLight.position.set(-1, 1.2, 2);
     scene.add(redLight);
-    const whiteLight = new THREE.PointLight(0xffffff, 1.2, 6);
+    const whiteLight = new THREE.PointLight(0xffffff, 0.98, 8);
     whiteLight.position.set(1, -1, 2);
     scene.add(whiteLight);
 
     previewScenes.set(itemId, {
         renderer, scene, camera, group, innerGlow, outerGlow, sparks, canvas,
         type: 'pokeball'
+    });
+    resizeDiscoPreview();
+}
+
+function setupEyePreview(canvas, itemId) {
+    if (!canvas) return;
+    const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'low-power'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.92;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 20);
+    camera.position.set(0, 0.1, 2.2);
+    camera.lookAt(0, 0, 0);
+
+    const { group } = buildEyeBallSkin(0.45, false);
+    group.scale.set(0.85, 0.85, 0.85);
+    scene.add(group);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambient);
+    const keyLight = new THREE.PointLight(0x88ccff, 1.05, 8);
+    keyLight.position.set(-1, 1.2, 2);
+    scene.add(keyLight);
+    const fillLight = new THREE.PointLight(0xffffff, 0.92, 8);
+    fillLight.position.set(1, -1, 2);
+    scene.add(fillLight);
+
+    previewScenes.set(itemId, {
+        renderer, scene, camera, group, canvas,
+        type: 'eye'
+    });
+    resizeDiscoPreview();
+}
+
+function setupSoccerPreview(canvas, itemId) {
+    if (!canvas) return;
+    const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'low-power'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.92;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 20);
+    camera.position.set(0, 0.1, 2.2);
+    camera.lookAt(0, 0, 0);
+
+    const { group } = buildSoccerBallSkin(0.45, false);
+    group.scale.set(0.85, 0.85, 0.85);
+    scene.add(group);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+    scene.add(ambient);
+    const keyLight = new THREE.PointLight(0xffffff, 1.0, 8);
+    keyLight.position.set(-1, 1.2, 2);
+    scene.add(keyLight);
+    const fillLight = new THREE.PointLight(0x88ccff, 0.85, 8);
+    fillLight.position.set(1, -1, 2);
+    scene.add(fillLight);
+
+    previewScenes.set(itemId, {
+        renderer, scene, camera, group, canvas,
+        type: 'soccer'
+    });
+    resizeDiscoPreview();
+}
+
+function setupBasketballPreview(canvas, itemId) {
+    if (!canvas) return;
+    const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'low-power'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.92;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 20);
+    camera.position.set(0, 0.1, 2.2);
+    camera.lookAt(0, 0, 0);
+
+    const { group } = buildBasketballSkin(0.45, false);
+    group.scale.set(0.85, 0.85, 0.85);
+    scene.add(group);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.82);
+    scene.add(ambient);
+    const keyLight = new THREE.PointLight(0xff8844, 1.06, 8);
+    keyLight.position.set(-1, 1.2, 2);
+    scene.add(keyLight);
+    const fillLight = new THREE.PointLight(0xffffff, 0.9, 8);
+    fillLight.position.set(1, -1, 2);
+    scene.add(fillLight);
+
+    previewScenes.set(itemId, {
+        renderer, scene, camera, group, canvas,
+        type: 'basketball'
+    });
+    resizeDiscoPreview();
+}
+
+function setupFurryPreview(canvas, itemId) {
+    if (!canvas) return;
+    const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'low-power'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.92;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 20);
+    camera.position.set(0, 0.1, 2.2);
+    camera.lookAt(0, 0, 0);
+
+    const { group } = buildFurryBallSkin(0.45, false);
+    group.scale.set(0.85, 0.85, 0.85);
+    scene.add(group);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.78);
+    scene.add(ambient);
+    const keyLight = new THREE.PointLight(0xffc58a, 0.96, 8);
+    keyLight.position.set(-1, 1.2, 2);
+    scene.add(keyLight);
+    const fillLight = new THREE.PointLight(0xffffff, 0.84, 8);
+    fillLight.position.set(1, -1, 2);
+    scene.add(fillLight);
+
+    previewScenes.set(itemId, {
+        renderer, scene, camera, group, canvas,
+        type: 'furry'
     });
     resizeDiscoPreview();
 }
@@ -203,6 +367,14 @@ function renderDiscoPreview(delta, elapsed) {
             renderFalafelPreviewItem(preview, delta, elapsed);
         } else if (preview.type === 'pokeball') {
             renderPokeballPreviewItem(preview, delta, elapsed);
+        } else if (preview.type === 'eye') {
+            renderEyePreviewItem(preview, delta, elapsed);
+        } else if (preview.type === 'soccer') {
+            renderSoccerPreviewItem(preview, delta, elapsed);
+        } else if (preview.type === 'basketball') {
+            renderBasketballPreviewItem(preview, delta, elapsed);
+        } else if (preview.type === 'furry') {
+            renderFurryPreviewItem(preview, delta, elapsed);
         } else {
             renderDiscoPreviewItem(preview, delta, elapsed);
         }
@@ -211,40 +383,11 @@ function renderDiscoPreview(delta, elapsed) {
 }
 
 function renderDiscoPreviewItem(preview, delta, elapsed) {
-    // Rotation
-    preview.group.rotation.y += delta * 0.55;
+    preview.group.rotation.y += delta * 0.8;
+    preview.group.scale.set(0.85, 0.85, 0.85);
 
-    // Pulse effect
-    const pulse = 1 + Math.sin(elapsed * 2.2) * 0.025;
-    preview.group.scale.set(0.85 * pulse, 0.85 * pulse, 0.85 * pulse);
-
-    // Static silver colors (traditional disco ball)
-    const SILVER_COLOR = new THREE.Color(0xc0c0c0);
-    const LIGHT_SILVER = new THREE.Color(0xe8e8e8);
-    const WHITE = new THREE.Color(0xffffff);
-
-    // Apply colors and intensity with subtle beat response
-    const beatPhase = Math.abs(Math.sin(elapsed * 2.2));
-    if (preview.core && preview.core.material) {
-        preview.core.material.emissive.copy(SILVER_COLOR);
-        preview.core.material.emissiveIntensity = 0.8 + beatPhase * 0.4;
-    }
-    if (preview.tiles && preview.tiles.material) {
-        preview.tiles.material.emissive.copy(SILVER_COLOR);
-        preview.tiles.material.emissiveIntensity = 0.6 + beatPhase * 0.3;
-    }
-    if (preview.innerGlow && preview.innerGlow.material) {
-        preview.innerGlow.material.color.copy(LIGHT_SILVER);
-        preview.innerGlow.material.opacity = 0.2 + beatPhase * 0.15;
-    }
-    if (preview.outerGlow && preview.outerGlow.material) {
-        preview.outerGlow.material.color.copy(WHITE);
-        preview.outerGlow.material.opacity = 0.12 + beatPhase * 0.1;
-    }
-    if (preview.beams && preview.beams.material) {
-        preview.beams.material.color.copy(LIGHT_SILVER);
-        // Rotate beams
-        preview.beams.rotation.y = elapsed * 1.2;
+    if (preview.group.userData.mixer) {
+        preview.group.userData.mixer.update(delta);
     }
 }
 
@@ -460,35 +603,46 @@ function renderPokeballPreviewItem(preview, delta, elapsed) {
     // Spin the pokéball
     preview.group.rotation.y += delta * 0.7;
 
-    // Subtle pulse
-    const pulse = 1 + Math.sin(elapsed * 2.4) * 0.03;
-    preview.group.scale.set(0.85 * pulse, 0.85 * pulse, 0.85 * pulse);
-
-    // Glow pulse
-    const beatPhase = Math.abs(Math.sin(elapsed * 2.4));
-    if (preview.innerGlow && preview.innerGlow.material) {
-        preview.innerGlow.material.opacity = 0.22 + beatPhase * 0.12;
-    }
-    if (preview.outerGlow && preview.outerGlow.material) {
-        preview.outerGlow.material.opacity = 0.12 + beatPhase * 0.06;
-    }
-
-    // Animate energy sparks in preview
-    if (preview.sparks && preview.sparks.geometry && preview.sparks.geometry.userData.basePositions) {
-        const positions = preview.sparks.geometry.attributes.position.array;
-        const basePositions = preview.sparks.geometry.userData.basePositions;
-        const phases = preview.sparks.geometry.userData.phases;
-
-        for (let i = 0; i < positions.length / 3; i++) {
-            const phase = phases[i];
-            positions[i * 3]     = basePositions[i * 3] + Math.sin(elapsed * 2.5 + phase) * 0.08;
-            positions[i * 3 + 1] = basePositions[i * 3 + 1] + Math.sin(elapsed * 2 + phase) * 0.1;
-            positions[i * 3 + 2] = basePositions[i * 3 + 2] + Math.cos(elapsed * 2.5 + phase) * 0.08;
-        }
-        preview.sparks.geometry.attributes.position.needsUpdate = true;
-    }
+    // Keep fixed scale for a clean model-only preview.
+    preview.group.scale.set(0.85, 0.85, 0.85);
 
     // Update AnimationMixer if GLB has embedded animations
+    if (preview.group.userData.mixer) {
+        preview.group.userData.mixer.update(delta);
+    }
+}
+
+function renderEyePreviewItem(preview, delta, elapsed) {
+    preview.group.rotation.y = (preview.group.rotation.y + delta * PREVIEW_EYE_SPIN_SPEED) % PREVIEW_FULL_TURN;
+    preview.group.scale.set(0.85, 0.85, 0.85);
+
+    if (preview.group.userData.mixer) {
+        preview.group.userData.mixer.update(delta);
+    }
+}
+
+function renderSoccerPreviewItem(preview, delta, elapsed) {
+    preview.group.rotation.y += delta * 0.95;
+    preview.group.scale.set(0.85, 0.85, 0.85);
+
+    if (preview.group.userData.mixer) {
+        preview.group.userData.mixer.update(delta);
+    }
+}
+
+function renderBasketballPreviewItem(preview, delta, elapsed) {
+    preview.group.rotation.y += delta * 0.9;
+    preview.group.scale.set(0.85, 0.85, 0.85);
+
+    if (preview.group.userData.mixer) {
+        preview.group.userData.mixer.update(delta);
+    }
+}
+
+function renderFurryPreviewItem(preview, delta, elapsed) {
+    preview.group.rotation.y += delta * 0.75;
+    preview.group.scale.set(0.85, 0.85, 0.85);
+
     if (preview.group.userData.mixer) {
         preview.group.userData.mixer.update(delta);
     }

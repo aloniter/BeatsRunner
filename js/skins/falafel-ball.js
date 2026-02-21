@@ -159,12 +159,7 @@ function applyFalafelBallSkin() {
     if (!player || !falafelBallGroup) return;
     const equipped = GameState.falafelBallOwned && GameState.falafelBallEquipped;
     falafelBallGroup.visible = equipped;
-    // Only show default if no skin is equipped
-    const anyEquipped = equipped ||
-        (GameState.discoBallOwned && GameState.discoBallEquipped) ||
-        (GameState.fireBallOwned && GameState.fireBallEquipped) ||
-        (GameState.rainbowOrbOwned && GameState.rainbowOrbEquipped) ||
-        (GameState.pokeballOwned && GameState.pokeballEquipped);
+    const anyEquipped = isAnySkinEquipped();
     if (playerCore) playerCore.visible = !anyEquipped;
     if (playerGlow) playerGlow.visible = !anyEquipped;
     if (playerRing) playerRing.visible = !anyEquipped;

@@ -118,6 +118,25 @@ function applySkins() {
     });
 }
 
+/**
+ * Check if a specific skin is currently equipped
+ * @param {string} skinId - Skin ID (kebab-case)
+ * @returns {boolean}
+ */
+function isSkinEquipped(skinId) {
+    const ownedKey = getOwnedKey(skinId);
+    const equippedKey = getEquippedKey(skinId);
+    return Boolean(GameState[ownedKey] && GameState[equippedKey]);
+}
+
+/**
+ * Check if any owned skin is equipped
+ * @returns {boolean}
+ */
+function isAnySkinEquipped() {
+    return getAllSkins().some(skin => isSkinEquipped(skin.id));
+}
+
 // ========================================
 // Purchase Functions (Generic)
 // ========================================

@@ -131,12 +131,7 @@ function applyFireBallSkin() {
     if (!player || !fireBallGroup) return;
     const equipped = GameState.fireBallOwned && GameState.fireBallEquipped;
     fireBallGroup.visible = equipped;
-    // Only show default if no skin is equipped
-    const anyEquipped = equipped ||
-        (GameState.discoBallOwned && GameState.discoBallEquipped) ||
-        (GameState.rainbowOrbOwned && GameState.rainbowOrbEquipped) ||
-        (GameState.falafelBallOwned && GameState.falafelBallEquipped) ||
-        (GameState.pokeballOwned && GameState.pokeballEquipped);
+    const anyEquipped = isAnySkinEquipped();
     if (playerCore) playerCore.visible = !anyEquipped;
     if (playerGlow) playerGlow.visible = !anyEquipped;
     if (playerRing) playerRing.visible = !anyEquipped;

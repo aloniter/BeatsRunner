@@ -16,8 +16,7 @@ function init() {
     setLoadProgress(10, 'Loading saved data...');
     loadOrbs();
     loadTopDistance();
-    loadDiscoBallState();
-    loadFireBallState();
+    loadAllSkinStates();
 
     // Initialize quality settings based on device capabilities
     setLoadProgress(20, 'Detecting device...');
@@ -50,6 +49,8 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, qualitySettings.pixelRatio));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = CONFIG.ORB_VISUALS.toneMapping;
+    renderer.toneMappingExposure = CONFIG.ORB_VISUALS.exposure;
 
     // ========================================
     // POST-PROCESSING SETUP - Quality-Aware Bloom
@@ -89,7 +90,15 @@ function init() {
     setLoadProgress(55, 'Creating player...');
     // Preload GLB models early so they're cached before skins are built
     if (typeof GLBLoader !== 'undefined') {
-        GLBLoader.preload('pokeball.glb');
+        const glbSkinAssets = [
+            'assets/skins/pokeball.glb',
+            'assets/skins/anatomical_eye_ball.glb',
+            'assets/skins/disco_ball.glb',
+            'assets/skins/soccer_ball.glb',
+            'assets/skins/basketball.glb',
+            'assets/skins/furry_ball.glb'
+        ];
+        glbSkinAssets.forEach(path => GLBLoader.preload(path));
     }
     createPlayer();
     createSidePillars();
@@ -181,11 +190,31 @@ class CameraShake {
 // LIGHTS
 // ========================================
 function createLights() {
-    // Ambient light
-    const ambient = new THREE.AmbientLight(0x333355, 0.6);
-    scene.add(ambient);
+    // Hemisphere light for a baseline neon-style ambient gradient
+    const hemiLight = new THREE.HemisphereLight(0x2233aa, 0x110033, 1.2);
+    hemiLight.position.set(0, 10, 0);
+    scene.add(hemiLight);
 
-    // Hemisphere light for better ambient
-    const hemi = new THREE.HemisphereLight(0x0066ff, 0xff00ff, 0.3);
-    scene.add(hemi);
+    // Key directional light for strong form definition on orbs and pillars
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.5);
+    keyLight.position.set(5, 8, -5); // Positioned high, front-right relative to player
+    keyLight.castShadow = true;
+
+    // Optimize shadow map
+    keyLight.shadow.mapSize.width = qualitySettings.presetName === 'LOW' ? 512 : 1024;
+    keyLight.shadow.mapSize.height = qualitySettings.presetName === 'LOW' ? 512 : 1024;
+    keyLight.shadow.camera.near = 0.5;
+    keyLight.shadow.camera.far = 50;
+    // Tight shadow camera bounds for player area only (we don't need shadows far away)
+    keyLight.shadow.camera.left = -5;
+    keyLight.shadow.camera.right = 5;
+    keyLight.shadow.camera.top = 5;
+    keyLight.shadow.camera.bottom = -5;
+
+    scene.add(keyLight);
+
+    // Optional rim light from behind (cyan/pink)
+    const rimLight = new THREE.DirectionalLight(0xff00ff, 1.5);
+    rimLight.position.set(-5, 3, 10); // Behind the player
+    scene.add(rimLight);
 }

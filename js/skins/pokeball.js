@@ -1,85 +1,30 @@
 // ========================================
-// POKEBALL SKIN - GLB Model with Epic Effects
+// POKEBALL SKIN - Clean GLB Model
 // ========================================
 // Uses GLBLoader cache so the .glb file is fetched only once.
-// Creates glow layers + energy sparks synchronously (instant visual),
-// then loads the GLB model via the shared cache. If the cache already
-// has the model (e.g. preview after player), it clones instantly.
+// Renders only the model itself (no glow shells or particle effects).
 
-const POKEBALL_GLB_URL = 'pokeball.glb';
+const POKEBALL_GLB_URL = 'assets/skins/pokeball.glb';
+const POKEBALL_PITCH_OFFSET = -0.22;
 
 /**
- * Build the Pokéball skin group. Glow layers and spark particles are created
- * synchronously so there's always something to render. The GLB model is loaded
- * via GLBLoader (cached / deduplicated) and attached when ready.
+ * Build the Pokéball skin group.
+ * The GLB model is loaded via GLBLoader (cached / deduplicated) and attached when ready.
  *
  * @param {number} radius       - Ball radius (0.45 for player, same for preview)
  * @param {boolean} assignGlobals - Whether to assign to the `pokeballGroup` global
- * @returns {{ group: THREE.Group, innerGlow: THREE.Mesh, outerGlow: THREE.Mesh, sparks: THREE.Points }}
+ * @returns {{ group: THREE.Group, innerGlow: null, outerGlow: null, sparks: null }}
  */
 function buildPokeballSkin(radius = 1, assignGlobals = false) {
     const group = new THREE.Group();
-
-    // ── children[0]: Inner glow — red halo that pulses with the beat ──
-    const innerGlowGeo = new THREE.SphereGeometry(radius * 1.1, 16, 12);
-    const innerGlowMat = new THREE.MeshBasicMaterial({
-        color: 0xff2222,
-        transparent: true,
-        opacity: 0.22,
-        blending: THREE.AdditiveBlending
-    });
-    const innerGlow = new THREE.Mesh(innerGlowGeo, innerGlowMat);
-    group.add(innerGlow);
-
-    // ── children[1]: Outer glow — wider, softer red aureole ──
-    const outerGlowGeo = new THREE.SphereGeometry(radius * 1.3, 16, 12);
-    const outerGlowMat = new THREE.MeshBasicMaterial({
-        color: 0xff4444,
-        transparent: true,
-        opacity: 0.12,
-        blending: THREE.AdditiveBlending
-    });
-    const outerGlow = new THREE.Mesh(outerGlowGeo, outerGlowMat);
-    group.add(outerGlow);
-
-    // ── children[2]: Energy sparks — orbiting particle system ──
-    const sparkCount = QualityManager.getParticleCount('pokeball-spark');
-    const sparkGeo = new THREE.BufferGeometry();
-    const sparkPositions = new Float32Array(sparkCount * 3);
-    const sparkBasePositions = new Float32Array(sparkCount * 3);
-    const sparkPhases = new Float32Array(sparkCount);
-
-    for (let i = 0; i < sparkCount; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const height = (Math.random() - 0.5) * 2;
-        const r = radius + 0.15 + Math.random() * 0.3;
-        sparkPositions[i * 3]     = Math.cos(angle) * r;
-        sparkPositions[i * 3 + 1] = height * 0.6;
-        sparkPositions[i * 3 + 2] = Math.sin(angle) * r;
-        sparkBasePositions[i * 3]     = sparkPositions[i * 3];
-        sparkBasePositions[i * 3 + 1] = sparkPositions[i * 3 + 1];
-        sparkBasePositions[i * 3 + 2] = sparkPositions[i * 3 + 2];
-        sparkPhases[i] = Math.random() * Math.PI * 2;
-    }
-
-    sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPositions, 3));
-    sparkGeo.userData.basePositions = sparkBasePositions;
-    sparkGeo.userData.phases = sparkPhases;
-
-    const sparkMat = new THREE.PointsMaterial({
-        color: 0xff4444,
-        size: 0.07,
-        transparent: true,
-        opacity: 0.85,
-        blending: THREE.AdditiveBlending
-    });
-    const sparks = new THREE.Points(sparkGeo, sparkMat);
-    group.add(sparks);
 
     // ── Loading state ──
     group.userData.modelReady = false;
     group.userData.model = null;
     group.userData.mixer = null;
+    group.userData.innerGlow = null;
+    group.userData.outerGlow = null;
+    group.userData.sparks = null;
 
     // ── Load GLB via shared cache ──
     _loadPokeballModel(group, radius);
@@ -88,7 +33,7 @@ function buildPokeballSkin(radius = 1, assignGlobals = false) {
         pokeballGroup = group;
     }
 
-    return { group, innerGlow, outerGlow, sparks };
+    return { group, innerGlow: null, outerGlow: null, sparks: null };
 }
 
 /**
@@ -133,7 +78,7 @@ function _loadPokeballModel(group, radius) {
 /**
  * Scale, center, and add the loaded GLB model to the skin group.
  * FIXED: Box3 is recalculated AFTER scaling to avoid centering offset bug.
- * Materials are preserved — only castShadow + subtle emissive for bloom.
+ * Materials are preserved and brightened for readability in gameplay.
  * @param {THREE.Group} group
  * @param {THREE.Group} model
  * @param {number} radius
@@ -152,20 +97,13 @@ function _attachPokeballModel(group, model, radius) {
     const center = new THREE.Vector3();
     scaledBox.getCenter(center);
     model.position.sub(center);
+    model.rotation.x = POKEBALL_PITCH_OFFSET;
 
-    // Step 3: minimal material enhancement — preserve artist intent
+    // Step 3: preserve authored look but boost visibility in dark scenes.
     model.traverse(child => {
         if (child.isMesh) {
             child.castShadow = true;
-            if (child.material) {
-                // Subtle emissive hint so bloom picks it up
-                if (!child.material.emissive) {
-                    child.material.emissive = new THREE.Color(0x000000);
-                }
-                child.material.emissiveIntensity = Math.max(
-                    child.material.emissiveIntensity || 0, 0.1
-                );
-            }
+            GLBLoader.normalizeMaterial(child.material, typeof renderer !== 'undefined' ? renderer.capabilities.getMaxAnisotropy() : 1);
         }
     });
 
@@ -210,6 +148,8 @@ function _attachFallbackSphere(group, radius) {
     group.userData.modelReady = true;
 }
 
+
+
 // ── Public skin API (auto-wired by skin-registry naming conventions) ──
 
 /**
@@ -228,13 +168,7 @@ function applyPokeballSkin() {
     if (!player || !pokeballGroup) return;
     const equipped = GameState.pokeballOwned && GameState.pokeballEquipped;
     pokeballGroup.visible = equipped;
-
-    // Hide the default cyan sphere/glow/ring if ANY skin is equipped
-    const anyEquipped = equipped ||
-        (GameState.discoBallOwned && GameState.discoBallEquipped) ||
-        (GameState.fireBallOwned && GameState.fireBallEquipped) ||
-        (GameState.rainbowOrbOwned && GameState.rainbowOrbEquipped) ||
-        (GameState.falafelBallOwned && GameState.falafelBallEquipped);
+    const anyEquipped = isAnySkinEquipped();
     if (playerCore) playerCore.visible = !anyEquipped;
     if (playerGlow) playerGlow.visible = !anyEquipped;
     if (playerRing) playerRing.visible = !anyEquipped;

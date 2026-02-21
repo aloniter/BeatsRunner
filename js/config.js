@@ -100,6 +100,16 @@ const CONFIG = {
         ]
     },
 
+    // Orb visual tuning
+    ORB_VISUALS: {
+        exposure: 1.1,                 // Tone mapping exposure
+        toneMapping: THREE.ACESFilmicToneMapping, // Tone mapping algorithm
+        roughnessRange: [0.15, 0.85],  // Clamped roughness range
+        metalnessRange: [0.0, 0.6],    // Clamped metalness range
+        emissiveTint: 0x222222,        // Base emissive tint applied to all Standard/Physical orb materials
+        emissiveIntensity: 0.8         // Multiplier for the emissive glow
+    },
+
     // Gameflow timing (milliseconds unless noted)
     TIMING: {
         DEATH_SCREEN_DELAY: 500,        // ms after gameOver() before death screen appears

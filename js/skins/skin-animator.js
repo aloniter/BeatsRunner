@@ -3,6 +3,9 @@
 // Moves per-skin animation code out of the main loop
 // ========================================
 
+const FULL_TURN = Math.PI * 2;
+const EYE_BALL_SPIN_SPEED = FULL_TURN / 2.4; // clear 360 cycle every ~2.4s
+
 const SkinAnimator = {
     /**
      * Update the currently active skin's animations.
@@ -14,14 +17,18 @@ const SkinAnimator = {
         this.updateRainbowOrb(delta, elapsed);
         this.updateFalafelBall(delta, elapsed);
         this.updatePokeball(delta, elapsed);
+        this.updateEyeBall(delta, elapsed);
+        this.updateSoccerBall(delta, elapsed);
+        this.updateBasketball(delta, elapsed);
+        this.updateFurryBall(delta, elapsed);
     },
 
     // --- Disco Ball ---
     updateDiscoBall(delta, elapsed) {
         if (!discoBallGroup || !discoBallGroup.visible) return;
         discoBallGroup.rotation.y += delta * 0.9;
-        if (discoBallBeams) {
-            discoBallBeams.rotation.y += delta * 1.5;
+        if (discoBallGroup.userData.mixer) {
+            discoBallGroup.userData.mixer.update(delta);
         }
     },
 
@@ -165,14 +172,10 @@ const SkinAnimator = {
 
     // --- Pokeball ---
     /**
-     * Spin the Pokéball, pulse glow layers, animate energy sparks, update
-     * AnimationMixer (if the GLB has embedded clips), and wobble on the beat.
-     * children[0]=innerGlow, children[1]=outerGlow, children[2]=sparks,
-     * children[3+]=GLB model (when loaded).
+     * Spin the Pokéball and update embedded GLB animations (if present).
      * @param {number} delta - Seconds since last frame
-     * @param {number} elapsed - Total elapsed seconds
      */
-    updatePokeball(delta, elapsed) {
+    updatePokeball(delta) {
         if (!pokeballGroup || !pokeballGroup.visible) return;
 
         // Rotation
@@ -182,52 +185,49 @@ const SkinAnimator = {
         if (pokeballGroup.userData.mixer) {
             pokeballGroup.userData.mixer.update(delta);
         }
+    },
 
-        // Glow pulse
-        const beatPulse = Math.abs(Math.sin(elapsed * 3));
-        const innerGlow = pokeballGroup.children[0];
-        const outerGlow = pokeballGroup.children[1];
-        if (innerGlow && innerGlow.material) {
-            innerGlow.material.opacity = 0.18 + beatPulse * 0.14;
+    // --- Eye Ball ---
+    updateEyeBall(delta) {
+        if (!eyeBallGroup || !eyeBallGroup.visible) return;
+
+        eyeBallGroup.rotation.y = (eyeBallGroup.rotation.y + delta * EYE_BALL_SPIN_SPEED) % FULL_TURN;
+
+        if (eyeBallGroup.userData.mixer) {
+            eyeBallGroup.userData.mixer.update(delta);
         }
-        if (outerGlow && outerGlow.material) {
-            outerGlow.material.opacity = 0.08 + beatPulse * 0.08;
+    },
+
+    // --- Soccer Ball ---
+    updateSoccerBall(delta) {
+        if (!soccerBallGroup || !soccerBallGroup.visible) return;
+
+        soccerBallGroup.rotation.y += delta * 1.05;
+
+        if (soccerBallGroup.userData.mixer) {
+            soccerBallGroup.userData.mixer.update(delta);
         }
+    },
 
-        // Animate energy sparks (children[2] = Points)
-        if (QualityManager.shouldUpdateParticles()) {
-            const sparks = pokeballGroup.children[2];
-            if (sparks && sparks.geometry && sparks.geometry.userData.basePositions) {
-                const positions = sparks.geometry.attributes.position.array;
-                const basePositions = sparks.geometry.userData.basePositions;
-                const phases = sparks.geometry.userData.phases;
+    // --- Basketball ---
+    updateBasketball(delta) {
+        if (!basketballGroup || !basketballGroup.visible) return;
 
-                for (let i = 0; i < positions.length / 3; i++) {
-                    const phase = phases[i];
-                    // Orbit around the ball
-                    positions[i * 3]     = basePositions[i * 3] + Math.sin(elapsed * 3 + phase) * 0.1;
-                    positions[i * 3 + 1] = basePositions[i * 3 + 1] + Math.sin(elapsed * 2 + phase) * 0.12;
-                    positions[i * 3 + 2] = basePositions[i * 3 + 2] + Math.cos(elapsed * 3 + phase) * 0.1;
-                }
-                sparks.geometry.attributes.position.needsUpdate = true;
+        basketballGroup.rotation.y += delta * 1.0;
 
-                // Red ↔ white color cycling
-                const colorT = (Math.sin(elapsed * 2) + 1) * 0.5;
-                sparks.material.color.lerpColors(
-                    new THREE.Color(0xff2222),
-                    new THREE.Color(0xffffff),
-                    colorT
-                );
-            }
+        if (basketballGroup.userData.mixer) {
+            basketballGroup.userData.mixer.update(delta);
         }
+    },
 
-        // Subtle scale wobble on the model mesh
-        if (pokeballGroup.userData.model) {
-            const m = pokeballGroup.userData.model;
-            if (!m.userData.baseScale) m.userData.baseScale = m.scale.x;
-            const wobble = 1 + Math.sin(elapsed * 3) * 0.015;
-            const s = m.userData.baseScale * wobble;
-            m.scale.set(s, s, s);
+    // --- Furry Ball ---
+    updateFurryBall(delta) {
+        if (!furryBallGroup || !furryBallGroup.visible) return;
+
+        furryBallGroup.rotation.y += delta * 0.8;
+
+        if (furryBallGroup.userData.mixer) {
+            furryBallGroup.userData.mixer.update(delta);
         }
     }
 };

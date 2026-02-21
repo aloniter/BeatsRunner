@@ -114,6 +114,22 @@ function createPlayer() {
     pokeballSkin.visible = false;
     group.add(pokeballSkin);
 
+    const eyeBallSkin = createEyeBallSkin();
+    eyeBallSkin.visible = false;
+    group.add(eyeBallSkin);
+
+    const soccerBallSkin = createSoccerBallSkin();
+    soccerBallSkin.visible = false;
+    group.add(soccerBallSkin);
+
+    const basketballSkin = createBasketballSkin();
+    basketballSkin.visible = false;
+    group.add(basketballSkin);
+
+    const furryBallSkin = createFurryBallSkin();
+    furryBallSkin.visible = false;
+    group.add(furryBallSkin);
+
     group.position.set(0, CONFIG.GROUND_Y, 0);
     scene.add(group);
     player = group;

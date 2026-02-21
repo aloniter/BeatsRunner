@@ -134,7 +134,7 @@ const BeatManager = {
             // Apply static silver to all components
             if (discoBallCore && discoBallCore.material) {
                 discoBallCore.material.emissive.setHex(SILVER_COLOR);
-                discoBallCore.material.emissiveIntensity = 0.8 + this.intensity * 0.4; // Subtle pulse
+                discoBallCore.material.emissiveIntensity = 0.32 + this.intensity * 0.2;
             }
 
             if (discoBallTiles && discoBallTiles.material) {

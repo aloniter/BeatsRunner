@@ -42,6 +42,38 @@ const SKIN_REGISTRY = {
         description: 'Catch the beat. Gotta run \'em all.',
         category: 'skins',
         order: 5
+    },
+    'eye-ball': {
+        id: 'eye-ball',
+        name: 'Eye Ball',
+        price: 150,
+        description: 'Keep your eyes on the beat.',
+        category: 'skins',
+        order: 6
+    },
+    'soccer-ball': {
+        id: 'soccer-ball',
+        name: 'Soccer Ball',
+        price: 140,
+        description: 'Street precision. Clean spin, sharp touch.',
+        category: 'skins',
+        order: 7
+    },
+    'basketball': {
+        id: 'basketball',
+        name: 'Basketball',
+        price: 145,
+        description: 'Court energy with a strong bounce look.',
+        category: 'skins',
+        order: 8
+    },
+    'furry-ball': {
+        id: 'furry-ball',
+        name: 'Furry Ball',
+        price: 180,
+        description: 'Soft chaos with heavy style.',
+        category: 'skins',
+        order: 9
     }
 };
 

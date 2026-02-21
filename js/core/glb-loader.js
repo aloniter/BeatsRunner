@@ -39,7 +39,7 @@ const GLBLoader = {
      * - If already loading: returns the existing in-flight Promise (no duplicate HTTP).
      * - Otherwise: starts a new load.
      *
-     * @param {string} url - Path to the .glb file (e.g. 'pokeball.glb')
+     * @param {string} url - Path to the .glb file (e.g. 'assets/skins/pokeball.glb')
      * @param {function} [onProgress] - Optional progress callback (xhr) => {}
      * @returns {Promise<{ scene: THREE.Group, animations: THREE.AnimationClip[] }>}
      */
@@ -146,5 +146,69 @@ const GLBLoader = {
     /** Number of cached models. */
     get size() {
         return this._cache.size;
+    },
+
+    /**
+     * Normalizes a material or an array of materials to ensure consistent
+     * rendering for orbs across the game. Limits extreme roughness/metalness,
+     * ensures proper color space, and injects a subtle emissive tint.
+     * @param {THREE.Material|THREE.Material[]} material 
+     * @param {number} maxAnisotropy 
+     */
+    normalizeMaterial(material, maxAnisotropy = 1) {
+        if (!material) return;
+
+        if (Array.isArray(material)) {
+            material.forEach(m => this.normalizeMaterial(m, maxAnisotropy));
+            return;
+        }
+
+        // If it's a basic material, we might consider upgrading it, but usually, 
+        // models authoring basic materials intentionally lack lighting responses.
+        // For GLB orbs, we should ideally work with Standard/Physical.
+        if (material.isMeshBasicMaterial) {
+            console.warn('GLBLoader: Normalizing a BasicMaterial. Consider upgrading to Standard if it needs lighting.');
+        }
+
+        const config = typeof CONFIG !== 'undefined' ? CONFIG.ORB_VISUALS : {
+            roughnessRange: [0.15, 0.85],
+            metalnessRange: [0.0, 0.6],
+            emissiveTint: 0x222222,
+            emissiveIntensity: 0.8
+        };
+
+        // Texture enhancements
+        if (material.map) {
+            material.map.colorSpace = THREE.SRGBColorSpace;
+            material.map.anisotropy = maxAnisotropy;
+        }
+        if (material.emissiveMap) {
+            material.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+        }
+
+        // Clamp physical properties to avoid "washed out" or "pure black" looks
+        if (typeof material.roughness === 'number') {
+            material.roughness = THREE.MathUtils.clamp(material.roughness, config.roughnessRange[0], config.roughnessRange[1]);
+        }
+        if (typeof material.metalness === 'number') {
+            material.metalness = THREE.MathUtils.clamp(material.metalness, config.metalnessRange[0], config.metalnessRange[1]);
+        }
+
+        // Inject subtle emissive glow if base color exists, so orbs pop in dark neon scenes
+        if (material.color && material.emissive) {
+            // Only add tint if there isn't already a strong emissive authored
+            if (material.emissive.getHex() === 0x000000 && !material.emissiveMap) {
+                material.emissive.setHex(config.emissiveTint);
+
+                // If it has a color map or base color, tint the emissive slightly towards it
+                const baseColorHex = material.map ? 0xffffff : material.color.getHex();
+                const blendedEmissive = new THREE.Color(baseColorHex).lerp(new THREE.Color(config.emissiveTint), 0.5);
+                material.emissive.copy(blendedEmissive);
+            }
+            material.emissiveIntensity = Math.max(material.emissiveIntensity || 0, config.emissiveIntensity);
+        }
+
+        material.envMapIntensity = 1.0;
+        material.needsUpdate = true;
     }
 };
