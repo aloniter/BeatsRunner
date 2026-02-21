@@ -8,7 +8,8 @@
     "test:debug": "playwright test --debug",
     "test:report": "playwright show-report",
     "dev": "http-server . -p 5000 -c-1",
-    "build-postprocessing": "rollup -c"
+    "build-postprocessing": "rollup -c",
+    "build-gltf-loader": "rollup -c rollup-gltf.config.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.45.0",
