@@ -149,6 +149,42 @@ function setupFalafelPreview(canvas, itemId) {
     resizeDiscoPreview();
 }
 
+function setupPokeballPreview(canvas, itemId) {
+    if (!canvas) return;
+    const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'low-power'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 20);
+    camera.position.set(0, 0.1, 2.2);
+    camera.lookAt(0, 0, 0);
+
+    const { group, innerGlow, outerGlow } = buildPokeballSkin(0.45, false);
+    group.scale.set(0.85, 0.85, 0.85);
+    scene.add(group);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 1.0);
+    scene.add(ambient);
+    const redLight = new THREE.PointLight(0xff2222, 1.6, 6);
+    redLight.position.set(-1, 1.2, 2);
+    scene.add(redLight);
+    const whiteLight = new THREE.PointLight(0xffffff, 1.2, 6);
+    whiteLight.position.set(1, -1, 2);
+    scene.add(whiteLight);
+
+    previewScenes.set(itemId, {
+        renderer, scene, camera, group, innerGlow, outerGlow, canvas,
+        type: 'pokeball'
+    });
+    resizeDiscoPreview();
+}
+
 function resizeDiscoPreview() {
     previewScenes.forEach((preview) => {
         const rect = preview.canvas.getBoundingClientRect();
@@ -165,6 +201,8 @@ function renderDiscoPreview(delta, elapsed) {
             renderRainbowOrbPreviewItem(preview, delta, elapsed);
         } else if (preview.type === 'falafel') {
             renderFalafelPreviewItem(preview, delta, elapsed);
+        } else if (preview.type === 'pokeball') {
+            renderPokeballPreviewItem(preview, delta, elapsed);
         } else {
             renderDiscoPreviewItem(preview, delta, elapsed);
         }
@@ -415,5 +453,23 @@ function renderFalafelPreviewItem(preview, delta, elapsed) {
             }
         }
         preview.crumbs.geometry.attributes.position.needsUpdate = true;
+    }
+}
+
+function renderPokeballPreviewItem(preview, delta, elapsed) {
+    // Spin the pokéball
+    preview.group.rotation.y += delta * 0.7;
+
+    // Subtle pulse
+    const pulse = 1 + Math.sin(elapsed * 2.4) * 0.03;
+    preview.group.scale.set(0.85 * pulse, 0.85 * pulse, 0.85 * pulse);
+
+    // Glow pulse
+    const beatPhase = Math.abs(Math.sin(elapsed * 2.4));
+    if (preview.innerGlow && preview.innerGlow.material) {
+        preview.innerGlow.material.opacity = 0.2 + beatPhase * 0.1;
+    }
+    if (preview.outerGlow && preview.outerGlow.material) {
+        preview.outerGlow.material.opacity = 0.1 + beatPhase * 0.05;
     }
 }

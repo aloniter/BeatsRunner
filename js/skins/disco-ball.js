@@ -175,7 +175,8 @@ function applyDiscoBallSkin() {
     const anyEquipped = equipped ||
         (GameState.fireBallOwned && GameState.fireBallEquipped) ||
         (GameState.rainbowOrbOwned && GameState.rainbowOrbEquipped) ||
-        (GameState.falafelBallOwned && GameState.falafelBallEquipped);
+        (GameState.falafelBallOwned && GameState.falafelBallEquipped) ||
+        (GameState.pokeballOwned && GameState.pokeballEquipped);
     if (playerCore) playerCore.visible = !anyEquipped;
     if (playerGlow) playerGlow.visible = !anyEquipped;
     if (playerRing) playerRing.visible = !anyEquipped;

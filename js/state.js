@@ -17,6 +17,8 @@ const GameState = {
     rainbowOrbEquipped: false,
     falafelBallOwned: false,
     falafelBallEquipped: false,
+    pokeballOwned: false,
+    pokeballEquipped: false,
     currentLane: 1, // Start in center
     speed: CONFIG.INITIAL_SPEED,
     lastBeatTime: 0,

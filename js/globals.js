@@ -15,6 +15,7 @@ let rainbowOrbGroup, rainbowOrbCore, rainbowOrbTrails;
 let rainbowOrbInnerGlow, rainbowOrbOuterGlow;
 let falafelBallGroup, falafelBallCore, falafelBallSesame, falafelBallSteam, falafelBallCrumbs;
 let falafelBallInnerGlow, falafelBallOuterGlow;
+let pokeballGroup;
 let obstacles = [];
 let collectibles = [];
 // Pickup arrays are owned by their respective managers:

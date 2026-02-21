@@ -163,7 +163,8 @@ function applyFalafelBallSkin() {
     const anyEquipped = equipped ||
         (GameState.discoBallOwned && GameState.discoBallEquipped) ||
         (GameState.fireBallOwned && GameState.fireBallEquipped) ||
-        (GameState.rainbowOrbOwned && GameState.rainbowOrbEquipped);
+        (GameState.rainbowOrbOwned && GameState.rainbowOrbEquipped) ||
+        (GameState.pokeballOwned && GameState.pokeballEquipped);
     if (playerCore) playerCore.visible = !anyEquipped;
     if (playerGlow) playerGlow.visible = !anyEquipped;
     if (playerRing) playerRing.visible = !anyEquipped;

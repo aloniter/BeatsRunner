@@ -19,6 +19,8 @@ const Storage = {
         RAINBOW_ORB_EQUIPPED: 'beat-runner-rainbow-orb-equipped',
         FALAFEL_BALL_OWNED: 'beat-runner-falafel-ball-owned',
         FALAFEL_BALL_EQUIPPED: 'beat-runner-falafel-ball-equipped',
+        POKEBALL_OWNED: 'beat-runner-pokeball-owned',
+        POKEBALL_EQUIPPED: 'beat-runner-pokeball-equipped',
         EQUIPPED_SKIN: 'beat-runner-equipped-skin'
     },
 

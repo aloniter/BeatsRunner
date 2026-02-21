@@ -135,7 +135,8 @@ function applyFireBallSkin() {
     const anyEquipped = equipped ||
         (GameState.discoBallOwned && GameState.discoBallEquipped) ||
         (GameState.rainbowOrbOwned && GameState.rainbowOrbEquipped) ||
-        (GameState.falafelBallOwned && GameState.falafelBallEquipped);
+        (GameState.falafelBallOwned && GameState.falafelBallEquipped) ||
+        (GameState.pokeballOwned && GameState.pokeballEquipped);
     if (playerCore) playerCore.visible = !anyEquipped;
     if (playerGlow) playerGlow.visible = !anyEquipped;
     if (playerRing) playerRing.visible = !anyEquipped;

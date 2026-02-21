@@ -13,6 +13,7 @@ const SkinAnimator = {
         this.updateFireBall(delta, elapsed);
         this.updateRainbowOrb(delta, elapsed);
         this.updateFalafelBall(delta, elapsed);
+        this.updatePokeball(delta, elapsed);
     },
 
     // --- Disco Ball ---
@@ -159,6 +160,29 @@ const SkinAnimator = {
         }
         if (falafelBallInnerGlow && falafelBallInnerGlow.material) {
             falafelBallInnerGlow.material.opacity = 0.25 + beatPulse * 0.1;
+        }
+    },
+
+    // --- Pokeball ---
+    /**
+     * Spin the Pokéball and pulse its glow layers with the beat.
+     * Glow meshes are always children[0] (innerGlow) and children[1] (outerGlow);
+     * the GLB model, if loaded, is children[2+].
+     * @param {number} delta - Seconds since last frame
+     * @param {number} elapsed - Total elapsed seconds
+     */
+    updatePokeball(delta, elapsed) {
+        if (!pokeballGroup || !pokeballGroup.visible) return;
+        pokeballGroup.rotation.y += delta * 1.2;
+
+        const beatPulse = Math.abs(Math.sin(elapsed * 3));
+        const innerGlow = pokeballGroup.children[0];
+        const outerGlow = pokeballGroup.children[1];
+        if (innerGlow && innerGlow.material) {
+            innerGlow.material.opacity = 0.18 + beatPulse * 0.12;
+        }
+        if (outerGlow && outerGlow.material) {
+            outerGlow.material.opacity = 0.08 + beatPulse * 0.06;
         }
     }
 };

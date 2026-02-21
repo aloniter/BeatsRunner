@@ -34,6 +34,14 @@ const SKIN_REGISTRY = {
         description: 'Crispy, golden, and surprisingly rhythmic. Fresh from the fryer.',
         category: 'skins',
         order: 4
+    },
+    'pokeball': {
+        id: 'pokeball',
+        name: 'Pokéball',
+        price: 150,
+        description: 'Catch the beat. Gotta run \'em all.',
+        category: 'skins',
+        order: 5
     }
 };
 

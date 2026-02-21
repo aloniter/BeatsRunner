@@ -110,6 +110,10 @@ function createPlayer() {
     falafelSkin.visible = false;
     group.add(falafelSkin);
 
+    const pokeballSkin = createPokeballSkin();
+    pokeballSkin.visible = false;
+    group.add(pokeballSkin);
+
     group.position.set(0, CONFIG.GROUND_Y, 0);
     scene.add(group);
     player = group;
