@@ -51,6 +51,11 @@ function init() {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = CONFIG.ORB_VISUALS.toneMapping;
     renderer.toneMappingExposure = CONFIG.ORB_VISUALS.exposure;
+    // Enable shadow maps on MEDIUM/HIGH — key light is already configured with castShadow + tight bounds
+    if (qualitySettings.presetName !== 'LOW') {
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    }
 
     // ========================================
     // POST-PROCESSING SETUP - Quality-Aware Bloom
@@ -90,13 +95,14 @@ function init() {
     setLoadProgress(55, 'Creating player...');
     // Preload GLB models early so they're cached before skins are built
     if (typeof GLBLoader !== 'undefined') {
+        // Preload small-to-medium GLBs eagerly so they're ready when skins are built.
+        // furry_ball.glb (~35MB) is intentionally excluded — it lazy-loads only when owned+equipped.
         const glbSkinAssets = [
             'assets/skins/pokeball.glb',
             'assets/skins/anatomical_eye_ball.glb',
             'assets/skins/disco_ball.glb',
             'assets/skins/soccer_ball.glb',
-            'assets/skins/basketball.glb',
-            'assets/skins/furry_ball.glb'
+            'assets/skins/basketball.glb'
         ];
         glbSkinAssets.forEach(path => GLBLoader.preload(path));
     }

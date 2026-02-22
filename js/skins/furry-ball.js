@@ -27,6 +27,14 @@ function _loadFurryBallModel(group, radius) {
         return;
     }
 
+    // Ownership guard: furry_ball.glb is ~35MB. Skip the load at startup unless
+    // the skin is already owned (loaded from localStorage). applyFurryBallSkin()
+    // will re-call this function the first time the skin is actually equipped.
+    const isOwned = typeof GameState !== 'undefined' && GameState.furryBallOwned;
+    if (!isOwned && !GLBLoader.has(FURRY_BALL_GLB_URL)) {
+        return; // Leave modelReady = false; group is invisible until owned
+    }
+
     if (GLBLoader.has(FURRY_BALL_GLB_URL)) {
         const model = GLBLoader.clone(FURRY_BALL_GLB_URL);
         const entry = GLBLoader._cache.get(FURRY_BALL_GLB_URL);
@@ -63,7 +71,7 @@ function _attachFurryBallModel(group, model, radius) {
     model.traverse(child => {
         if (!child.isMesh) return;
         child.castShadow = true;
-        GLBLoader.normalizeMaterial(child.material, typeof renderer !== 'undefined' ? renderer.capabilities.getMaxAnisotropy() : 1);
+        GLBLoader.normalizeMaterial(child.material, typeof renderer !== 'undefined' ? renderer.capabilities.getMaxAnisotropy() : 1, 'furry-ball');
     });
 
     group.add(model);
@@ -127,6 +135,12 @@ function createFurryBallSkin() {
 function applyFurryBallSkin() {
     if (!player || !furryBallGroup) return;
     const equipped = GameState.furryBallOwned && GameState.furryBallEquipped;
+
+    // Lazy-load: trigger the 35MB download the first time the skin is equipped after purchase
+    if (equipped && !furryBallGroup.userData.modelReady) {
+        _loadFurryBallModel(furryBallGroup, 0.45);
+    }
+
     furryBallGroup.visible = equipped;
 
     const anyEquipped = isAnySkinEquipped();

@@ -73,7 +73,7 @@ function _attachEyeBallModel(group, model, radius) {
     model.traverse(child => {
         if (child.isMesh) {
             child.castShadow = true;
-            GLBLoader.normalizeMaterial(child.material, typeof renderer !== 'undefined' ? renderer.capabilities.getMaxAnisotropy() : 1);
+            GLBLoader.normalizeMaterial(child.material, typeof renderer !== 'undefined' ? renderer.capabilities.getMaxAnisotropy() : 1, 'eye-ball');
         }
     });
 

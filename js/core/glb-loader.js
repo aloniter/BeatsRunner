@@ -152,30 +152,46 @@ const GLBLoader = {
      * Normalizes a material or an array of materials to ensure consistent
      * rendering for orbs across the game. Limits extreme roughness/metalness,
      * ensures proper color space, and injects a subtle emissive tint.
-     * @param {THREE.Material|THREE.Material[]} material 
-     * @param {number} maxAnisotropy 
+     *
+     * Per-skin config is looked up from CONFIG.SKIN_LOOK[skinId] when provided,
+     * allowing each skin to have its own roughness/metalness/emissive profile.
+     *
+     * @param {THREE.Material|THREE.Material[]} material
+     * @param {number} maxAnisotropy
+     * @param {string|null} skinId  - Optional skin ID (e.g. 'pokeball', 'disco-ball') for per-skin overrides
      */
-    normalizeMaterial(material, maxAnisotropy = 1) {
+    normalizeMaterial(material, maxAnisotropy = 1, skinId = null) {
         if (!material) return;
 
         if (Array.isArray(material)) {
-            material.forEach(m => this.normalizeMaterial(m, maxAnisotropy));
+            material.forEach(m => this.normalizeMaterial(m, maxAnisotropy, skinId));
             return;
         }
 
-        // If it's a basic material, we might consider upgrading it, but usually, 
+        // If it's a basic material, we might consider upgrading it, but usually,
         // models authoring basic materials intentionally lack lighting responses.
         // For GLB orbs, we should ideally work with Standard/Physical.
         if (material.isMeshBasicMaterial) {
             console.warn('GLBLoader: Normalizing a BasicMaterial. Consider upgrading to Standard if it needs lighting.');
         }
 
-        const config = typeof CONFIG !== 'undefined' ? CONFIG.ORB_VISUALS : {
+        const orbCfg = typeof CONFIG !== 'undefined' ? CONFIG.ORB_VISUALS : {
             roughnessRange: [0.15, 0.85],
             metalnessRange: [0.0, 0.6],
-            emissiveTint: 0x222222,
-            emissiveIntensity: 0.8
+            emissiveTint: 0x1a1a1a,
+            emissiveIntensity: 0.15
         };
+
+        // Per-skin overrides (from CONFIG.SKIN_LOOK table)
+        const skinLook = (typeof CONFIG !== 'undefined' && CONFIG.SKIN_LOOK && skinId)
+            ? CONFIG.SKIN_LOOK[skinId]
+            : null;
+
+        const roughnessMin = skinLook ? skinLook.roughnessMin : orbCfg.roughnessRange[0];
+        const roughnessMax = skinLook ? skinLook.roughnessMax : orbCfg.roughnessRange[1];
+        const metalnessMin = skinLook ? skinLook.metalnessMin : orbCfg.metalnessRange[0];
+        const metalnessMax = skinLook ? skinLook.metalnessMax : orbCfg.metalnessRange[1];
+        const emissiveIntensity = skinLook ? skinLook.emissiveIntensity : orbCfg.emissiveIntensity;
 
         // Texture enhancements
         if (material.map) {
@@ -186,26 +202,31 @@ const GLBLoader = {
             material.emissiveMap.colorSpace = THREE.SRGBColorSpace;
         }
 
-        // Clamp physical properties to avoid "washed out" or "pure black" looks
+        // Clamp physical properties to per-skin or global range
         if (typeof material.roughness === 'number') {
-            material.roughness = THREE.MathUtils.clamp(material.roughness, config.roughnessRange[0], config.roughnessRange[1]);
+            material.roughness = THREE.MathUtils.clamp(material.roughness, roughnessMin, roughnessMax);
         }
         if (typeof material.metalness === 'number') {
-            material.metalness = THREE.MathUtils.clamp(material.metalness, config.metalnessRange[0], config.metalnessRange[1]);
+            material.metalness = THREE.MathUtils.clamp(material.metalness, metalnessMin, metalnessMax);
         }
 
-        // Inject subtle emissive glow if base color exists, so orbs pop in dark neon scenes
+        // Inject subtle emissive tint ONLY when the material has no authored emissive.
+        // FIX: For textured models, apply the tint color directly (not lerped with white)
+        //      to avoid the "medium gray glow" artifact. emissiveIntensity is set only
+        //      inside this block so authored emissives keep their own intensity.
         if (material.color && material.emissive) {
-            // Only add tint if there isn't already a strong emissive authored
             if (material.emissive.getHex() === 0x000000 && !material.emissiveMap) {
-                material.emissive.setHex(config.emissiveTint);
-
-                // If it has a color map or base color, tint the emissive slightly towards it
-                const baseColorHex = material.map ? 0xffffff : material.color.getHex();
-                const blendedEmissive = new THREE.Color(baseColorHex).lerp(new THREE.Color(config.emissiveTint), 0.5);
-                material.emissive.copy(blendedEmissive);
+                if (material.map) {
+                    // Textured model: use tint color directly — no white-lerp
+                    material.emissive.setHex(orbCfg.emissiveTint);
+                } else {
+                    // Untextured model: tint toward base color for a colour-matched glow
+                    const blendedEmissive = new THREE.Color(material.color.getHex())
+                        .lerp(new THREE.Color(orbCfg.emissiveTint), 0.7);
+                    material.emissive.copy(blendedEmissive);
+                }
+                material.emissiveIntensity = emissiveIntensity;
             }
-            material.emissiveIntensity = Math.max(material.emissiveIntensity || 0, config.emissiveIntensity);
         }
 
         material.envMapIntensity = 1.0;

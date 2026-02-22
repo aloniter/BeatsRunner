@@ -88,7 +88,7 @@ function _attachDiscoBallModel(group, model, radius) {
         if (!child.isMesh) return;
         if (!primaryMesh) primaryMesh = child;
         child.castShadow = true;
-        GLBLoader.normalizeMaterial(child.material, typeof renderer !== 'undefined' ? renderer.capabilities.getMaxAnisotropy() : 1);
+        GLBLoader.normalizeMaterial(child.material, typeof renderer !== 'undefined' ? renderer.capabilities.getMaxAnisotropy() : 1, 'disco-ball');
     });
 
     group.add(model);

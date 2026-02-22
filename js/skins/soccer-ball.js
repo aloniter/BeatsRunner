@@ -63,7 +63,7 @@ function _attachSoccerBallModel(group, model, radius) {
     model.traverse(child => {
         if (!child.isMesh) return;
         child.castShadow = true;
-        GLBLoader.normalizeMaterial(child.material, typeof renderer !== 'undefined' ? renderer.capabilities.getMaxAnisotropy() : 1);
+        GLBLoader.normalizeMaterial(child.material, typeof renderer !== 'undefined' ? renderer.capabilities.getMaxAnisotropy() : 1, 'soccer-ball');
     });
 
     group.add(model);
