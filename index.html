@@ -89,58 +89,75 @@
                             <span class="dev-tools-toggle-icon" aria-hidden="true">⚙</span>
                         </button>
                         <div class="dev-tools" id="dev-tools" aria-hidden="true">
-                            <div class="dev-tools-title">Settings</div>
-                            <div class="dev-tools-row">
-                                <div class="dev-tools-label">Graphics Quality</div>
-                                <div class="dev-tools-actions">
-                                    <select class="dev-tools-select" id="quality-select">
-                                        <option value="AUTO">Auto (Recommended)</option>
-                                        <option value="HIGH">High</option>
-                                        <option value="MEDIUM">Medium</option>
-                                        <option value="LOW">Low</option>
-                                    </select>
-                                    <button class="dev-tools-btn" id="quality-apply">Apply</button>
+                            <div class="dev-tools-title">⚡ Dev Tools</div>
+                            <div class="dev-tools-body">
+                                <div class="dev-tools-row">
+                                    <div class="dev-tools-label">Graphics</div>
+                                    <div class="dev-tools-actions">
+                                        <select class="dev-tools-select" id="quality-select">
+                                            <option value="AUTO">Auto (Recommended)</option>
+                                            <option value="HIGH">High</option>
+                                            <option value="MEDIUM">Medium</option>
+                                            <option value="LOW">Low</option>
+                                        </select>
+                                        <button class="dev-tools-btn" id="quality-apply">Apply</button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="dev-tools-row">
-                                <div class="dev-tools-label">Orbs</div>
-                                <div class="dev-tools-actions">
-                                    <button class="dev-tools-btn" data-dev-action="orbs-add" data-amount="10">+10</button>
-                                    <button class="dev-tools-btn" data-dev-action="orbs-remove" data-amount="10">-10</button>
-                                    <button class="dev-tools-btn" data-dev-action="orbs-reset">Reset</button>
-                                    <input class="dev-tools-input" id="dev-orbs-input" type="number" min="0" step="10" value="50">
-                                    <button class="dev-tools-btn" data-dev-action="orbs-set">Set</button>
+                                <hr class="dev-tools-divider">
+                                <div class="dev-tools-row">
+                                    <div class="dev-tools-label">Orbs</div>
+                                    <div class="dev-tools-actions">
+                                        <button class="dev-tools-btn" data-dev-action="orbs-add" data-amount="10">+10</button>
+                                        <button class="dev-tools-btn" data-dev-action="orbs-add" data-amount="100">+100</button>
+                                        <button class="dev-tools-btn" data-dev-action="orbs-add" data-amount="1000">+1000</button>
+                                        <button class="dev-tools-btn" data-dev-action="orbs-reset">Reset</button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="dev-tools-row">
-                                <div class="dev-tools-label">Start With</div>
-                                <div class="dev-tools-actions">
-                                    <label class="dev-tools-toggle">
-                                        <input type="checkbox" id="dev-start-shield">
-                                        Shield
-                                    </label>
-                                    <label class="dev-tools-toggle">
-                                        <input type="checkbox" id="dev-start-magnet">
-                                        Magnet
-                                    </label>
+                                <div class="dev-tools-row">
+                                    <div class="dev-tools-label"></div>
+                                    <div class="dev-tools-actions">
+                                        <input class="dev-tools-input" id="dev-orbs-input" type="number" min="0" step="10" value="50">
+                                        <button class="dev-tools-btn" data-dev-action="orbs-set">Set</button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="dev-tools-row">
-                                <div class="dev-tools-label">Bonus Mode (1000-1250)</div>
-                                <div class="dev-tools-actions">
-                                    <label class="dev-tools-toggle">
-                                        <input type="checkbox" id="dev-force-bonus">
-                                        Force
-                                    </label>
+                                <hr class="dev-tools-divider">
+                                <div class="dev-tools-row">
+                                    <div class="dev-tools-label">Start With</div>
+                                    <div class="dev-tools-actions">
+                                        <label class="dev-tools-toggle">
+                                            <input type="checkbox" id="dev-start-shield">
+                                            Shield
+                                        </label>
+                                        <label class="dev-tools-toggle">
+                                            <input type="checkbox" id="dev-start-magnet">
+                                            Magnet
+                                        </label>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="dev-tools-row">
-                                <div class="dev-tools-label">God Mode</div>
-                                <div class="dev-tools-actions">
-                                    <label class="dev-tools-toggle">
-                                        <input type="checkbox" id="dev-god-mode">
-                                        On
-                                    </label>
+                                <div class="dev-tools-row">
+                                    <div class="dev-tools-label">Force Bonus</div>
+                                    <div class="dev-tools-actions">
+                                        <label class="dev-tools-toggle">
+                                            <input type="checkbox" id="dev-force-bonus">
+                                            Enable
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="dev-tools-row">
+                                    <div class="dev-tools-label">God Mode</div>
+                                    <div class="dev-tools-actions">
+                                        <label class="dev-tools-toggle">
+                                            <input type="checkbox" id="dev-god-mode">
+                                            Enable
+                                        </label>
+                                    </div>
+                                </div>
+                                <hr class="dev-tools-divider">
+                                <div class="dev-tools-row">
+                                    <div class="dev-tools-label">Skins</div>
+                                    <div class="dev-tools-actions">
+                                        <button class="dev-tools-btn dev-tools-btn-special" data-dev-action="skins-unlock-all">Unlock All</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

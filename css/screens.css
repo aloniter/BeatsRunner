@@ -270,14 +270,19 @@
     top: calc(100% + 10px);
     right: 0;
     margin-top: 0;
-    padding: 16px 18px;
+    padding: 0;
     border-radius: 14px;
-    border: 1px solid rgba(0, 255, 255, 0.2);
-    background: rgba(0, 0, 0, 0.4);
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.08);
+    border: 1px solid rgba(0, 255, 255, 0.55);
+    background: rgba(5, 0, 20, 0.93);
+    box-shadow:
+        0 0 30px rgba(0, 255, 255, 0.18),
+        0 0 60px rgba(0, 0, 0, 0.7),
+        inset 0 1px 0 rgba(0, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
     text-align: left;
     display: none;
-    width: min(320px, 80vw);
+    width: min(340px, 88vw);
+    overflow: hidden;
 }
 
 .dev-tools.is-open {
@@ -285,19 +290,27 @@
 }
 
 .dev-tools-title {
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 2px;
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 12px;
+    letter-spacing: 3px;
+    color: #00ffff;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+    padding: 14px 18px 12px;
+    margin: 0;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+    background: linear-gradient(135deg, rgba(0, 255, 255, 0.07) 0%, rgba(255, 0, 255, 0.04) 100%);
+}
+
+.dev-tools-body {
+    padding: 14px 18px 16px;
 }
 
 .dev-tools-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px 12px;
+    gap: 8px 10px;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .dev-tools-row:last-child {
@@ -305,59 +318,88 @@
 }
 
 .dev-tools-label {
-    min-width: 92px;
+    min-width: 88px;
     font-size: 12px;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 0.5px;
 }
 
 .dev-tools-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
 }
 
 .dev-tools-btn {
-    background: rgba(0, 255, 255, 0.12);
-    border: 1px solid rgba(0, 255, 255, 0.35);
-    color: #b8ffff;
+    background: rgba(0, 255, 255, 0.18);
+    border: 1px solid rgba(0, 255, 255, 0.6);
+    color: #d6ffff;
     font-size: 12px;
-    padding: 6px 10px;
-    border-radius: 8px;
+    padding: 5px 10px;
+    border-radius: 7px;
     cursor: pointer;
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease;
 }
 
 .dev-tools-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 0 12px rgba(0, 255, 255, 0.3);
+    background: rgba(0, 255, 255, 0.28);
+    box-shadow: 0 0 14px rgba(0, 255, 255, 0.45);
+}
+
+.dev-tools-btn:active {
+    transform: translateY(0);
+}
+
+.dev-tools-btn-special {
+    border-color: rgba(255, 215, 0, 0.65);
+    color: #ffd700;
+    background: rgba(255, 215, 0, 0.12);
+}
+
+.dev-tools-btn-special:hover {
+    background: rgba(255, 215, 0, 0.22);
+    box-shadow: 0 0 14px rgba(255, 215, 0, 0.4);
+}
+
+.dev-tools-divider {
+    border: none;
+    border-top: 1px solid rgba(0, 255, 255, 0.15);
+    margin: 10px 0;
 }
 
 .dev-tools-input {
-    width: 76px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    width: 68px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 255, 255, 0.35);
+    border-radius: 7px;
     color: #fff;
-    padding: 6px 8px;
+    padding: 5px 8px;
     font-size: 12px;
+}
+
+.dev-tools-input:focus {
+    outline: none;
+    border-color: rgba(0, 255, 255, 0.7);
+    box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
 }
 
 .dev-tools-select {
     min-width: 140px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 255, 255, 0.35);
+    border-radius: 7px;
     color: #fff;
-    padding: 6px 8px;
+    padding: 5px 8px;
     font-size: 12px;
     cursor: pointer;
 }
 
 .dev-tools-select:focus {
     outline: none;
-    border-color: rgba(0, 255, 255, 0.5);
+    border-color: rgba(0, 255, 255, 0.7);
     box-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
 }
 
@@ -365,14 +407,23 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 10px;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 0, 255, 0.25);
-    background: rgba(255, 0, 255, 0.08);
-    color: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 7px;
+    border: 1px solid rgba(255, 0, 255, 0.5);
+    background: rgba(255, 0, 255, 0.12);
+    color: #fff;
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 1px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dev-tools-toggle:has(input:checked) {
+    border-color: rgba(0, 255, 100, 0.7);
+    background: rgba(0, 255, 100, 0.15);
+    box-shadow: 0 0 10px rgba(0, 255, 100, 0.25);
+    color: #00ff96;
 }
 
 .menu-orbs {

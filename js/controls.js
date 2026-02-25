@@ -337,6 +337,14 @@ function setupDevTools() {
             saveOrbs();
             if (menuOrbsValue) menuOrbsValue.textContent = GameState.totalOrbs;
             if (typeof refreshStoreUI === 'function') refreshStoreUI();
+        } else if (action === 'skins-unlock-all') {
+            getAllSkins().forEach(skin => {
+                const ownedKey = getOwnedKey(skin.id);
+                GameState[ownedKey] = true;
+                saveSkinState(skin.id);
+            });
+            applySkins();
+            if (typeof refreshStoreUI === 'function') refreshStoreUI();
         }
     });
 }
