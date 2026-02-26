@@ -126,6 +126,10 @@ function createPlayer() {
     basketballSkin.visible = false;
     group.add(basketballSkin);
 
+    const sunSkin = createSunSkin();
+    sunSkin.visible = false;
+    group.add(sunSkin);
+
     group.position.set(0, CONFIG.GROUND_Y, 0);
     scene.add(group);
     player = group;

@@ -27,6 +27,8 @@ const Storage = {
         SOCCER_BALL_EQUIPPED: 'beat-runner-soccer-ball-equipped',
         BASKETBALL_OWNED: 'beat-runner-basketball-owned',
         BASKETBALL_EQUIPPED: 'beat-runner-basketball-equipped',
+        SUN_OWNED: 'beat-runner-sun-owned',
+        SUN_EQUIPPED: 'beat-runner-sun-equipped',
         EQUIPPED_SKIN: 'beat-runner-equipped-skin'
     },
 

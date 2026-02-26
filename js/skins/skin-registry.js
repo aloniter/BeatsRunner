@@ -66,6 +66,14 @@ const SKIN_REGISTRY = {
         description: 'Court energy with a strong bounce look.',
         category: 'skins',
         order: 8
+    },
+    'sun': {
+        id: 'sun',
+        name: 'Sun',
+        price: 160,
+        description: 'Radiate pure energy. Burn bright, run fast.',
+        category: 'skins',
+        order: 9
     }
 };
 
