@@ -95,8 +95,7 @@ function init() {
     setLoadProgress(55, 'Creating player...');
     // Preload GLB models early so they're cached before skins are built
     if (typeof GLBLoader !== 'undefined') {
-        // Preload small-to-medium GLBs eagerly so they're ready when skins are built.
-        // furry_ball.glb (~35MB) is intentionally excluded — it lazy-loads only when owned+equipped.
+        // Preload GLBs eagerly so they're ready when skins are built.
         const glbSkinAssets = [
             'assets/skins/pokeball.glb',
             'assets/skins/anatomical_eye_ball.glb',

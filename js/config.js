@@ -114,14 +114,12 @@ const CONFIG = {
     // Each entry overrides the global ORB_VISUALS clamp ranges for that skin.
     // - disco-ball: mirror tiles need near-max metalness + near-zero roughness
     // - basketball/soccer-ball: rubber/leather needs high roughness, minimal metalness
-    // - furry-ball: fabric/fur needs max roughness, zero metalness
     SKIN_LOOK: {
         'disco-ball':  { roughnessMin: 0.02, roughnessMax: 0.25, metalnessMin: 0.7,  metalnessMax: 0.98, emissiveIntensity: 0.25 },
         'pokeball':    { roughnessMin: 0.25, roughnessMax: 0.75, metalnessMin: 0.0,  metalnessMax: 0.4,  emissiveIntensity: 0.15 },
         'eye-ball':    { roughnessMin: 0.1,  roughnessMax: 0.7,  metalnessMin: 0.0,  metalnessMax: 0.35, emissiveIntensity: 0.4  },
         'soccer-ball': { roughnessMin: 0.45, roughnessMax: 0.95, metalnessMin: 0.0,  metalnessMax: 0.15, emissiveIntensity: 0.05 },
-        'basketball':  { roughnessMin: 0.5,  roughnessMax: 0.95, metalnessMin: 0.0,  metalnessMax: 0.1,  emissiveIntensity: 0.05 },
-        'furry-ball':  { roughnessMin: 0.65, roughnessMax: 1.0,  metalnessMin: 0.0,  metalnessMax: 0.08, emissiveIntensity: 0.35 }
+        'basketball':  { roughnessMin: 0.5,  roughnessMax: 0.95, metalnessMin: 0.0,  metalnessMax: 0.1,  emissiveIntensity: 0.05 }
     },
 
     // Gameflow timing (milliseconds unless noted)

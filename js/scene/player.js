@@ -126,10 +126,6 @@ function createPlayer() {
     basketballSkin.visible = false;
     group.add(basketballSkin);
 
-    const furryBallSkin = createFurryBallSkin();
-    furryBallSkin.visible = false;
-    group.add(furryBallSkin);
-
     group.position.set(0, CONFIG.GROUND_Y, 0);
     scene.add(group);
     player = group;

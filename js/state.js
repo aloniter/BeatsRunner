@@ -25,8 +25,6 @@ const GameState = {
     soccerBallEquipped: false,
     basketballOwned: false,
     basketballEquipped: false,
-    furryBallOwned: false,
-    furryBallEquipped: false,
     currentLane: 1, // Start in center
     speed: CONFIG.INITIAL_SPEED,
     lastBeatTime: 0,

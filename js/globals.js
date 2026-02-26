@@ -19,7 +19,6 @@ let pokeballGroup;
 let eyeBallGroup;
 let soccerBallGroup;
 let basketballGroup;
-let furryBallGroup;
 let obstacles = [];
 let collectibles = [];
 // Pickup arrays are owned by their respective managers:

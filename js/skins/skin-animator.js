@@ -20,7 +20,6 @@ const SkinAnimator = {
         this.updateEyeBall(delta, elapsed);
         this.updateSoccerBall(delta, elapsed);
         this.updateBasketball(delta, elapsed);
-        this.updateFurryBall(delta, elapsed);
     },
 
     // --- Disco Ball ---
@@ -217,17 +216,6 @@ const SkinAnimator = {
 
         if (basketballGroup.userData.mixer) {
             basketballGroup.userData.mixer.update(delta);
-        }
-    },
-
-    // --- Furry Ball ---
-    updateFurryBall(delta) {
-        if (!furryBallGroup || !furryBallGroup.visible) return;
-
-        furryBallGroup.rotation.y += delta * 0.8;
-
-        if (furryBallGroup.userData.mixer) {
-            furryBallGroup.userData.mixer.update(delta);
         }
     }
 };

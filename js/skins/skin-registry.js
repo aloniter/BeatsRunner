@@ -66,14 +66,6 @@ const SKIN_REGISTRY = {
         description: 'Court energy with a strong bounce look.',
         category: 'skins',
         order: 8
-    },
-    'furry-ball': {
-        id: 'furry-ball',
-        name: 'Furry Ball',
-        price: 180,
-        description: 'Soft chaos with heavy style.',
-        category: 'skins',
-        order: 9
     }
 };
 
