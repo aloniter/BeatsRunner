@@ -275,6 +275,7 @@ const SpeedBoostManager = {
                 ExitBoosterManager.activateBooster('speed');
                 flashScreen(0.1, '#ffdd55');
                 playCollectSound();
+                if (typeof hapticFeedback !== 'undefined') hapticFeedback.powerUp();
                 if (typeof BoosterHUD !== 'undefined') {
                     BoosterHUD.announce('speed');
                     BoosterHUD.activateBadge('speed', CONFIG.POWERUP.SPEED_BOOST.DURATION);

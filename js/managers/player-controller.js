@@ -41,6 +41,7 @@ const PlayerController = {
             player.position.y = Math.max(player.position.y, CONFIG.GROUND_Y + 0.02);
         }
         playJumpSound();
+        if (typeof hapticFeedback !== 'undefined') hapticFeedback.jump();
     },
 
     /**
@@ -87,6 +88,7 @@ const PlayerController = {
                 player.position.y = CONFIG.GROUND_Y;
                 GameState.isJumping = false;
                 GameState.jumpVelocity = 0;
+                if (typeof hapticFeedback !== 'undefined') hapticFeedback.land();
                 if (GameState.jumpQueued) {
                     this.beginJump();
                 }

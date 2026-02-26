@@ -60,6 +60,9 @@ const BeatManager = {
         beatIndicator.classList.add('pulse');
         setTimeout(() => beatIndicator.classList.remove('pulse'), 80);
 
+        // Rhythm haptic — subtle pulse synced to the beat
+        if (typeof hapticFeedback !== 'undefined') hapticFeedback.beat();
+
         // Camera micro-shake
         this.shakeCamera();
 

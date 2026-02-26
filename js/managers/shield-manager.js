@@ -203,6 +203,7 @@ const ShieldManager = {
                 ShieldManager.pickups.splice(i, 1);
                 this.activate();
                 flashScreen(0.08, '#66ccff');
+                if (typeof hapticFeedback !== 'undefined') hapticFeedback.powerUp();
                 if (typeof BoosterHUD !== 'undefined') {
                     BoosterHUD.announce('shield');
                     BoosterHUD.activateBadge('shield', null); // infinite until broken
@@ -235,6 +236,7 @@ const ShieldManager = {
             ShieldManager.aura.scale.set(1.2, 1.2, 1.2);
         }
         flashScreen(0.12, '#99e6ff');
+        if (typeof hapticFeedback !== 'undefined') hapticFeedback.shieldBreak();
         if (typeof BoosterHUD !== 'undefined') BoosterHUD.removeBadge('shield');
         if (ShieldManager._breakTimeoutId) {
             clearTimeout(ShieldManager._breakTimeoutId);

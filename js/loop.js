@@ -1,3 +1,53 @@
+// ========================================
+// ADAPTIVE RESOLUTION - Auto-lower pixel ratio when FPS drops
+// Only active on touch devices (phones/tablets). Adjusts at most once every 3s.
+// ========================================
+const adaptiveRes = {
+    _history: [],
+    _maxHistory: 60,   // ~1 second of samples at 60 fps
+    _cooldown: 0,      // seconds until next adjustment is allowed
+    _COOLDOWN: 3.0,    // seconds between adjustments (hysteresis)
+    _LOW_FPS: 50,      // lower pixel ratio when avg FPS falls below this
+    _HIGH_FPS: 58,     // raise pixel ratio when avg FPS recovers above this
+    _MIN_RATIO: 0.75,  // floor — never go below this
+    _isMobile: null,   // cached mobile check
+
+    update(delta) {
+        if (!renderer || !qualitySettings) return;
+        // Only run on mobile — desktop GPU is fast enough
+        if (this._isMobile === null) {
+            this._isMobile = ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+        }
+        if (!this._isMobile) return;
+
+        const fps = delta > 0 ? 1 / delta : 60;
+        this._history.push(fps);
+        if (this._history.length > this._maxHistory) this._history.shift();
+        if (this._history.length < this._maxHistory) return; // wait for a full second of data
+
+        this._cooldown -= delta;
+        if (this._cooldown > 0) return;
+
+        const avg = this._history.reduce((a, b) => a + b, 0) / this._history.length;
+        const cur = renderer.getPixelRatio();
+        const max = qualitySettings.pixelRatio;
+
+        if (avg < this._LOW_FPS && cur > this._MIN_RATIO) {
+            const next = Math.max(this._MIN_RATIO, +(cur - 0.25).toFixed(2));
+            renderer.setPixelRatio(next);
+            if (composer) composer.setSize(window.innerWidth, window.innerHeight);
+            this._cooldown = this._COOLDOWN;
+            this._history = [];
+        } else if (avg > this._HIGH_FPS && cur < max) {
+            const next = Math.min(max, +(cur + 0.25).toFixed(2));
+            renderer.setPixelRatio(next);
+            if (composer) composer.setSize(window.innerWidth, window.innerHeight);
+            this._cooldown = this._COOLDOWN;
+            this._history = [];
+        }
+    }
+};
+
 // UPDATE LOOP
 // ========================================
 function updateGame(delta, elapsed) {
@@ -464,6 +514,9 @@ function animate(currentTime = 0) {
     } else {
         renderer.render(scene, camera);
     }
+
+    // Adaptively lower/raise pixel ratio to maintain smooth FPS on mobile
+    adaptiveRes.update(delta);
 
     // Render disco ball/fireball preview canvases (independent renderers)
     if (typeof renderDiscoPreview === 'function') {

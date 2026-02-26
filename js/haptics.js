@@ -11,7 +11,8 @@ class HapticFeedback {
         this.initialized = false;
         this.backend = 'none';
         this.lastHapticTime = 0;
-        this.debounceMs = 20; // Prevent duplicate haptics
+        this.lastBeatHapticTime = 0; // Separate tracking so beat never blocks action haptics
+        this.debounceMs = 20; // Prevent duplicate haptics on same-type events
 
         // Detect iOS devices
         this.isIOS = this.detectIOS();
@@ -79,13 +80,14 @@ class HapticFeedback {
     /**
      * AudioContext-based haptic simulation for iOS
      * Uses low-frequency bass pulses to create tactile feedback
+     * Handles full vibration patterns (on/off/on/off...)
      */
     vibrateAudio(pattern) {
         if (!window.audioContext) return;
 
         try {
             const durations = Array.isArray(pattern) ? pattern : [pattern];
-            let timeOffset = 0;
+            let timeOffset = window.audioContext.currentTime;
 
             durations.forEach((duration, index) => {
                 // Odd indices are pauses in vibration patterns
@@ -116,15 +118,14 @@ class HapticFeedback {
                     osc.frequency.value = 30;
                 }
 
-                const now = window.audioContext.currentTime + timeOffset;
                 const durationSec = duration / 1000;
 
                 // Envelope: quick attack, exponential decay
-                gain.gain.setValueAtTime(0.3, now);
-                gain.gain.exponentialRampToValueAtTime(0.001, now + durationSec);
+                gain.gain.setValueAtTime(0.3, timeOffset);
+                gain.gain.exponentialRampToValueAtTime(0.001, timeOffset + durationSec);
 
-                osc.start(now);
-                osc.stop(now + durationSec);
+                osc.start(timeOffset);
+                osc.stop(timeOffset + durationSec);
 
                 timeOffset += durationSec;
             });
@@ -134,7 +135,8 @@ class HapticFeedback {
     }
 
     /**
-     * Main vibrate method - routes to native or audio backend
+     * Main vibrate method - routes to native or audio backend.
+     * Uses shared debounce so rapid duplicate events don't stack.
      */
     vibrate(pattern) {
         if (!this.qualityEnabled) return;
@@ -144,7 +146,26 @@ class HapticFeedback {
         if (now - this.lastHapticTime < this.debounceMs) return;
         this.lastHapticTime = now;
 
-        // Route to appropriate backend
+        this._send(pattern);
+    }
+
+    /**
+     * Beat-specific vibrate — uses its own debounce so it never blocks
+     * action haptics (collect, crash, lane change, etc.)
+     */
+    vibrateBeat(pattern) {
+        if (!this.qualityEnabled) return;
+        const now = performance.now();
+        if (now - this.lastBeatHapticTime < 80) return; // min 80ms between beat ticks
+        this.lastBeatHapticTime = now;
+
+        this._send(pattern);
+    }
+
+    /**
+     * Internal: send pattern to the active backend (vibration API or AudioContext).
+     */
+    _send(pattern) {
         if (this.backend === 'vibration') {
             try {
                 navigator.vibrate(pattern);
@@ -152,14 +173,12 @@ class HapticFeedback {
                 if (DEBUG) console.log('Vibration failed:', e);
             }
         } else if (this.backend === 'audio') {
-            // iOS limitation: convert complex patterns to single pulse
-            // iOS speakers work better with simplified patterns
-            const simplifiedPattern = Array.isArray(pattern)
-                ? pattern.reduce((sum, val, idx) => idx % 2 === 0 ? sum + val : sum, 0)
-                : pattern;
-            this.vibrateAudio(simplifiedPattern);
+            // Pass the original pattern — vibrateAudio handles on/off sequences correctly
+            this.vibrateAudio(pattern);
         }
     }
+
+    // ── Action haptics (use shared debounce) ──────────────────────────────
 
     impact(intensity = 'medium') {
         const patterns = {
@@ -170,25 +189,54 @@ class HapticFeedback {
         this.vibrate(patterns[intensity] || patterns.medium);
     }
 
+    /** Quick tick when collecting an orb */
     collect() {
-        // Quick tap for orb collection
-        this.vibrate(20);
+        this.vibrate(30);
     }
 
+    /** Double-bump for crash / obstacle hit */
     crash() {
-        // Heavy pattern for collision
         this.vibrate([200, 100, 100]);
     }
 
+    /** Celebratory burst for stage complete */
     victory() {
-        // Celebratory pattern for stage complete
         this.vibrate([100, 50, 100, 50, 200]);
     }
 
+    /** Subtle nudge for lane switches */
     laneChange() {
-        // Very subtle feedback for lane changes
         this.vibrate(15);
     }
+
+    /** Light tap when the player jumps */
+    jump() {
+        this.vibrate(25);
+    }
+
+    /** Soft thud when the player lands */
+    land() {
+        this.vibrate(12);
+    }
+
+    /** Rising pulse for power-up pickup (magnet, shield, speed boost) */
+    powerUp() {
+        this.vibrate([40, 30, 60]);
+    }
+
+    /** Sharp crack when shield absorbs a hit */
+    shieldBreak() {
+        this.vibrate([80, 40, 80]);
+    }
+
+    // ── Rhythm haptic (independent debounce) ─────────────────────────────
+
+    /** Very subtle pulse synced to the music beat */
+    beat() {
+        this.vibrateBeat(12);
+    }
+
+    // ── Control ───────────────────────────────────────────────────────────
 
     setEnabled(enabled) {
         // Control haptics based on quality preset or user preference

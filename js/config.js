@@ -168,13 +168,13 @@ const QUALITY_PRESETS = {
     },
     MEDIUM: {
         name: 'Medium',
-        pixelRatio: 2.0,  // Increased from 1.5 - modern mobile devices can handle this
-        antialias: true,
+        pixelRatio: 1.0,  // Mobile: 1.0 cuts GPU pixel fill ~4× vs 2.0 (huge perf win)
+        antialias: false,
         bloom: {
-            enabled: true,
-            strength: 0.85,  // Increased from 0.7 for better visuals
-            radius: 0.35,    // Increased from 0.3
-            threshold: 0.88  // Reduced from 0.9 for more bloom
+            enabled: false,  // Bloom disabled on mobile — UnrealBloom renders scene twice
+            strength: 0.85,
+            radius: 0.35,
+            threshold: 0.88
         },
         particles: {
             background: 150,
@@ -197,13 +197,13 @@ const QUALITY_PRESETS = {
     },
     LOW: {
         name: 'Low',
-        pixelRatio: 1.5,  // Increased from 1.0 - even budget devices deserve better
+        pixelRatio: 1.0,  // Budget devices: native CSS pixels, no supersampling
         antialias: false,
         bloom: {
-            enabled: true,
-            strength: 0.6,   // Increased from 0.4 for more noticeable glow
-            radius: 0.25,    // Increased from 0.2
-            threshold: 0.92  // Reduced from 0.95 for more bloom
+            enabled: false,  // Bloom disabled — too expensive for low-end devices
+            strength: 0.6,
+            radius: 0.25,
+            threshold: 0.92
         },
         particles: {
             background: 80,

@@ -9,6 +9,10 @@
     <link rel="icon" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
     <title>Beat Runner - Neon Rhythm Game</title>
+    <!-- Preload critical scripts so the browser fetches them in parallel with HTML parsing -->
+    <link rel="preload" href="js/vendor/three.min.js" as="script">
+    <link rel="preload" href="js/gltf-loader-bundle.js" as="script">
+    <link rel="preload" href="js/postprocessing-bundle.js" as="script">
     <!-- CSS Modules (split from styles.css) -->
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/hud.css">

@@ -207,6 +207,7 @@ const MagnetManager = {
                 MagnetManager.pickups.splice(i, 1);
                 this.activate();
                 flashScreen(0.1, '#66ffff');
+                if (typeof hapticFeedback !== 'undefined') hapticFeedback.powerUp();
                 if (typeof BoosterHUD !== 'undefined') {
                     BoosterHUD.announce('magnet');
                     BoosterHUD.activateBadge('magnet', MagnetManager.magnetDuration);
