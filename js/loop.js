@@ -1,15 +1,15 @@
 // ========================================
 // ADAPTIVE RESOLUTION - Auto-lower pixel ratio when FPS drops
-// Only active on touch devices (phones/tablets). Adjusts at most once every 3s.
+// Only active on touch devices (phones/tablets). Adjusts at most once every 1.5s.
 // ========================================
 const adaptiveRes = {
     _history: [],
-    _maxHistory: 60,   // ~1 second of samples at 60 fps
+    _maxHistory: 45,   // ~0.75 second window (faster reaction)
     _cooldown: 0,      // seconds until next adjustment is allowed
-    _COOLDOWN: 3.0,    // seconds between adjustments (hysteresis)
-    _LOW_FPS: 50,      // lower pixel ratio when avg FPS falls below this
+    _COOLDOWN: 1.5,    // seconds between adjustments (react 2× faster)
+    _LOW_FPS: 54,      // start downscaling earlier for smoother feel (was 50)
     _HIGH_FPS: 58,     // raise pixel ratio when avg FPS recovers above this
-    _MIN_RATIO: 0.75,  // floor — never go below this
+    _MIN_RATIO: 0.6,   // allow more aggressive downscaling (was 0.75)
     _isMobile: null,   // cached mobile check
 
     update(delta) {
@@ -33,7 +33,7 @@ const adaptiveRes = {
         const max = qualitySettings.pixelRatio;
 
         if (avg < this._LOW_FPS && cur > this._MIN_RATIO) {
-            const next = Math.max(this._MIN_RATIO, +(cur - 0.25).toFixed(2));
+            const next = Math.max(this._MIN_RATIO, +(cur - 0.3).toFixed(2));
             renderer.setPixelRatio(next);
             if (composer) composer.setSize(window.innerWidth, window.innerHeight);
             this._cooldown = this._COOLDOWN;
@@ -47,6 +47,10 @@ const adaptiveRes = {
         }
     }
 };
+
+// Pre-allocated Color objects for bonus/finale visuals (avoid per-frame GC pressure)
+const _tmpColor = new THREE.Color();
+const _tmpColor2 = new THREE.Color();
 
 // UPDATE LOOP
 // ========================================
@@ -370,26 +374,27 @@ function updateBonusVisuals(elapsed, distance, transitionProgress) {
         const spatialFlow = distance * 0.04;    // Forward flow along track
         const hue = (timeCycle + spatialFlow) % 1.0;
 
-        // Animate floor colors - STRONG and VIVID
+        // Animate floor colors - STRONG and VIVID (reuse pre-allocated colors)
         window.rainbowMaterials.floors.forEach(mat => {
-            const rainbowColor = new THREE.Color().setHSL(hue, 1.0, 0.65);
-            mat.color.copy(rainbowColor);  // Full intensity color
-            mat.emissive.copy(rainbowColor.clone().multiplyScalar(0.9));  // Strong emissive
-            mat.emissiveIntensity = 1.8;  // Very high emissive intensity
+            _tmpColor.setHSL(hue, 1.0, 0.65);
+            mat.color.copy(_tmpColor);
+            _tmpColor2.copy(_tmpColor).multiplyScalar(0.9);
+            mat.emissive.copy(_tmpColor2);
+            mat.emissiveIntensity = 1.8;
         });
 
         // Animate edges with offset hue - keep readable
         window.rainbowMaterials.edges.forEach((mat, index) => {
             const offsetHue = (hue + index * 0.15) % 1.0;
-            const edgeColor = new THREE.Color().setHSL(offsetHue, 0.95, 0.65);
-            mat.color.copy(edgeColor);
+            _tmpColor.setHSL(offsetHue, 0.95, 0.65);
+            mat.color.copy(_tmpColor);
         });
 
         // Animate grids with subtle offset
         window.rainbowMaterials.grids.forEach((mat, index) => {
             const offsetHue = (hue + index * 0.08) % 1.0;
-            const gridColor = new THREE.Color().setHSL(offsetHue, 0.85, 0.55);
-            mat.color.copy(gridColor);
+            _tmpColor.setHSL(offsetHue, 0.85, 0.55);
+            mat.color.copy(_tmpColor);
         });
     }
 }
@@ -442,26 +447,27 @@ function updateFinaleVisuals(delta, elapsed) {
             const spatialFlow = GameState.distance * 0.05;
             const hue = (timeCycle + spatialFlow) % 1.0;
 
-            // Vibrant floor colors
+            // Vibrant floor colors (reuse pre-allocated colors)
             window.rainbowMaterials.floors.forEach(mat => {
-                const rainbowColor = new THREE.Color().setHSL(hue, 1.0, 0.7);
-                mat.color.copy(rainbowColor);
-                mat.emissive.copy(rainbowColor.clone().multiplyScalar(0.95));
-                mat.emissiveIntensity = 2.0; // Extra vivid for finale
+                _tmpColor.setHSL(hue, 1.0, 0.7);
+                mat.color.copy(_tmpColor);
+                _tmpColor2.copy(_tmpColor).multiplyScalar(0.95);
+                mat.emissive.copy(_tmpColor2);
+                mat.emissiveIntensity = 2.0;
             });
 
             // Offset edge colors
             window.rainbowMaterials.edges.forEach((mat, index) => {
                 const offsetHue = (hue + index * 0.2) % 1.0;
-                const edgeColor = new THREE.Color().setHSL(offsetHue, 0.95, 0.7);
-                mat.color.copy(edgeColor);
+                _tmpColor.setHSL(offsetHue, 0.95, 0.7);
+                mat.color.copy(_tmpColor);
             });
 
             // Subtle grid colors
             window.rainbowMaterials.grids.forEach((mat, index) => {
                 const offsetHue = (hue + index * 0.1) % 1.0;
-                const gridColor = new THREE.Color().setHSL(offsetHue, 0.9, 0.6);
-                mat.color.copy(gridColor);
+                _tmpColor.setHSL(offsetHue, 0.9, 0.6);
+                mat.color.copy(_tmpColor);
             });
         }
 

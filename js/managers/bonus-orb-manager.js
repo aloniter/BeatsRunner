@@ -137,9 +137,11 @@ const BonusOrbManager = {
             if (GameState.isMagnetActive) {
                 const dx = player.position.x - orb.group.position.x;
                 const dz = player.position.z - orb.group.position.z;
-                const dist = Math.sqrt(dx * dx + dz * dz);
+                const distSq = dx * dx + dz * dz;
+                const rangeSq = MagnetManager.magnetRange * MagnetManager.magnetRange;
 
-                if (dist < MagnetManager.magnetRange) {
+                if (distSq < rangeSq) {
+                    const dist = Math.sqrt(distSq);
                     orb.group.position.x += (dx / dist) * MagnetManager.magnetPull * delta;
                     orb.group.position.z += (dz / dist) * MagnetManager.magnetPull * delta * 0.65;
                 }
@@ -193,10 +195,10 @@ const BonusOrbManager = {
             const dz = playerZ - orb.group.position.z;
             const dy = playerY - orb.group.position.y;
 
-            const dist3D = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            const dist3DSq = dx * dx + dy * dy + dz * dz;
             const crossedPlayer = orb.lastZ >= playerZ && orb.group.position.z <= playerZ;
             const closeXY = Math.abs(dx) < 1.4 && Math.abs(dy) < 1.6;
-            const collected = dist3D < 2.1 || (crossedPlayer && closeXY);
+            const collected = dist3DSq < (2.1 * 2.1) || (crossedPlayer && closeXY);
 
             if (collected) {
                 GameState.orbs++;

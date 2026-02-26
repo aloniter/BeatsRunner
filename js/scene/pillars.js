@@ -45,10 +45,12 @@ function createPillar(isLeft) {
     strip.position.set(isLeft ? 0.2 : -0.2, 6, 0.2);
     group.add(strip);
 
-    // Top light (reduced intensity for performance)
-    const topLight = new THREE.PointLight(stripColor, 0.4, 12);
-    topLight.position.y = 12;
-    group.add(topLight);
+    // Top light — only on HIGH (24 PointLights kill mobile GPU)
+    if (QualityManager.presetName === 'HIGH') {
+        const topLight = new THREE.PointLight(stripColor, 0.4, 12);
+        topLight.position.y = 12;
+        group.add(topLight);
+    }
 
     return group;
 }

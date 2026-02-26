@@ -73,18 +73,23 @@ function createFloorTile(length) {
         group.add(edge);
     });
 
-    // Grid lines (reduced count for performance)
-    const gridGeo = new THREE.BoxGeometry(14, 0.03, 0.06);
+    // Grid lines — fewer on mobile for reduced draw calls
+    const gridSpacing = QualityManager.presetName === 'HIGH' ? 4
+                      : QualityManager.presetName === 'MEDIUM' ? 8
+                      : 0;  // LOW: skip grid lines entirely
 
-    for (let i = 0; i < length; i += 4) {
-        const gridMat = new THREE.MeshBasicMaterial({
-            color: CONFIG.COLORS.PURPLE,
-            transparent: true,
-            opacity: 0.25
-        });
-        const gridLine = new THREE.Mesh(gridGeo, gridMat);
-        gridLine.position.set(0, 0.015, i - length / 2);
-        group.add(gridLine);
+    if (gridSpacing > 0) {
+        const gridGeo = new THREE.BoxGeometry(14, 0.03, 0.06);
+        for (let i = 0; i < length; i += gridSpacing) {
+            const gridMat = new THREE.MeshBasicMaterial({
+                color: CONFIG.COLORS.PURPLE,
+                transparent: true,
+                opacity: 0.25
+            });
+            const gridLine = new THREE.Mesh(gridGeo, gridMat);
+            gridLine.position.set(0, 0.015, i - length / 2);
+            group.add(gridLine);
+        }
     }
 
     return group;
@@ -145,18 +150,24 @@ function createRainbowFloorTile(length) {
         window.rainbowMaterials.edges.push(edgeMat);
     });
 
-    // Rainbow grid lines
-    const gridGeo = new THREE.BoxGeometry(14, 0.03, 0.06);
-    for (let i = 0; i < length; i += 4) {
-        const gridMat = new THREE.MeshBasicMaterial({
-            color: 0xffff00,
-            transparent: true,
-            opacity: 0
-        });
-        const gridLine = new THREE.Mesh(gridGeo, gridMat);
-        gridLine.position.set(0, 0.015, i - length / 2);
-        group.add(gridLine);
-        window.rainbowMaterials.grids.push(gridMat);
+    // Rainbow grid lines — fewer on mobile for reduced draw calls
+    const gridSpacing = QualityManager.presetName === 'HIGH' ? 4
+                      : QualityManager.presetName === 'MEDIUM' ? 8
+                      : 0;
+
+    if (gridSpacing > 0) {
+        const gridGeo = new THREE.BoxGeometry(14, 0.03, 0.06);
+        for (let i = 0; i < length; i += gridSpacing) {
+            const gridMat = new THREE.MeshBasicMaterial({
+                color: 0xffff00,
+                transparent: true,
+                opacity: 0
+            });
+            const gridLine = new THREE.Mesh(gridGeo, gridMat);
+            gridLine.position.set(0, 0.015, i - length / 2);
+            group.add(gridLine);
+            window.rainbowMaterials.grids.push(gridMat);
+        }
     }
 
     return group;

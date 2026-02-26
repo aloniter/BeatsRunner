@@ -174,9 +174,11 @@ const CollectibleManager = {
             if (magnetActive) {
                 const dx = playerX - orb.position.x;
                 const dz = playerZ - orb.position.z;
-                const dist = Math.sqrt(dx * dx + dz * dz);
+                const distSq = dx * dx + dz * dz;
+                const rangeSq = MagnetManager.magnetRange * MagnetManager.magnetRange;
 
-                if (dist < MagnetManager.magnetRange) {
+                if (distSq < rangeSq) {
+                    const dist = Math.sqrt(distSq);
                     const pull = (1 - dist / MagnetManager.magnetRange) * MagnetManager.magnetPull;
                     orb.position.x += dx * pull * delta;
                     orb.position.z += dz * pull * delta * 0.65;
@@ -213,9 +215,9 @@ const CollectibleManager = {
             const orb = collectibles[i];
             const dx = orb.position.x - playerX;
             const dz = orb.position.z - playerZ;
-            const dist = Math.sqrt(dx * dx + dz * dz);
+            const distSq = dx * dx + dz * dz;
 
-            if (dist < collectRadius) {
+            if (distSq < collectRadius * collectRadius) {
                 // Get timing accuracy for rhythm bonus
                 const elapsed = (performance.now() - GameState.gameStartTime) / 1000;
                 const timing = BeatManager.getTimingAccuracy(elapsed);

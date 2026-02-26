@@ -262,9 +262,9 @@ const SpeedBoostManager = {
             const pickup = SpeedBoostManager.pickups[i];
             const dx = pickup.position.x - playerX;
             const dz = pickup.position.z - playerZ;
-            const dist = Math.sqrt(dx * dx + dz * dz);
+            const distSq = dx * dx + dz * dz;
 
-            if (dist < collectRadius) {
+            if (distSq < collectRadius * collectRadius) {
                 scene.remove(pickup);
                 if (this._speedPool) {
                     this._speedPool.release(pickup);

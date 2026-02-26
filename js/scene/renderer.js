@@ -52,9 +52,12 @@ function init() {
     renderer.toneMapping = CONFIG.ORB_VISUALS.toneMapping;
     renderer.toneMappingExposure = CONFIG.ORB_VISUALS.exposure;
     // Enable shadow maps on MEDIUM/HIGH — key light is already configured with castShadow + tight bounds
-    if (qualitySettings.presetName !== 'LOW') {
+    if (QualityManager.presetName !== 'LOW') {
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        // PCFSoft (9 samples) on HIGH, cheaper PCF (4 samples) on MEDIUM
+        renderer.shadowMap.type = QualityManager.presetName === 'HIGH'
+            ? THREE.PCFSoftShadowMap
+            : THREE.PCFShadowMap;
     }
 
     // ========================================
@@ -208,8 +211,9 @@ function createLights() {
     keyLight.castShadow = true;
 
     // Optimize shadow map
-    keyLight.shadow.mapSize.width = qualitySettings.presetName === 'LOW' ? 512 : 1024;
-    keyLight.shadow.mapSize.height = qualitySettings.presetName === 'LOW' ? 512 : 1024;
+    const shadowSize = QualityManager.presetName === 'HIGH' ? 1024 : 512;
+    keyLight.shadow.mapSize.width = shadowSize;
+    keyLight.shadow.mapSize.height = shadowSize;
     keyLight.shadow.camera.near = 0.5;
     keyLight.shadow.camera.far = 50;
     // Tight shadow camera bounds for player area only (we don't need shadows far away)
