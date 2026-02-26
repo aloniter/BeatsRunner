@@ -130,6 +130,10 @@ function createPlayer() {
     sunSkin.visible = false;
     group.add(sunSkin);
 
+    const moonSkin = createMoonSkin();
+    moonSkin.visible = false;
+    group.add(moonSkin);
+
     group.position.set(0, CONFIG.GROUND_Y, 0);
     scene.add(group);
     player = group;

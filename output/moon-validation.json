@@ -1,0 +1,11 @@
+{
+  "moonCardExists": true,
+  "moonRuntime": {
+    "hasMoonGroup": true,
+    "ready": true,
+    "visible": true,
+    "moonOwned": true,
+    "moonEquipped": true
+  },
+  "consoleErrors": []
+}

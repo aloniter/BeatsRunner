@@ -101,7 +101,9 @@ function init() {
             'assets/skins/anatomical_eye_ball.glb',
             'assets/skins/disco_ball.glb',
             'assets/skins/soccer_ball.glb',
-            'assets/skins/basketball.glb'
+            'assets/skins/basketball.glb',
+            'assets/skins/sun.glb',
+            'assets/skins/moon.glb'
         ];
         glbSkinAssets.forEach(path => GLBLoader.preload(path));
     }

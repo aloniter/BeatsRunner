@@ -21,6 +21,7 @@ const SkinAnimator = {
         this.updateSoccerBall(delta, elapsed);
         this.updateBasketball(delta, elapsed);
         this.updateSun(delta, elapsed);
+        this.updateMoon(delta, elapsed);
     },
 
     // --- Disco Ball ---
@@ -228,6 +229,17 @@ const SkinAnimator = {
 
         if (sunGroup.userData.mixer) {
             sunGroup.userData.mixer.update(delta);
+        }
+    },
+
+    // --- Moon ---
+    updateMoon(delta, elapsed) {
+        if (!moonGroup || !moonGroup.visible) return;
+
+        moonGroup.rotation.y += delta * 0.52;
+
+        if (moonGroup.userData.mixer) {
+            moonGroup.userData.mixer.update(delta);
         }
     }
 };

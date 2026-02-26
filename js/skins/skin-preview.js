@@ -349,6 +349,44 @@ function setupSunPreview(canvas, itemId) {
     resizeDiscoPreview();
 }
 
+function setupMoonPreview(canvas, itemId) {
+    if (!canvas) return;
+    const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+        powerPreference: 'low-power'
+    });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.92;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 20);
+    camera.position.set(0, 0.1, 2.2);
+    camera.lookAt(0, 0, 0);
+
+    const { group } = buildMoonSkin(0.45, false);
+    group.scale.set(0.85, 0.85, 0.85);
+    scene.add(group);
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.82);
+    scene.add(ambient);
+    const moonLight = new THREE.PointLight(0xdde8ff, 1.1, 8);
+    moonLight.position.set(-1, 1.2, 2);
+    scene.add(moonLight);
+    const coolFillLight = new THREE.PointLight(0x8fb8ff, 0.84, 8);
+    coolFillLight.position.set(1, -1, 2);
+    scene.add(coolFillLight);
+
+    previewScenes.set(itemId, {
+        renderer, scene, camera, group, canvas,
+        type: 'moon'
+    });
+    resizeDiscoPreview();
+}
+
 function resizeDiscoPreview() {
     previewScenes.forEach((preview) => {
         const rect = preview.canvas.getBoundingClientRect();
@@ -375,6 +413,8 @@ function renderDiscoPreview(delta, elapsed) {
             renderBasketballPreviewItem(preview, delta, elapsed);
         } else if (preview.type === 'sun') {
             renderSunPreviewItem(preview, delta, elapsed);
+        } else if (preview.type === 'moon') {
+            renderMoonPreviewItem(preview, delta, elapsed);
         } else {
             renderDiscoPreviewItem(preview, delta, elapsed);
         }
@@ -648,3 +688,11 @@ function renderSunPreviewItem(preview, delta, elapsed) {
     }
 }
 
+function renderMoonPreviewItem(preview, delta, elapsed) {
+    preview.group.rotation.y += delta * 0.52;
+    preview.group.scale.set(0.85, 0.85, 0.85);
+
+    if (preview.group.userData.mixer) {
+        preview.group.userData.mixer.update(delta);
+    }
+}

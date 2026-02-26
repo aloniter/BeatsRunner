@@ -27,6 +27,8 @@ const GameState = {
     basketballEquipped: false,
     sunOwned: false,
     sunEquipped: false,
+    moonOwned: false,
+    moonEquipped: false,
     currentLane: 1, // Start in center
     speed: CONFIG.INITIAL_SPEED,
     lastBeatTime: 0,

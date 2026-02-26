@@ -74,6 +74,14 @@ const SKIN_REGISTRY = {
         description: 'Radiate pure energy. Burn bright, run fast.',
         category: 'skins',
         order: 9
+    },
+    'moon': {
+        id: 'moon',
+        name: 'Moon',
+        price: 165,
+        description: 'Cool lunar glow. Silent, steady momentum.',
+        category: 'skins',
+        order: 10
     }
 };
 
