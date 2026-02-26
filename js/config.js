@@ -119,7 +119,9 @@ const CONFIG = {
         'pokeball':    { roughnessMin: 0.25, roughnessMax: 0.75, metalnessMin: 0.0,  metalnessMax: 0.4,  emissiveIntensity: 0.15 },
         'eye-ball':    { roughnessMin: 0.1,  roughnessMax: 0.7,  metalnessMin: 0.0,  metalnessMax: 0.35, emissiveIntensity: 0.4  },
         'soccer-ball': { roughnessMin: 0.45, roughnessMax: 0.95, metalnessMin: 0.0,  metalnessMax: 0.15, emissiveIntensity: 0.05 },
-        'basketball':  { roughnessMin: 0.5,  roughnessMax: 0.95, metalnessMin: 0.0,  metalnessMax: 0.1,  emissiveIntensity: 0.05 }
+        'basketball':  { roughnessMin: 0.5,  roughnessMax: 0.95, metalnessMin: 0.0,  metalnessMax: 0.1,  emissiveIntensity: 0.05 },
+        'sun':         { roughnessMin: 0.1,  roughnessMax: 0.6,  metalnessMin: 0.0,  metalnessMax: 0.2,  emissiveIntensity: 0.42 },
+        'moon':        { roughnessMin: 0.3,  roughnessMax: 0.8,  metalnessMin: 0.0,  metalnessMax: 0.2,  emissiveIntensity: 0.2  }
     },
 
     // Gameflow timing (milliseconds unless noted)

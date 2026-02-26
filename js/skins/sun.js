@@ -60,15 +60,28 @@ function _attachSunModel(group, model, radius) {
     scaledBox.getCenter(center);
     model.position.sub(center);
 
+    const anisotropy = typeof renderer !== 'undefined' ? renderer.capabilities.getMaxAnisotropy() : 1;
     model.traverse(child => {
         if (!child.isMesh) return;
         child.castShadow = true;
-        GLBLoader.normalizeMaterial(child.material, typeof renderer !== 'undefined' ? renderer.capabilities.getMaxAnisotropy() : 1, 'sun');
+        GLBLoader.normalizeMaterial(child.material, anisotropy, 'sun');
+        // The sun GLB has emissiveFactor [1,1,1] (fully self-lit) which washes out
+        // all 3D detail. Clamp it so the texture shape reads clearly.
+        _fixSunEmissive(child.material);
     });
 
     group.add(model);
     group.userData.model = model;
     group.userData.modelReady = true;
+}
+
+function _fixSunEmissive(material) {
+    if (!material) return;
+    if (Array.isArray(material)) { material.forEach(_fixSunEmissive); return; }
+    if (typeof material.emissiveIntensity === 'number' && material.emissiveIntensity > 0.5) {
+        material.emissiveIntensity = 0.42;
+        material.needsUpdate = true;
+    }
 }
 
 function _setupSunAnimations(group, model, animations) {
