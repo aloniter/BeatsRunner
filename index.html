@@ -8,6 +8,7 @@
     <meta name="theme-color" content="#ff00ff">
     <link rel="icon" href="icon.png">
     <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.webmanifest">
     <title>Beat Runner - Neon Rhythm Game</title>
     <!-- Preload critical scripts so the browser fetches them in parallel with HTML parsing -->
     <link rel="preload" href="js/vendor/three.min.js" as="script">
@@ -400,5 +401,12 @@
     <script defer src="js/main.js"></script>
     <script defer src="js/orb-debug.js"></script>
 
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('sw.js').catch(function () {});
+            });
+        }
+    </script>
 </body>
 </html>
