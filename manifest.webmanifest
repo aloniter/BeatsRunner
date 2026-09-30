@@ -1,0 +1,14 @@
+{
+  "name": "Beat Runner",
+  "short_name": "BeatRunner",
+  "description": "Neon rhythm runner game",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#ff00ff",
+  "icons": [
+    { "src": "icon.png", "sizes": "1024x1024", "purpose": "any" }
+  ]
+}
