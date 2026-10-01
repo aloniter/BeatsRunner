@@ -108,6 +108,12 @@ const ObstacleManager = {
         const distPerBeat = GameState.speed * CONFIG.BEAT_INTERVAL;
         const z = distPerBeat > 0 ? Math.round(rawZ / distPerBeat) * distPerBeat : rawZ;
 
+        // Stage Mode: keep the last stretch before the finish gate (and beyond it) clear
+        if (typeof isInFinishClearZone === 'function' && isInFinishClearZone(z)) {
+            this.lastSpawnZ = z;
+            return;
+        }
+
         // Determine jump frequency based on stage or difficulty
         const jumpChance = pool ? pool.jumpFrequency : (freeRunDiff ? freeRunDiff.jumpChance : 0.35);
         const useJumpObstacle = Math.random() < jumpChance;

@@ -450,7 +450,7 @@ function goToMainMenu() {
  * No-ops when the game is not playing.
  */
 function togglePause() {
-    if (!GameState.isPlaying) return;
+    if (!GameState.isPlaying || GameState.isFinishing) return;
 
     GameState.isPaused = !GameState.isPaused;
     pauseBtn.classList.toggle('is-paused', GameState.isPaused);

@@ -161,7 +161,7 @@ const ResultsScreenUI = {
         let html = '';
         for (let i = 1; i <= 3; i++) {
             const filled = i <= count;
-            html += `<span class="result-star ${filled ? 'filled' : 'empty'}">${filled ? '⭐' : '☆'}</span>`;
+            html += `<span class="result-star ${filled ? 'filled' : 'empty'}" style="--i:${i - 1}">${filled ? '⭐' : '☆'}</span>`;
         }
         return html;
     },

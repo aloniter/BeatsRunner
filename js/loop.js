@@ -59,6 +59,12 @@ const _tmpColor2 = new THREE.Color();
 // ========================================
 function updateGame(delta, elapsed) {
     if (!GameState.isPlaying || GameState.isPaused) return;
+
+    // Stage Mode: finish gate crossed, play the outro instead of gameplay
+    if (GameState.isFinishing && typeof updateFinishOutro === 'function') {
+        updateFinishOutro(delta, elapsed);
+        return;
+    }
     
     // Update beat system
     BeatManager.update(elapsed);
@@ -254,8 +260,50 @@ function updateGame(delta, elapsed) {
         return;
     }
     
-    // Update floor (infinite scroll) - handle both track sets
-    const moveAmount = GameState.speed * delta;
+    scrollTrack(GameState.speed * delta);
+
+    // Update HUD
+    distanceValue.textContent = Math.floor(GameState.distance);
+    orbsValue.textContent = GameState.orbs;
+    // In Free Run show remaining lives, in Stage Mode show crash count
+    if (GameState.isStageMode) {
+        hitsValue.textContent = GameState.crashes;
+    } else {
+        hitsValue.textContent = GameState.lives;
+    }
+    scoreValue.textContent = GameState.score;
+
+    // Update combo display
+    const comboDisplay = document.getElementById('combo-display');
+    const comboCount = document.getElementById('combo-count');
+    const comboMult = document.getElementById('combo-multiplier');
+    if (comboDisplay && comboCount) {
+        if (GameState.combo >= 2) {
+            comboDisplay.classList.add('active');
+            comboCount.textContent = `${GameState.combo}x`;
+            // Pop animation
+            comboCount.classList.add('pop');
+            setTimeout(() => comboCount.classList.remove('pop'), 150);
+            if (comboMult) {
+                comboMult.textContent = GameState.multiplier > 1 ? `${GameState.multiplier.toFixed(1)}x bonus` : '';
+            }
+        } else {
+            comboDisplay.classList.remove('active');
+        }
+    }
+
+    // Update booster HUD badge countdowns
+    if (typeof BoosterHUD !== 'undefined') {
+        BoosterHUD.update();
+    }
+}
+
+/**
+ * Scroll the endless track, side pillars and ambient particles toward the player.
+ * Shared by gameplay and the Stage Mode finish outro.
+ * @param {number} moveAmount - World units to move this frame
+ */
+function scrollTrack(moveAmount) {
     const tileLength = floorTilesNormal[0].userData.length;
     const totalLength = floorTilesNormal.length * tileLength;
 
@@ -303,41 +351,6 @@ function updateGame(delta, elapsed) {
             }
         }
         particleSystem.geometry.attributes.position.needsUpdate = true;
-    }
-    
-    // Update HUD
-    distanceValue.textContent = Math.floor(GameState.distance);
-    orbsValue.textContent = GameState.orbs;
-    // In Free Run show remaining lives, in Stage Mode show crash count
-    if (GameState.isStageMode) {
-        hitsValue.textContent = GameState.crashes;
-    } else {
-        hitsValue.textContent = GameState.lives;
-    }
-    scoreValue.textContent = GameState.score;
-
-    // Update combo display
-    const comboDisplay = document.getElementById('combo-display');
-    const comboCount = document.getElementById('combo-count');
-    const comboMult = document.getElementById('combo-multiplier');
-    if (comboDisplay && comboCount) {
-        if (GameState.combo >= 2) {
-            comboDisplay.classList.add('active');
-            comboCount.textContent = `${GameState.combo}x`;
-            // Pop animation
-            comboCount.classList.add('pop');
-            setTimeout(() => comboCount.classList.remove('pop'), 150);
-            if (comboMult) {
-                comboMult.textContent = GameState.multiplier > 1 ? `${GameState.multiplier.toFixed(1)}x bonus` : '';
-            }
-        } else {
-            comboDisplay.classList.remove('active');
-        }
-    }
-
-    // Update booster HUD badge countdowns
-    if (typeof BoosterHUD !== 'undefined') {
-        BoosterHUD.update();
     }
 }
 
