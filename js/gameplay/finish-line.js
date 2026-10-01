@@ -256,6 +256,10 @@ function onFinishLineCrossed() {
     )
     : 1;
 
+  // Does finishing this stage open the next one? (read before saving; drives the map transition)
+  const nextStage = typeof getNextStage === 'function' ? getNextStage(currentStage.id) : null;
+  const unlockedNext = !!nextStage && typeof isStageUnlocked === 'function' && !isStageUnlocked(nextStage.id);
+
   // Save progress (assumes stage-progress.js is loaded)
   let newReward = null;
   if (typeof saveProgress === 'function') {
@@ -270,7 +274,7 @@ function onFinishLineCrossed() {
 
   // Show results screen (assumes results screen exists)
   if (typeof showStageResults === 'function') {
-    showStageResults(stars, newReward);
+    showStageResults(stars, newReward, unlockedNext);
   } else {
     // Fallback: Log to console if Results screen not implemented yet
     console.log('STAGE COMPLETE!');

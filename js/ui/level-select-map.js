@@ -314,10 +314,13 @@ const NeonDistrictMap = (() => {
     /**
      * Build the full scenery SVG plus positions for animated HTML props.
      * @param {object} L - Layout from computeLayout
-     * @param {object} progress - { litUntil: index of the furthest lit segment end }
+     * @param {object} progress - { litUntil: index of the furthest lit segment end,
+     *   sparkTo: node index the idle spark runs to,
+     *   advance: optional { from, to } node indices; lights the path only up to `from`
+     *   and adds a masked segment (from -> to) that the stylesheet reveals on demand }
      * @returns {{ svg: string, lanterns: Array, spark: string }}
      */
-    function render(L, { litUntil = 0, sparkTo = 1 } = {}) {
+    function render(L, { litUntil = 0, sparkTo = 1, advance = null } = {}) {
         const rng = createRng(SEED);
         const { W, H, N, s, P, cx, ww, y0, positions } = L;
         const segs = buildSegments(L);
@@ -429,7 +432,9 @@ const NeonDistrictMap = (() => {
 
         // Neon progression path
         const full = pathBetween(L, segs, 0, positions.length - 1);
-        const lit = pathBetween(L, segs, 0, Math.min(litUntil, positions.length - 1));
+        const adv = advance && advance.to > advance.from && advance.to < positions.length ? advance : null;
+        const lit = pathBetween(L, segs, 0, Math.min(adv ? adv.from : litUntil, positions.length - 1));
+        const advPath = adv ? pathBetween(L, segs, adv.from, adv.to) : '';
         mid.push(`<g class="nd-path">`);
         mid.push(`<path d="${full}" fill="none" stroke="url(#nd-path)" stroke-width="12" stroke-linecap="round" opacity="0.1"/>`);
         mid.push(`<path d="${full}" fill="none" stroke="url(#nd-path)" stroke-width="5" stroke-linecap="round" stroke-dasharray="0.1 12" opacity="0.85"/>`);
@@ -438,6 +443,15 @@ const NeonDistrictMap = (() => {
             mid.push(`<path d="${lit}" fill="none" stroke="url(#nd-path)" stroke-width="14" stroke-linecap="round" opacity="0.16"/>`);
             mid.push(`<path d="${lit}" fill="none" stroke="url(#nd-path)" stroke-width="6" stroke-linecap="round" stroke-dasharray="0.1 12" opacity="1"/>`);
             mid.push(`<path d="${lit}" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="0.1 12"/>`);
+        }
+        if (advPath) {
+            const reveal = `url(#nd-adv-mask)`;
+            mid.push(`<mask id="nd-adv-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="${r1(W)}" height="${r1(H)}"><path class="nd-adv-reveal" d="${advPath}" pathLength="1" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round" stroke-dasharray="1 1" stroke-dashoffset="1"/></mask>`);
+            mid.push(`<g mask="${reveal}">`);
+            mid.push(`<path d="${advPath}" fill="none" stroke="url(#nd-path)" stroke-width="14" stroke-linecap="round" opacity="0.2"/>`);
+            mid.push(`<path d="${advPath}" fill="none" stroke="url(#nd-path)" stroke-width="6" stroke-linecap="round" stroke-dasharray="0.1 12"/>`);
+            mid.push(`<path d="${advPath}" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="0.1 12"/>`);
+            mid.push(`</g>`);
         }
         mid.push(`</g>`);
 
@@ -451,7 +465,7 @@ const NeonDistrictMap = (() => {
 
         const svg = `<svg class="ls-env" xmlns="http://www.w3.org/2000/svg" width="${r1(W)}" height="${r1(H)}" viewBox="0 0 ${r1(W)} ${r1(H)}" aria-hidden="true" focusable="false">${defs(L)}${back.join('')}${mid.join('')}${front.join('')}</svg>`;
 
-        const spark = pathBetween(L, segs, 0, clamp(sparkTo, 1, positions.length - 1));
+        const spark = adv ? advPath : pathBetween(L, segs, 0, clamp(sparkTo, 1, positions.length - 1));
         return { svg, lanterns, spark };
     }
 
