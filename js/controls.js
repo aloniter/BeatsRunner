@@ -7,11 +7,13 @@ function setupControls() {
         
         if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
             e.preventDefault();
-            PlayerController.switchLane(1); // Left arrow moves RIGHT
+            if (e.repeat) return; // holding the key must not slide multiple lanes
+            changeLane(1); // Left arrow moves RIGHT
         }
         else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
             e.preventDefault();
-            PlayerController.switchLane(-1); // Right arrow moves LEFT
+            if (e.repeat) return;
+            changeLane(-1); // Right arrow moves LEFT
         }
         else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') {
             if (e.repeat) return;
@@ -25,57 +27,84 @@ function setupControls() {
     });
     
     // Touch / Swipe controls
+    // One gesture = one action. The swipe fires as soon as the finger crosses the
+    // threshold (touchmove) and is then locked, so lifting the finger can never
+    // trigger a second lane change. Only the first finger of a gesture is tracked.
+    let touchId = null;
     let touchStartX = 0;
     let touchStartY = 0;
-    let touchStartTime = 0;
+    let gestureHandled = false;
     const swipeThreshold = Math.max(30, Math.min(80, window.innerWidth * 0.04));
-    
+
+    // Minimum gap between lane changes (ms) - filters duplicate/bounced inputs
+    const LANE_COOLDOWN_MS = 90;
+    let lastLaneChange = 0;
+    function changeLane(direction) {
+        const now = performance.now();
+        if (now - lastLaneChange < LANE_COOLDOWN_MS) return;
+        lastLaneChange = now;
+        PlayerController.switchLane(direction);
+    }
+
+    function findTouch(list) {
+        for (let i = 0; i < list.length; i++) {
+            if (list[i].identifier === touchId) return list[i];
+        }
+        return null;
+    }
+
     canvas.addEventListener('touchstart', (e) => {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-        touchStartTime = performance.now();
+        if (touchId !== null) return; // ignore extra fingers
+        const t = e.changedTouches[0];
+        touchId = t.identifier;
+        touchStartX = t.clientX;
+        touchStartY = t.clientY;
+        gestureHandled = false;
     }, { passive: true });
-    
-    canvas.addEventListener('touchend', (e) => {
-        if (!GameState.isPlaying) return;
-        
-        const touchEndX = e.changedTouches[0].clientX;
-        const touchEndY = e.changedTouches[0].clientY;
-        const diffX = touchEndX - touchStartX;
-        const diffY = touchEndY - touchStartY;
-        const timeDiff = performance.now() - touchStartTime;
-        
-        // Check for vertical swipe first
+
+    canvas.addEventListener('touchmove', (e) => {
+        if (touchId === null || gestureHandled || !GameState.isPlaying) return;
+        const t = findTouch(e.changedTouches);
+        if (!t) return;
+        const diffX = t.clientX - touchStartX;
+        const diffY = t.clientY - touchStartY;
+
         if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(diffY) > swipeThreshold) {
-            if (diffY < 0) {
-                PlayerController.jump(); // Swipe up -> jump
-            }
-        }
-        else if (Math.abs(diffX) > swipeThreshold) {
-            // Horizontal swipe detected (SWAPPED)
-            if (diffX > 0) {
-                PlayerController.switchLane(-1); // Swipe right -> move LEFT
-            } else {
-                PlayerController.switchLane(1); // Swipe left -> move RIGHT
-            }
-        } else {
-            // Tap/press - move toward tap position (SWAPPED)
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
-            
-            // Top third of screen = jump
-            if (touchEndY < screenHeight / 3) {
-                PlayerController.jump();
-            }
-            // Bottom two thirds = left/right movement
-            else if (touchEndX < screenWidth / 3) {
-                PlayerController.switchLane(1); // Tap left side -> move RIGHT
-            } else if (touchEndX > screenWidth * 2 / 3) {
-                PlayerController.switchLane(-1); // Tap right side -> move LEFT
-            }
+            gestureHandled = true;
+            if (diffY < 0) PlayerController.jump(); // Swipe up -> jump
+        } else if (Math.abs(diffX) > swipeThreshold) {
+            gestureHandled = true;
+            // Horizontal swipe (SWAPPED)
+            changeLane(diffX > 0 ? -1 : 1); // Swipe right -> move LEFT, swipe left -> move RIGHT
         }
     }, { passive: true });
-    
+
+    canvas.addEventListener('touchend', (e) => {
+        const t = findTouch(e.changedTouches);
+        if (!t) return;
+        touchId = null;
+        if (gestureHandled || !GameState.isPlaying) return;
+
+        // Tap/press - move toward tap position (SWAPPED)
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+
+        // Top third of screen = jump
+        if (t.clientY < screenHeight / 3) {
+            PlayerController.jump();
+        }
+        // Bottom two thirds = left/right movement
+        else if (t.clientX < screenWidth / 3) {
+            changeLane(1); // Tap left side -> move RIGHT
+        } else if (t.clientX > screenWidth * 2 / 3) {
+            changeLane(-1); // Tap right side -> move LEFT
+        }
+    }, { passive: true });
+
+    canvas.addEventListener('touchcancel', (e) => {
+        if (findTouch(e.changedTouches)) touchId = null;
+    }, { passive: true });
+
     // Mobile button controls (SWAPPED)
     let lastTouchTime = 0;
 
@@ -83,7 +112,7 @@ function setupControls() {
         e.preventDefault();
         lastTouchTime = performance.now();
         if (GameState.isPlaying) {
-            PlayerController.switchLane(1); // Left button moves RIGHT
+            changeLane(1); // Left button moves RIGHT
         }
     });
     
@@ -91,7 +120,7 @@ function setupControls() {
         e.preventDefault();
         lastTouchTime = performance.now();
         if (GameState.isPlaying) {
-            PlayerController.switchLane(-1); // Right button moves LEFT
+            changeLane(-1); // Right button moves LEFT
         }
     });
     
@@ -107,13 +136,13 @@ function setupControls() {
     document.getElementById('left-btn').addEventListener('click', (e) => {
         e.preventDefault();
         if (performance.now() - lastTouchTime < 500) return;
-        if (GameState.isPlaying) PlayerController.switchLane(1);
+        if (GameState.isPlaying) changeLane(1);
     });
     
     document.getElementById('right-btn').addEventListener('click', (e) => {
         e.preventDefault();
         if (performance.now() - lastTouchTime < 500) return;
-        if (GameState.isPlaying) PlayerController.switchLane(-1);
+        if (GameState.isPlaying) changeLane(-1);
     });
     
     document.getElementById('jump-btn').addEventListener('click', (e) => {

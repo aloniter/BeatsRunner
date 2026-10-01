@@ -168,7 +168,7 @@ const QUALITY_PRESETS = {
     },
     MEDIUM: {
         name: 'Medium',
-        pixelRatio: 1.0,  // Mobile: 1.0 cuts GPU pixel fill ~4× vs 2.0 (huge perf win)
+        pixelRatio: 1.5,  // Mobile: sharper than 1.0; adaptiveRes lowers it automatically if FPS drops
         antialias: false,
         bloom: {
             enabled: false,  // Bloom disabled on mobile — UnrealBloom renders scene twice

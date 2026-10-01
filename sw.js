@@ -1,6 +1,6 @@
 // Offline-first service worker: everything is precached on install so the
 // game runs in airplane mode. Bump CACHE_VERSION on every release.
-const CACHE_VERSION = 'beatsrunner-v3';
+const CACHE_VERSION = 'beatsrunner-v4';
 
 const PRECACHE = [
   './',
