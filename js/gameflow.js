@@ -401,6 +401,16 @@ function restartGame() {
  * the start screen. Exits Stage Mode if active.
  */
 function goToMainMenu() {
+    // Leaving mid-run (e.g. from the pause menu): stop the run and clear pause UI
+    GameState.isPlaying = false;
+    GameState.isPaused = false;
+    pauseScreen.style.display = 'none';
+    pauseBtn.classList.remove('is-paused');
+    pauseBtn.textContent = 'Ⅱ';
+    hud.style.display = 'none';
+    beatIndicator.style.display = 'none';
+    mobileControls.style.display = 'none';
+
     // Exit Stage Mode if active
     if (GameState.isStageMode) {
         exitStageMode();
@@ -445,6 +455,7 @@ function togglePause() {
     GameState.isPaused = !GameState.isPaused;
     pauseBtn.classList.toggle('is-paused', GameState.isPaused);
     pauseBtn.textContent = GameState.isPaused ? '▶' : 'Ⅱ';
+    pauseScreen.style.display = GameState.isPaused ? 'flex' : 'none';
 
     if (bgMusic) {
         if (GameState.isPaused) {
