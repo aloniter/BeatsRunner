@@ -2,7 +2,7 @@
   "name": "Beat Runner",
   "short_name": "BeatRunner",
   "description": "Neon rhythm runner game",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
   "orientation": "portrait",

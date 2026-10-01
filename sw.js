@@ -1,10 +1,9 @@
 // Offline-first service worker: everything is precached on install so the
 // game runs in airplane mode. Bump CACHE_VERSION on every release.
-const CACHE_VERSION = 'beatsrunner-v1';
+const CACHE_VERSION = 'beatsrunner-v2';
 
 const PRECACHE = [
   './',
-  'index.html',
   'manifest.webmanifest',
   'icon.png',
   'Lights on.mp3',
@@ -84,12 +83,27 @@ const PRECACHE = [
   'js/vendor/three.min.js',
 ];
 
+// A response that followed a redirect (e.g. Cloudflare's /index.html -> /)
+// cannot be used to answer a navigation, so store a clean copy instead.
+async function clean(response) {
+  if (!response.redirected) return response;
+  return new Response(await response.blob(), {
+    status: response.status,
+    statusText: response.statusText,
+    headers: response.headers
+  });
+}
+
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_VERSION)
-      .then((cache) => cache.addAll(PRECACHE))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_VERSION);
+    await Promise.all(PRECACHE.map(async (url) => {
+      const response = await fetch(new Request(url, { cache: 'reload' }));
+      if (!response.ok) throw new Error('Precache failed: ' + url);
+      await cache.put(url, await clean(response));
+    }));
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (event) => {
@@ -131,10 +145,10 @@ self.addEventListener('fetch', (event) => {
     }
     try {
       const response = await fetch(request);
-      if (response.ok && response.status === 200) cache.put(request, response.clone());
+      if (response.ok && response.status === 200) cache.put(request, (await clean(response.clone())));
       return response;
     } catch (err) {
-      if (request.mode === 'navigate') return cache.match('index.html');
+      if (request.mode === 'navigate') return cache.match('./');
       throw err;
     }
   })());
