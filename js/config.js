@@ -86,6 +86,10 @@ const CONFIG = {
 
     // Beat timing thresholds (used by BeatManager.getTimingAccuracy)
     BEAT: {
+        // PERFECT/GOOD/OK/MISS rating on orb pickup (floating text, tick sound, and the
+        // combo reset on MISS). Off for now: the beat window is invisible to the player,
+        // so pickups read as random MISSes. Collecting an orb always counts as a normal hit.
+        TIMING_FEEDBACK: false,
         TIMING: {
             PERFECT: 0.15,  // Beat distance fraction for PERFECT rating  (3x multiplier)
             GOOD: 0.35,  // Beat distance fraction for GOOD rating      (2x multiplier)

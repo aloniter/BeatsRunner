@@ -219,8 +219,11 @@ const CollectibleManager = {
 
             if (distSq < collectRadius * collectRadius) {
                 // Get timing accuracy for rhythm bonus
+                const timingOn = CONFIG.BEAT.TIMING_FEEDBACK;
                 const elapsed = (performance.now() - GameState.gameStartTime) / 1000;
-                const timing = BeatManager.getTimingAccuracy(elapsed);
+                const timing = timingOn
+                    ? BeatManager.getTimingAccuracy(elapsed)
+                    : { rating: 'GOOD', multiplier: 1, color: '#00ff88' };
                 const comboMultiplier = GameState.multiplier;
                 const basePoints = 100;
                 const points = Math.floor(basePoints * timing.multiplier * comboMultiplier);
@@ -248,7 +251,7 @@ const CollectibleManager = {
                 GameState.lastCollectionRating = timing.rating;
 
                 // Play timing feedback sound
-                if (typeof playTimingSound === 'function') {
+                if (timingOn && typeof playTimingSound === 'function') {
                     playTimingSound(timing.rating);
                 }
 
@@ -272,7 +275,7 @@ const CollectibleManager = {
                 flashScreen(0.08, '#00ffff');
 
                 // Show floating timing feedback
-                if (typeof showTimingFeedback === 'function') {
+                if (timingOn && typeof showTimingFeedback === 'function') {
                     showTimingFeedback(orbPos, timing.rating, points, timing.color);
                 }
 
