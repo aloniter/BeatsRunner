@@ -165,6 +165,18 @@
                                         <button class="dev-tools-btn dev-tools-btn-special" data-dev-action="skins-unlock-all">Unlock All</button>
                                     </div>
                                 </div>
+                                <hr class="dev-tools-divider">
+                                <div class="dev-tools-row">
+                                    <div class="dev-tools-label">Offline</div>
+                                    <div class="dev-tools-actions">
+                                        <button class="dev-tools-btn" id="offline-refresh-btn">Check</button>
+                                        <button class="dev-tools-btn" id="offline-recache-btn">Re-download</button>
+                                    </div>
+                                </div>
+                                <div class="offline-status" id="offline-status">
+                                    <div class="offline-status-summary" id="offline-summary">Checking…</div>
+                                    <ul class="offline-status-list" id="offline-list"></ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -357,6 +369,7 @@
     <script defer src="js/skins/skin-animator.js"></script>
     <script defer src="js/skins/skin-preview.js"></script>
     <script defer src="js/store/store-ui.js"></script>
+    <script defer src="js/ui/offline-status.js"></script>
 
     <!-- Stage Mode (MVP) - Week 1 -->
     <script defer src="js/data/stage-registry.js"></script>

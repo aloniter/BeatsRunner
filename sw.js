@@ -1,6 +1,6 @@
 // Offline-first service worker: everything is precached on install so the
 // game runs in airplane mode. Bump CACHE_VERSION on every release.
-const CACHE_VERSION = 'beatsrunner-v6';
+const CACHE_VERSION = 'beatsrunner-v7';
 
 const PRECACHE = [
   './',
@@ -75,6 +75,7 @@ const PRECACHE = [
   'js/ui/booster-hud.js',
   'js/ui/gameplay-hud.js',
   'js/ui/level-select.js',
+  'js/ui/offline-status.js',
   'js/ui/results-screen.js',
   'js/ui/settings-screen.js',
   'js/ui/stage-info-card.js',
@@ -132,6 +133,36 @@ async function rangeResponse(request, cached) {
     }
   });
 }
+
+// Status / maintenance requests from the in-game Dev Tools panel
+self.addEventListener('message', (event) => {
+  const port = event.ports && event.ports[0];
+  if (!port || !event.data) return;
+  const type = event.data.type;
+  if (type === 'GET_STATUS' || type === 'RECACHE') {
+    event.waitUntil((async () => {
+      const cache = await caches.open(CACHE_VERSION);
+      let failed = [];
+      if (type === 'RECACHE') {
+        const results = await Promise.allSettled(PRECACHE.map(async (url) => {
+          const response = await fetch(new Request(url, { cache: 'reload' }));
+          if (!response.ok) throw new Error(url);
+          await cache.put(url, await clean(response));
+        }));
+        failed = PRECACHE.filter((url, i) => results[i].status === 'rejected');
+      }
+      const present = await Promise.all(PRECACHE.map((url) => cache.match(url)));
+      const missing = PRECACHE.filter((url, i) => !present[i]);
+      port.postMessage({
+        version: CACHE_VERSION,
+        total: PRECACHE.length,
+        cached: PRECACHE.length - missing.length,
+        missing,
+        failed
+      });
+    })());
+  }
+});
 
 self.addEventListener('fetch', (event) => {
   const request = event.request;
