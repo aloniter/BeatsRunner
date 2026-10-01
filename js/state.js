@@ -4,6 +4,7 @@
 const GameState = {
     isPlaying: false,
     isPaused: false,
+    isFinishing: false,           // Stage Mode: crossed the finish gate, outro playing
     distance: 0,
     orbs: 0,  // Session orbs collected in current run
     score: 0,
