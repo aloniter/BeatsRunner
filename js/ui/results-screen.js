@@ -11,6 +11,7 @@ const ResultsScreenUI = {
     overlay: null,
     starsEarned: 0,
     currentStageId: null,
+    unlockedNext: false,
 
     /**
      * Initialize Results Screen
@@ -38,9 +39,11 @@ const ResultsScreenUI = {
      * Show results screen with stage performance
      * @param {number} stars - Stars earned (1-3)
      * @param {object|null} newReward - Newly unlocked reward (if any)
+     * @param {boolean} unlockedNext - True if this run unlocked the next stage
      */
-    show(stars, newReward = null) {
+    show(stars, newReward = null, unlockedNext = false) {
         this.starsEarned = stars;
+        this.unlockedNext = unlockedNext;
         this.currentStageId = GameState.currentStage ? GameState.currentStage.id : null;
 
         const stage = GameState.currentStage;
@@ -176,6 +179,13 @@ const ResultsScreenUI = {
      */
     goToMenu() {
         this.hide();
+
+        // Let the map celebrate the new stage the next time it opens
+        const next = this.currentStageId ? getNextStage(this.currentStageId) : null;
+        if (this.unlockedNext && next) {
+            LevelSelectUI.pendingAdvance = { fromId: this.currentStageId, toId: next.id, unlock: true };
+        }
+
         exitStageMode();
         LevelSelectUI.updateMenuStars();
         startScreen.style.display = 'flex';
@@ -215,22 +225,33 @@ const ResultsScreenUI = {
 
         this.hide();
 
-        // Reset managers
-        ObstacleManager.reset();
-        CollectibleManager.reset();
-        ShieldManager.reset();
-        SpeedBoostManager.reset();
-        BonusOrbManager.reset();
-        ExitBoosterManager.reset();
+        const startNext = () => {
+            LevelSelectUI.hide();
 
-        // Reset track
-        resetTrackAndPillars();
+            // Reset managers
+            ObstacleManager.reset();
+            CollectibleManager.reset();
+            ShieldManager.reset();
+            SpeedBoostManager.reset();
+            BonusOrbManager.reset();
+            ExitBoosterManager.reset();
 
-        // Exit current stage mode state
-        exitStageMode();
+            // Reset track
+            resetTrackAndPillars();
 
-        // Start next stage
-        startStage(nextStage.id);
+            // Exit current stage mode state
+            exitStageMode();
+
+            // Start next stage
+            startStage(nextStage.id);
+        };
+
+        // Walk the path on the Neon District map to the next stage, then start it
+        // (skips straight to startNext when Reduced Motion is on)
+        LevelSelectUI.playAdvance(this.currentStageId, nextStage.id, {
+            unlock: this.unlockedNext,
+            onDone: startNext
+        });
     }
 };
 
@@ -239,7 +260,8 @@ const ResultsScreenUI = {
  * This bridges the gap between Week 2 code and Week 3 UI
  * @param {number} stars - Stars earned (1-3)
  * @param {object|null} newReward - Newly unlocked reward (if any)
+ * @param {boolean} unlockedNext - True if this run unlocked the next stage
  */
-function showStageResults(stars, newReward) {
-    ResultsScreenUI.show(stars, newReward);
+function showStageResults(stars, newReward, unlockedNext) {
+    ResultsScreenUI.show(stars, newReward, unlockedNext);
 }

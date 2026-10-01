@@ -16,6 +16,11 @@ const LevelSelectUI = {
     selectedStageId: null,
     qaMode: false,
 
+    // Stage-to-stage transition: { fromId, toId, unlock, onDone } waiting for show(),
+    // and the running one (with its timers)
+    pendingAdvance: null,
+    _advance: null,
+
     _layoutKey: '',
     _scrollRaf: 0,
     _resizeRaf: 0,
@@ -51,6 +56,9 @@ const LevelSelectUI = {
                 this.onStageClick(stage.id);
             }
         });
+
+        // Tap anywhere during the transition to skip it
+        document.getElementById('ls-skip').addEventListener('click', () => this.finishAdvance(true));
 
         // Parallax: far skyline drifts slower than the map
         this.stagePath.addEventListener('scroll', () => {
@@ -131,10 +139,16 @@ const LevelSelectUI = {
 
         // Render after opening so the map can measure the screen.
         // Re-reading progress here keeps newly completed/unlocked stages in sync.
-        this.refreshStageNodes();
+        const advance = this.pendingAdvance;
+        this.pendingAdvance = null;
+        const advancing = !!advance && !this.prefersReducedMotion() && this.startAdvance(advance);
+        if (!advancing) {
+            this.refreshStageNodes();
+            this.scrollToCurrent();
+            if (advance && advance.onDone) advance.onDone();
+        }
         // Update the total stars count in the header
         this.updateTotalStars();
-        this.scrollToCurrent();
 
         if (!this.prefersReducedMotion()) {
             this.overlay.classList.remove('ls-entering');
@@ -149,6 +163,7 @@ const LevelSelectUI = {
      * Hide Level Select screen
      */
     hide() {
+        this.cancelAdvance();
         this.overlay.classList.remove('is-open', 'ls-entering');
         this.overlay.setAttribute('aria-hidden', 'true');
         this.clearInfoBar();
@@ -197,8 +212,10 @@ const LevelSelectUI = {
 
     /**
      * Render the district map and all stage nodes
+     * @param {{from: number, to: number, unlock: boolean}|null} advance - draw the "before"
+     *   state of a stage-to-stage transition (path lit up to `from`, `to` still locked)
      */
-    renderStageNodes() {
+    renderStageNodes(advance = null) {
         const width = this.stagePath.clientWidth;
         const height = this.stagePath.clientHeight;
         // Hidden overlays have no size; show() renders again once visible
@@ -223,7 +240,7 @@ const LevelSelectUI = {
         const currentIndex = states.findIndex(s => s.isCurrent);
         const sparkTo = (currentIndex >= 0 ? currentIndex : lastUnlocked) + 1;
 
-        const scene = NeonDistrictMap.render(layout, { litUntil: lastUnlocked, sparkTo });
+        const scene = NeonDistrictMap.render(layout, { litUntil: lastUnlocked, sparkTo, advance });
 
         const world = document.createElement('div');
         world.className = 'ls-world';
@@ -243,16 +260,19 @@ const LevelSelectUI = {
 
         if (scene.spark && !this.prefersReducedMotion() && window.CSS && CSS.supports('offset-path', "path('M 0 0 L 1 1')")) {
             const spark = document.createElement('span');
-            spark.className = 'ls-spark';
+            spark.className = advance ? 'ls-spark ls-spark--advance' : 'ls-spark';
             spark.style.offsetPath = `path('${scene.spark}')`;
-            const probe = world.querySelector('svg');
-            const length = this.measurePath(probe, scene.spark);
-            spark.style.animationDuration = `${Math.max(1.8, length / 150).toFixed(2)}s`;
+            if (!advance) {
+                const probe = world.querySelector('svg');
+                const length = this.measurePath(probe, scene.spark);
+                spark.style.animationDuration = `${Math.max(1.8, length / 150).toFixed(2)}s`;
+            }
             world.appendChild(spark);
         }
 
         states.forEach((state, index) => {
-            world.appendChild(this.createNode(state, layout.positions[index], index));
+            const arriving = !!(advance && advance.unlock && index === advance.to);
+            world.appendChild(this.createNode(state, layout.positions[index], index, arriving));
         });
 
         this.stagePath.innerHTML = '';
@@ -270,7 +290,7 @@ const LevelSelectUI = {
     /**
      * Build one stage node button
      */
-    createNode({ stage, isUnlocked, isCompleted, bestStars, isCurrent }, pos, index) {
+    createNode({ stage, isUnlocked, isCompleted, bestStars, isCurrent }, pos, index, arriving = false) {
         const node = document.createElement('button');
         node.type = 'button';
         node.className = 'stage-node';
@@ -293,6 +313,12 @@ const LevelSelectUI = {
                 <span class="node-face"><span class="node-number">${stage.order}</span></span>
                 ${showStars ? `<span class="node-stars" aria-hidden="true">${this.renderStarsSmall(bestStars)}</span>` : ''}
             `;
+            if (arriving) {
+                // Locked-looking lid that breaks away when the spark arrives
+                node.classList.add('is-arriving');
+                node.insertAdjacentHTML('beforeend',
+                    `<span class="node-ghost" aria-hidden="true"><span class="node-lock">${this.lockIcon()}</span></span>`);
+            }
         } else {
             node.setAttribute('aria-label', `Stage ${stage.order}: locked`);
             node.setAttribute('aria-disabled', 'true');
@@ -364,6 +390,101 @@ const LevelSelectUI = {
         if (!this.sky || this.prefersReducedMotion()) return;
         const y = -this.stagePath.scrollTop * 0.35;
         this.sky.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
+    },
+
+    // ---------- Stage-to-stage transition ----------
+    // Timeline (ms) mirrors the animation delays in css/level-select.css:
+    // 0-500 map settles, 500-1400 spark runs the new path segment, 1350 lock breaks,
+    // 1700 the stage ignites, 2700 hand over to the next stage.
+    ADVANCE_UNLOCK_MS: 1350,
+    ADVANCE_DONE_MS: 2700,
+
+    /**
+     * Walk the path from a finished stage to the next one.
+     * Opens the map, plays the transition, then calls onDone (e.g. to start the stage).
+     * With Reduced Motion the map is skipped and onDone runs immediately.
+     * @param {string} fromId - Stage just finished
+     * @param {string} toId - Stage to move to
+     * @param {{unlock?: boolean, onDone?: Function}} opts - unlock: play the unlock burst
+     */
+    playAdvance(fromId, toId, { unlock = true, onDone = null } = {}) {
+        if (this.prefersReducedMotion()) {
+            if (onDone) onDone();
+            return;
+        }
+        this.pendingAdvance = { fromId, toId, unlock, onDone };
+        this.show();
+    },
+
+    /**
+     * Render the "before" state and start the timeline
+     * @returns {boolean} False if the transition can't run (caller falls back)
+     */
+    startAdvance({ fromId, toId, unlock, onDone }) {
+        const stages = getAllStages();
+        const from = stages.findIndex(s => s.id === fromId);
+        const to = stages.findIndex(s => s.id === toId);
+        if (from < 0 || to !== from + 1) return false;
+
+        this.renderStageNodes({ from, to, unlock });
+        if (!this.layout || !this.layout.positions[to]) return false;
+
+        const next = stages[to];
+        const infoBar = document.getElementById('stage-info-bar');
+        if (infoBar) infoBar.textContent = `Stage ${stages[from].order} complete!`;
+
+        // Frame both nodes
+        const mid = (this.layout.positions[from].y + this.layout.positions[to].y) / 2;
+        const view = this.stagePath.clientHeight;
+        const max = Math.max(0, this.stagePath.scrollHeight - view);
+        this.stagePath.scrollTop = Math.max(0, Math.min(max, mid - view * 0.5));
+        this.updateParallax();
+
+        const timers = [];
+        this._advance = { fromId, toId, onDone, timers };
+        this.overlay.classList.add('ls-advancing');
+        void this.overlay.offsetWidth; // commit the "before" state, then run
+        this.overlay.classList.add('ls-advance-run');
+
+        timers.push(setTimeout(() => {
+            if (infoBar) infoBar.textContent = unlock
+                ? `Stage ${next.order} unlocked: ${next.name}`
+                : `Next up: Stage ${next.order}, ${next.name}`;
+            if (unlock && typeof hapticFeedback !== 'undefined') hapticFeedback.impact('medium');
+        }, this.ADVANCE_UNLOCK_MS));
+        timers.push(setTimeout(() => this.finishAdvance(true), this.ADVANCE_DONE_MS));
+        return true;
+    },
+
+    /**
+     * End the transition (timer or tap-to-skip)
+     * @param {boolean} runCallback - Call onDone (otherwise just settle the map)
+     */
+    finishAdvance(runCallback) {
+        const adv = this._advance;
+        if (!adv) return;
+        this._advance = null;
+        adv.timers.forEach(clearTimeout);
+        this.overlay.classList.remove('ls-advancing', 'ls-advance-run');
+        this.clearInfoBar();
+
+        if (runCallback && adv.onDone) {
+            adv.onDone();
+        } else {
+            this.renderStageNodes();
+            this.scrollToCurrent();
+        }
+    },
+
+    /**
+     * Abort without running onDone (screen is being hidden)
+     */
+    cancelAdvance() {
+        const adv = this._advance;
+        if (!adv) return;
+        this._advance = null;
+        adv.timers.forEach(clearTimeout);
+        this.overlay.classList.remove('ls-advancing', 'ls-advance-run');
     },
 
     /**
