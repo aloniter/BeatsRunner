@@ -404,7 +404,7 @@ function goToMainMenu() {
     // Leaving mid-run (e.g. from the pause menu): stop the run and clear pause UI
     GameState.isPlaying = false;
     GameState.isPaused = false;
-    pauseScreen.style.display = 'none';
+    pauseHomeBtn.classList.remove('is-visible');
     pauseBtn.classList.remove('is-paused');
     pauseBtn.textContent = 'Ⅱ';
     hud.style.display = 'none';
@@ -455,7 +455,7 @@ function togglePause() {
     GameState.isPaused = !GameState.isPaused;
     pauseBtn.classList.toggle('is-paused', GameState.isPaused);
     pauseBtn.textContent = GameState.isPaused ? '▶' : 'Ⅱ';
-    pauseScreen.style.display = GameState.isPaused ? 'flex' : 'none';
+    pauseHomeBtn.classList.toggle('is-visible', GameState.isPaused);
 
     if (bgMusic) {
         if (GameState.isPaused) {

@@ -156,8 +156,7 @@ function setupControls() {
     document.getElementById('restart-btn').addEventListener('click', restartGame);
     document.getElementById('mainmenu-btn').addEventListener('click', goToMainMenu);
     pauseBtn.addEventListener('click', togglePause);
-    document.getElementById('resume-btn').addEventListener('click', togglePause);
-    document.getElementById('pause-mainmenu-btn').addEventListener('click', goToMainMenu);
+    pauseHomeBtn.addEventListener('click', goToMainMenu);
 
     // Stage Mode button
     document.getElementById('stage-mode-btn').addEventListener('click', () => {
@@ -230,7 +229,7 @@ function onVisibilityChange() {
         if (bgMusic && !bgMusic.paused) {
             bgMusic.pause();
         }
-    } else if (!document.hidden && GameState.isPaused && pauseScreen.style.display !== 'flex') {
+    } else if (!document.hidden && GameState.isPaused && !pauseHomeBtn.classList.contains('is-visible')) {
         GameState.isPaused = false;
         pauseBtn.classList.remove('is-paused');
         pauseBtn.textContent = 'Ⅱ';

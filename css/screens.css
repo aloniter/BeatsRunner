@@ -617,27 +617,3 @@
     min-width: 35px;
     text-align: right;
 }
-
-/* Pause Screen */
-#pause-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 200;
-    padding: calc(var(--safe-area-inset-top) + 20px) calc(var(--safe-area-inset-right) + 20px) calc(var(--safe-area-inset-bottom) + 20px) calc(var(--safe-area-inset-left) + 20px);
-}
-
-#pause-screen h2 {
-    font-size: 42px;
-    color: #ff00ff;
-    text-transform: uppercase;
-    letter-spacing: 6px;
-    text-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff;
-}

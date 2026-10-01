@@ -32,6 +32,16 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+/* Main-menu button: sits next to the pause button, only shown while paused */
+.pause-btn.pause-home-btn {
+    right: calc(16px + 44px + 10px + var(--safe-area-inset-right));
+    display: none;
+}
+
+.pause-btn.pause-home-btn.is-visible {
+    display: flex;
+}
+
 .pause-btn:hover {
     background: rgba(0, 255, 255, 0.18);
     box-shadow: 0 0 18px rgba(0, 255, 255, 0.6);
@@ -47,6 +57,9 @@
 @media (max-width: 768px) {
     .pause-btn {
         top: calc(12px + var(--safe-area-inset-top));  /* Slightly lower on mobile */
+    }
+    .pause-btn.pause-home-btn {
+        right: calc(16px + 44px + 10px + var(--safe-area-inset-right));
     }
 }
 
