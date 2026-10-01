@@ -1,35 +1,77 @@
 /* ========================================
    BEAT RUNNER - Level Select Screen
-   Stage Mode UI: Stage progression path
+   Stage Mode UI: Neon District map
    ======================================== */
 
 /**
  * Level Select UI
- * Displays 15 stage nodes in a connected path
+ * Displays the stage nodes along a path through the Neon District
+ * (scenery comes from NeonDistrictMap; state comes from stage progress)
  * Handles stage selection and navigation
  */
 const LevelSelectUI = {
     overlay: null,
+    panel: null,
     stagePath: null,
     selectedStageId: null,
-
-    /**
-     * Initialize Level Select screen
-     */
     qaMode: false,
+
+    _layoutKey: '',
+    _scrollRaf: 0,
+    _resizeRaf: 0,
 
     /**
      * Initialize Level Select screen
      */
     init() {
         this.overlay = document.getElementById('level-select-overlay');
+        this.panel = this.overlay.querySelector('.level-select-panel');
         this.stagePath = document.getElementById('stage-path');
+        this.sky = this.overlay.querySelector('.ls-sky');
+
+        const skyline = document.getElementById('ls-sky-skyline');
+        if (skyline) skyline.innerHTML = NeonDistrictMap.skyline(560, 190);
 
         // Back button
         document.getElementById('level-select-back').addEventListener('click', () => {
             this.hide();
             startScreen.style.display = 'flex';
         });
+
+        // One delegated handler for every node (nodes are re-rendered freely)
+        this.stagePath.addEventListener('click', (e) => {
+            const node = e.target.closest('.stage-node');
+            if (!node) return;
+            const stage = getStage(node.dataset.stageId);
+            if (!stage) return;
+            if (node.classList.contains('locked')) {
+                this.showLockedTooltip(stage, node, e);
+            } else {
+                if (typeof hapticFeedback !== 'undefined') hapticFeedback.impact('light');
+                this.onStageClick(stage.id);
+            }
+        });
+
+        // Parallax: far skyline drifts slower than the map
+        this.stagePath.addEventListener('scroll', () => {
+            if (this._scrollRaf) return;
+            this._scrollRaf = requestAnimationFrame(() => {
+                this._scrollRaf = 0;
+                this.updateParallax();
+            });
+        }, { passive: true });
+
+        // Re-layout on rotation / resize while open
+        if (typeof ResizeObserver !== 'undefined') {
+            new ResizeObserver(() => {
+                if (!this.isOpen() || this._resizeRaf) return;
+                this._resizeRaf = requestAnimationFrame(() => {
+                    this._resizeRaf = 0;
+                    const key = this.getLayoutKey();
+                    if (key !== this._layoutKey) this.renderStageNodes();
+                });
+            }).observe(this.panel);
+        }
 
         // QA Unlock Toggle Button
         this.createQAToggle();
@@ -38,42 +80,30 @@ const LevelSelectUI = {
         this.renderStageNodes();
     },
 
+    isOpen() {
+        return this.overlay.classList.contains('is-open');
+    },
+
+    prefersReducedMotion() {
+        return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    },
+
     /**
      * Create and inject QA toggle button
      */
     createQAToggle() {
-        const panel = this.overlay.querySelector('.level-select-panel');
-        if (!panel) return;
+        const host = document.getElementById('ls-header-sub') || this.panel;
+        if (!host) return;
 
-        // Create container for QA tools if we want to expand later, but for now just a button
         const qaBtn = document.createElement('button');
         qaBtn.id = 'qa-unlock-btn';
+        qaBtn.type = 'button';
+        qaBtn.className = 'ls-qa-btn';
         qaBtn.textContent = '🔒 QA: Default';
-
-        // Inline styles for QA tool
-        Object.assign(qaBtn.style, {
-            position: 'absolute',
-            top: '70px',
-            right: '25px',
-            background: 'rgba(0, 0, 0, 0.6)',
-            border: '1px solid #ff00ff',
-            color: '#fff',
-            fontSize: '10px',
-            padding: '4px 8px',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            zIndex: '10',
-            fontFamily: 'monospace',
-            textTransform: 'uppercase'
-        });
+        qaBtn.setAttribute('aria-pressed', 'false');
 
         qaBtn.addEventListener('click', () => this.toggleQAMode(qaBtn));
-        panel.appendChild(qaBtn);
-
-        // Ensure panel is relative for absolute positioning
-        if (getComputedStyle(panel).position === 'static') {
-            panel.style.position = 'relative';
-        }
+        host.appendChild(qaBtn);
     },
 
     /**
@@ -83,15 +113,9 @@ const LevelSelectUI = {
     toggleQAMode(btn) {
         this.qaMode = !this.qaMode;
 
-        if (this.qaMode) {
-            btn.textContent = '🔓 QA: Unlocked';
-            btn.style.background = 'rgba(255, 0, 255, 0.4)';
-            btn.style.borderColor = '#fff';
-        } else {
-            btn.textContent = '🔒 QA: Default';
-            btn.style.background = 'rgba(0, 0, 0, 0.6)';
-            btn.style.borderColor = '#ff00ff';
-        }
+        btn.textContent = this.qaMode ? '🔓 QA: Unlocked' : '🔒 QA: Default';
+        btn.classList.toggle('is-active', this.qaMode);
+        btn.setAttribute('aria-pressed', String(this.qaMode));
 
         // Refresh UI to reflect new state
         this.refreshStageNodes();
@@ -100,24 +124,32 @@ const LevelSelectUI = {
     /**
      * Show Level Select screen
      * Ensures progression data is always fresh by reloading from localStorage
-     * FIX: This handles the progression bug by calling refreshStageNodes()
-     * which properly updates stages that have been completed and unlocked
      */
     show() {
-        // Refresh all stage nodes with latest progress data from localStorage
-        // This ensures completed stages and newly unlocked stages are visible
+        this.overlay.classList.add('is-open');
+        this.overlay.setAttribute('aria-hidden', 'false');
+
+        // Render after opening so the map can measure the screen.
+        // Re-reading progress here keeps newly completed/unlocked stages in sync.
         this.refreshStageNodes();
         // Update the total stars count in the header
         this.updateTotalStars();
-        this.overlay.classList.add('is-open');
-        this.overlay.setAttribute('aria-hidden', 'false');
+        this.scrollToCurrent();
+
+        if (!this.prefersReducedMotion()) {
+            this.overlay.classList.remove('ls-entering');
+            void this.overlay.offsetWidth; // restart entrance animation
+            this.overlay.classList.add('ls-entering');
+            clearTimeout(this._enterTimer);
+            this._enterTimer = setTimeout(() => this.overlay.classList.remove('ls-entering'), 1400);
+        }
     },
 
     /**
      * Hide Level Select screen
      */
     hide() {
-        this.overlay.classList.remove('is-open');
+        this.overlay.classList.remove('is-open', 'ls-entering');
         this.overlay.setAttribute('aria-hidden', 'true');
         this.clearInfoBar();
     },
@@ -133,131 +165,205 @@ const LevelSelectUI = {
     },
 
     /**
-     * Render 15 stage nodes as connected path
+     * Resolve display state for every stage from saved progress
+     * @returns {Array<{stage, isUnlocked, isCompleted, bestStars, isCurrent}>}
      */
-    renderStageNodes() {
+    getStageStates() {
         const stages = getAllStages();
         const progress = loadProgress();
 
-        this.stagePath.innerHTML = '';
-
-        stages.forEach((stage, index) => {
+        const states = stages.map(stage => {
             const stageData = progress.stageProgress[stage.id];
             // QA Mode overrides unlocked state
             const isUnlocked = this.qaMode || (stageData ? stageData.unlocked : false);
-            const isCompleted = stageData ? stageData.completed : false;
-            const bestStars = stageData ? stageData.bestStars : 0;
-
-            const node = document.createElement('div');
-            node.className = 'stage-node';
-            node.classList.add(isUnlocked ? 'unlocked' : 'locked');
-            if (isCompleted) {
-                node.classList.add('completed');
-            }
-            node.dataset.stageId = stage.id;
-            node.dataset.order = stage.order;
-
-            if (isUnlocked) {
-                node.innerHTML = `
-                    <div class="node-number">${stage.order}</div>
-                    <div class="node-stars">${this.renderStarsSmall(bestStars)}</div>
-                `;
-                node.addEventListener('click', () => this.onStageClick(stage.id));
-            } else {
-                node.innerHTML = `
-                    <div class="node-lock">🔒</div>
-                `;
-                node.addEventListener('click', (e) => this.showLockedTooltip(stage, node, e));
-            }
-
-            this.stagePath.appendChild(node);
-
-            // Add connector line (except for last node)
-            if (index < stages.length - 1) {
-                const connector = document.createElement('div');
-                connector.className = 'stage-connector';
-                this.stagePath.appendChild(connector);
-            }
+            return {
+                stage,
+                isUnlocked,
+                isCompleted: stageData ? stageData.completed : false,
+                bestStars: stageData ? stageData.bestStars : 0,
+                isCurrent: false
+            };
         });
+
+        // "Current" = first playable stage not yet completed (the frontier)
+        const current = states.find(s => s.isUnlocked && !s.isCompleted);
+        if (current) current.isCurrent = true;
+        return states;
+    },
+
+    getLayoutKey() {
+        return `${this.stagePath.clientWidth}x${this.stagePath.clientHeight}`;
     },
 
     /**
-     * Refresh node states without full re-render
-     * FIX: Properly handles locked→unlocked transitions by re-rendering node HTML
-     * Ensures that when a stage is completed and the next stage unlocks,
-     * the UI immediately reflects these changes when the level select is shown
+     * Render the district map and all stage nodes
+     */
+    renderStageNodes() {
+        const width = this.stagePath.clientWidth;
+        const height = this.stagePath.clientHeight;
+        // Hidden overlays have no size; show() renders again once visible
+        if (!width || !height) return;
+
+        const states = this.getStageStates();
+        const header = this.overlay.querySelector('.ls-header');
+        const infoBar = document.getElementById('stage-info-bar');
+        const panelRect = this.panel.getBoundingClientRect();
+        const topInset = header ? header.getBoundingClientRect().bottom - panelRect.top : 0;
+        const bottomInset = infoBar ? panelRect.bottom - infoBar.getBoundingClientRect().top + 8 : 0;
+
+        const layout = NeonDistrictMap.computeLayout({
+            width, viewportHeight: height, topInset, bottomInset, count: states.length
+        });
+        this.layout = layout;
+        this._layoutKey = this.getLayoutKey();
+
+        // Path lights up to the furthest playable stage; the spark runs one step beyond it
+        let lastUnlocked = 0;
+        states.forEach((s, i) => { if (s.isUnlocked) lastUnlocked = i; });
+        const currentIndex = states.findIndex(s => s.isCurrent);
+        const sparkTo = (currentIndex >= 0 ? currentIndex : lastUnlocked) + 1;
+
+        const scene = NeonDistrictMap.render(layout, { litUntil: lastUnlocked, sparkTo });
+
+        const world = document.createElement('div');
+        world.className = 'ls-world';
+        world.style.height = `${layout.H}px`;
+        world.style.setProperty('--n', `${layout.N}px`);
+        world.innerHTML = scene.svg;
+
+        scene.lanterns.forEach((l, i) => {
+            const el = document.createElement('span');
+            el.className = 'ls-lantern';
+            el.style.left = `${l.x}px`;
+            el.style.top = `${l.y}px`;
+            el.style.setProperty('--s', l.size);
+            el.style.animationDelay = `${-(i * 0.7)}s`;
+            world.appendChild(el);
+        });
+
+        if (scene.spark && !this.prefersReducedMotion() && window.CSS && CSS.supports('offset-path', "path('M 0 0 L 1 1')")) {
+            const spark = document.createElement('span');
+            spark.className = 'ls-spark';
+            spark.style.offsetPath = `path('${scene.spark}')`;
+            const probe = world.querySelector('svg');
+            const length = this.measurePath(probe, scene.spark);
+            spark.style.animationDuration = `${Math.max(1.8, length / 150).toFixed(2)}s`;
+            world.appendChild(spark);
+        }
+
+        states.forEach((state, index) => {
+            world.appendChild(this.createNode(state, layout.positions[index], index));
+        });
+
+        this.stagePath.innerHTML = '';
+        this.stagePath.appendChild(world);
+        this.updateParallax();
+    },
+
+    /**
+     * Refresh node states (full re-render keeps locked→unlocked transitions correct)
      */
     refreshStageNodes() {
-        const progress = loadProgress();
-        const nodes = this.stagePath.querySelectorAll('.stage-node');
+        this.renderStageNodes();
+    },
 
-        nodes.forEach(node => {
-            const stageId = node.dataset.stageId;
-            const stageData = progress.stageProgress[stageId];
+    /**
+     * Build one stage node button
+     */
+    createNode({ stage, isUnlocked, isCompleted, bestStars, isCurrent }, pos, index) {
+        const node = document.createElement('button');
+        node.type = 'button';
+        node.className = 'stage-node';
+        node.classList.add(isUnlocked ? 'unlocked' : 'locked');
+        if (isCompleted) node.classList.add('completed');
+        if (isCurrent) node.classList.add('current');
+        node.dataset.stageId = stage.id;
+        node.dataset.order = stage.order;
+        node.style.left = `${pos.x}px`;
+        node.style.top = `${pos.y}px`;
+        node.style.setProperty('--i', index);
 
-            if (!stageData) return;
+        if (isUnlocked) {
+            node.setAttribute('aria-label', `Stage ${stage.order}: ${stage.name}${isCompleted ? `, ${bestStars} of 3 stars` : ''}`);
+            if (isCurrent) node.setAttribute('aria-current', 'step');
+            const showStars = isCompleted || bestStars > 0;
+            node.innerHTML = `
+                ${isCurrent ? '<span class="node-aura" aria-hidden="true"></span>' : ''}
+                <span class="node-plinth" aria-hidden="true"></span>
+                <span class="node-face"><span class="node-number">${stage.order}</span></span>
+                ${showStars ? `<span class="node-stars" aria-hidden="true">${this.renderStarsSmall(bestStars)}</span>` : ''}
+            `;
+        } else {
+            node.setAttribute('aria-label', `Stage ${stage.order}: locked`);
+            node.setAttribute('aria-disabled', 'true');
+            node.innerHTML = `
+                <span class="node-plinth" aria-hidden="true"></span>
+                <span class="node-face"><span class="node-lock" aria-hidden="true">${this.lockIcon()}</span></span>
+            `;
+        }
+        return node;
+    },
 
-            // Get stage for rendering locked/unlocked content
-            const stage = getStage(stageId);
-            if (!stage) return;
-
-            const isCurrentlyUnlocked = node.classList.contains('unlocked');
-            const shouldBeUnlocked = this.qaMode || stageData.unlocked;
-
-            // If unlock state has changed, we need to update the entire node HTML
-            // This is the FIX for the progression bug: when a stage transitions from
-            // locked to unlocked, the node HTML needs to be completely re-rendered
-            if (isCurrentlyUnlocked !== shouldBeUnlocked) {
-                // Clear old event listeners by replacing the element
-                const newNode = node.cloneNode(false);
-                newNode.dataset.stageId = stageId;
-                newNode.dataset.order = stage.order;
-
-                if (shouldBeUnlocked) {
-                    // Stage is now unlocked
-                    newNode.className = 'stage-node unlocked';
-                    if (stageData.completed) {
-                        newNode.classList.add('completed');
-                    }
-                    newNode.innerHTML = `
-                        <div class="node-number">${stage.order}</div>
-                        <div class="node-stars">${this.renderStarsSmall(stageData.bestStars)}</div>
-                    `;
-                    newNode.addEventListener('click', () => this.onStageClick(stageId));
-                } else {
-                    // Stage is locked
-                    newNode.className = 'stage-node locked';
-                    newNode.innerHTML = `
-                        <div class="node-lock">🔒</div>
-                    `;
-                    newNode.addEventListener('click', (e) => this.showLockedTooltip(stage, newNode, e));
-                }
-
-                // Replace the old node with the new one
-                node.parentNode.replaceChild(newNode, node);
-            } else {
-                // Unlock state unchanged - just update visual state
-                node.classList.toggle('completed', stageData.completed);
-
-                // If already unlocked, update the star display
-                if (shouldBeUnlocked) {
-                    const starsContainer = node.querySelector('.node-stars');
-                    if (starsContainer) {
-                        starsContainer.innerHTML = this.renderStarsSmall(stageData.bestStars);
-                    }
-                }
-            }
-        });
+    lockIcon() {
+        return `<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+            <defs>
+                <linearGradient id="lk-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe7a0"/><stop offset="0.45" stop-color="#f2b640"/><stop offset="1" stop-color="#a8650f"/></linearGradient>
+                <linearGradient id="lk-shackle" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8a5a1a"/><stop offset="0.4" stop-color="#f7d27a"/><stop offset="1" stop-color="#8a5a1a"/></linearGradient>
+            </defs>
+            <path d="M10 14V10.5a6 6 0 0 1 12 0V14" fill="none" stroke="#3a2306" stroke-width="5" stroke-linecap="round"/>
+            <path d="M10 14V10.5a6 6 0 0 1 12 0V14" fill="none" stroke="url(#lk-shackle)" stroke-width="3" stroke-linecap="round"/>
+            <rect x="6" y="13" width="20" height="16" rx="3.5" fill="url(#lk-body)" stroke="#5c3608" stroke-width="1.2"/>
+            <rect x="7.5" y="14.2" width="17" height="2.2" rx="1.1" fill="#fff6cf" opacity="0.55"/>
+            <circle cx="16" cy="20.5" r="2.4" fill="#4a2a05"/>
+            <path d="M15 21.5h2l.6 4h-3.2z" fill="#4a2a05"/>
+        </svg>`;
     },
 
     /**
      * Render mini star display for node
      * @param {number} count - Star count (0-3)
-     * @returns {string} Star emoji string
+     * @returns {string} Star markup (3 slots, earned ones filled)
      */
     renderStarsSmall(count) {
-        if (count === 0) return '';
-        return '⭐'.repeat(count);
+        let out = '';
+        for (let i = 0; i < 3; i++) {
+            out += `<svg class="node-star${i < count ? ' is-earned' : ''}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.6L12 17.4l-5.9 3.2 1.2-6.6L2.5 9.4l6.6-.9z"/></svg>`;
+        }
+        return out;
+    },
+
+    measurePath(svg, d) {
+        if (!svg || !d) return 0;
+        try {
+            const p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            p.setAttribute('d', d);
+            svg.appendChild(p);
+            const len = p.getTotalLength();
+            p.remove();
+            return len;
+        } catch (e) {
+            return 0;
+        }
+    },
+
+    /**
+     * Bring the current stage into view (instant: happens while opening)
+     */
+    scrollToCurrent() {
+        const node = this.stagePath.querySelector('.stage-node.current') ||
+            [...this.stagePath.querySelectorAll('.stage-node.unlocked')].pop();
+        if (!node || !this.layout) return;
+        const y = parseFloat(node.style.top) || 0;
+        const view = this.stagePath.clientHeight;
+        const max = this.stagePath.scrollHeight - view;
+        this.stagePath.scrollTop = Math.max(0, Math.min(max, y - view * 0.5));
+        this.updateParallax();
+    },
+
+    updateParallax() {
+        if (!this.sky || this.prefersReducedMotion()) return;
+        const y = -this.stagePath.scrollTop * 0.35;
+        this.sky.style.transform = `translate3d(0, ${y.toFixed(1)}px, 0)`;
     },
 
     /**
@@ -286,6 +392,11 @@ const LevelSelectUI = {
         if (infoBar) {
             infoBar.textContent = `Complete "${prevStageName}" to unlock`;
         }
+
+        // Small "nope" shake on the locked node
+        node.classList.remove('is-denied');
+        void node.offsetWidth;
+        node.classList.add('is-denied');
     },
 
     /**
@@ -294,6 +405,8 @@ const LevelSelectUI = {
     updateTotalStars() {
         const summary = getProgressSummary();
         document.getElementById('level-select-total-stars').textContent = summary.totalStars;
+        const maxEl = document.getElementById('level-select-max-stars');
+        if (maxEl && summary.maxStars) maxEl.textContent = summary.maxStars;
     },
 
     /**

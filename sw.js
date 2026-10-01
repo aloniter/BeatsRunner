@@ -1,6 +1,6 @@
 // Offline-first service worker: everything is precached on install so the
 // game runs in airplane mode. Bump CACHE_VERSION on every release.
-const CACHE_VERSION = 'beatsrunner-v7';
+const CACHE_VERSION = 'beatsrunner-v8';
 
 const PRECACHE = [
   './',
@@ -17,6 +17,7 @@ const PRECACHE = [
   'css/base.css',
   'css/controls.css',
   'css/hud.css',
+  'css/level-select.css',
   'css/overlays.css',
   'css/screens.css',
   'css/store.css',
@@ -74,6 +75,7 @@ const PRECACHE = [
   'js/top-distance.js',
   'js/ui/booster-hud.js',
   'js/ui/gameplay-hud.js',
+  'js/ui/level-select-map.js',
   'js/ui/level-select.js',
   'js/ui/offline-status.js',
   'js/ui/results-screen.js',
