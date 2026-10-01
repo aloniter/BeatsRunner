@@ -4,12 +4,12 @@
 // ========================================
 const adaptiveRes = {
     _history: [],
-    _maxHistory: 45,   // ~0.75 second window (faster reaction)
+    _maxHistory: 90,   // ~1.5s window - ignores single hitches
     _cooldown: 0,      // seconds until next adjustment is allowed
-    _COOLDOWN: 1.5,    // seconds between adjustments (react 2× faster)
-    _LOW_FPS: 54,      // start downscaling earlier for smoother feel (was 50)
-    _HIGH_FPS: 58,     // raise pixel ratio when avg FPS recovers above this
-    _MIN_RATIO: 0.6,   // allow more aggressive downscaling (was 0.75)
+    _COOLDOWN: 3,      // each resolution change reallocates buffers (a hitch), so change rarely
+    _LOW_FPS: 50,
+    _HIGH_FPS: 58,
+    _MIN_RATIO: 1.0,   // never render below native CSS pixels (looks blurry)
     _isMobile: null,   // cached mobile check
 
     update(delta) {
@@ -19,31 +19,34 @@ const adaptiveRes = {
             this._isMobile = ('ontouchstart' in window || navigator.maxTouchPoints > 0);
         }
         if (!this._isMobile) return;
+        // Only measure real gameplay frames (menus/pause are not representative)
+        if (!GameState.isPlaying || GameState.isPaused) {
+            this._history.length = 0;
+            return;
+        }
 
-        const fps = delta > 0 ? 1 / delta : 60;
-        this._history.push(fps);
+        this._history.push(delta);
         if (this._history.length > this._maxHistory) this._history.shift();
-        if (this._history.length < this._maxHistory) return; // wait for a full second of data
-
         this._cooldown -= delta;
-        if (this._cooldown > 0) return;
+        if (this._history.length < this._maxHistory || this._cooldown > 0) return;
 
-        const avg = this._history.reduce((a, b) => a + b, 0) / this._history.length;
+        // Average frame time -> FPS (robust against one long frame)
+        const avgDelta = this._history.reduce((a, b) => a + b, 0) / this._history.length;
+        const avg = 1 / avgDelta;
         const cur = renderer.getPixelRatio();
-        const max = qualitySettings.pixelRatio;
+        const max = Math.min(window.devicePixelRatio, qualitySettings.pixelRatio);
 
+        let next = cur;
         if (avg < this._LOW_FPS && cur > this._MIN_RATIO) {
-            const next = Math.max(this._MIN_RATIO, +(cur - 0.3).toFixed(2));
-            renderer.setPixelRatio(next);
-            if (composer) composer.setSize(window.innerWidth, window.innerHeight);
-            this._cooldown = this._COOLDOWN;
-            this._history = [];
+            next = Math.max(this._MIN_RATIO, +(cur - 0.25).toFixed(2));
         } else if (avg > this._HIGH_FPS && cur < max) {
-            const next = Math.min(max, +(cur + 0.25).toFixed(2));
+            next = Math.min(max, +(cur + 0.25).toFixed(2));
+        }
+        if (next !== cur) {
             renderer.setPixelRatio(next);
             if (composer) composer.setSize(window.innerWidth, window.innerHeight);
             this._cooldown = this._COOLDOWN;
-            this._history = [];
+            this._history.length = 0;
         }
     }
 };

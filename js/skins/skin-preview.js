@@ -387,6 +387,20 @@ function setupMoonPreview(canvas, itemId) {
     resizeDiscoPreview();
 }
 
+/**
+ * Destroy all preview renderers. Each preview owns its own WebGL context, so they
+ * must be released when the store closes - otherwise they keep rendering every
+ * frame during gameplay and, on iOS, can push the main game context over the
+ * browser's context limit (context lost / stutter).
+ */
+function disposeDiscoPreviews() {
+    previewScenes.forEach((preview) => {
+        preview.renderer.dispose();
+        preview.renderer.forceContextLoss();
+    });
+    previewScenes.clear();
+}
+
 function resizeDiscoPreview() {
     previewScenes.forEach((preview) => {
         const rect = preview.canvas.getBoundingClientRect();

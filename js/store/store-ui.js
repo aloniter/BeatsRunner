@@ -70,7 +70,7 @@ function renderStoreItems() {
     if (!storeGrid) return;
     storeGrid.innerHTML = '';
     storeItemElements.clear();
-    previewScenes.clear();
+    disposeDiscoPreviews();
 
     const category = STORE_CATEGORIES.find((c) => c.id === selectedCategoryId);
     if (!category) return;
@@ -154,28 +154,34 @@ function renderStore() {
 // Store Setup
 // ========================================
 
+function openStore() {
+    // Previews (one WebGL context each) only exist while the store is open
+    renderStoreItems();
+    refreshStoreUI();
+    storeOverlay.classList.add('is-open');
+    storeOverlay.setAttribute('aria-hidden', 'false');
+    if (typeof resizeDiscoPreview === 'function') resizeDiscoPreview();
+}
+
+function closeStore() {
+    storeOverlay.classList.remove('is-open');
+    storeOverlay.setAttribute('aria-hidden', 'true');
+    disposeDiscoPreviews();
+}
+
 function setupStore() {
     if (storeBtn && storeOverlay) {
-        storeBtn.addEventListener('click', () => {
-            storeOverlay.classList.add('is-open');
-            storeOverlay.setAttribute('aria-hidden', 'false');
-            if (typeof resizeDiscoPreview === 'function') resizeDiscoPreview();
-        });
+        storeBtn.addEventListener('click', openStore);
     }
     if (storeCloseBtn && storeOverlay) {
-        storeCloseBtn.addEventListener('click', () => {
-            storeOverlay.classList.remove('is-open');
-            storeOverlay.setAttribute('aria-hidden', 'true');
-        });
+        storeCloseBtn.addEventListener('click', closeStore);
     }
     if (storeOverlay) {
         storeOverlay.addEventListener('click', (e) => {
-            if (e.target === storeOverlay) {
-                storeOverlay.classList.remove('is-open');
-                storeOverlay.setAttribute('aria-hidden', 'true');
-            }
+            if (e.target === storeOverlay) closeStore();
         });
     }
     renderStore();
+    disposeDiscoPreviews();
     refreshStoreUI();
 }
