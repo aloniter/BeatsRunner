@@ -453,6 +453,13 @@ function onFinishLineCrossed() {
   const nextStage = typeof getNextStage === 'function' ? getNextStage(currentStage.id) : null;
   const unlockedNext = !!nextStage && typeof isStageUnlocked === 'function' && !isStageUnlocked(nextStage.id);
 
+  // What the player had before this run (for the NEW BEST badge and star-bar animation)
+  const prevData = typeof getStageData === 'function' ? getStageData(currentStage.id) : null;
+  const previousBest = {
+    completed: !!(prevData && prevData.completed),
+    bestStars: prevData && prevData.bestStars ? prevData.bestStars : 0
+  };
+
   // Save progress now, so closing the app during the outro never loses the result
   let newReward = null;
   if (typeof saveProgress === 'function') {
@@ -465,10 +472,10 @@ function onFinishLineCrossed() {
     );
   }
 
-  startFinishOutro({ stage: currentStage, stars, newReward, unlockedNext });
+  startFinishOutro({ stage: currentStage, stars, newReward, unlockedNext, previousBest });
 }
 
-function startFinishOutro({ stage, stars, newReward, unlockedNext }) {
+function startFinishOutro({ stage, stars, newReward, unlockedNext, previousBest }) {
   const reduced = finishPrefersReducedMotion();
   const gatePos = finishLineGroup ? finishLineGroup.position.clone() : new THREE.Vector3(0, 0, 0);
 
@@ -493,6 +500,7 @@ function startFinishOutro({ stage, stars, newReward, unlockedNext }) {
     stars,
     newReward,
     unlockedNext,
+    previousBest,
     reduced,
     startSpeed: GameState.speed,
     starsPlayed: 0,
@@ -611,7 +619,7 @@ function endFinishOutro() {
 
   // Results pauses the music; restore the player's volume for next time
   if (typeof showStageResults === 'function') {
-    showStageResults(o.stars, o.newReward, o.unlockedNext);
+    showStageResults(o.stars, o.newReward, o.unlockedNext, o.previousBest);
   } else {
     console.log('STAGE COMPLETE!', o.stars);
   }

@@ -22,6 +22,7 @@
     <link rel="stylesheet" href="css/controls.css">
     <link rel="stylesheet" href="css/overlays.css">
     <link rel="stylesheet" href="css/level-select.css">
+    <link rel="stylesheet" href="css/results.css">
 </head>
 <body>
     <canvas id="game-canvas"></canvas>
@@ -258,9 +259,11 @@
 
     <!-- Stage Info Card Modal (Stage Mode) -->
     <div class="overlay" id="stage-info-overlay" aria-hidden="true">
-        <div class="overlay-panel stage-info-card">
+        <div class="rs-bg" aria-hidden="true"><div class="rs-skyline"></div></div>
+        <div class="overlay-panel stage-info-card" role="dialog" aria-labelledby="card-stage-name">
             <div class="stage-info-header">
                 <div class="stage-number" id="card-stage-number">1</div>
+                <div class="stage-eyebrow">Neon District</div>
                 <div class="stage-name" id="card-stage-name">Neon Intro</div>
                 <div class="stage-description" id="card-stage-description"></div>
             </div>
@@ -271,21 +274,24 @@
                 </div>
                 <div class="stat-row">
                     <span class="stat-label">Best</span>
-                    <span class="stat-value" id="card-best-stars">--</span>
+                    <span class="stat-value stat-value--stars" id="card-best-stars">--</span>
                 </div>
             </div>
             <div class="stage-star-goals">
-                <div class="star-goal">
-                    <span class="star-tier">⭐</span>
-                    <span class="star-requirement">Complete Stage</span>
+                <div class="star-goal" data-tier="1">
+                    <span class="star-tier"></span>
+                    <span class="star-requirement">Complete the stage</span>
+                    <span class="star-check" aria-hidden="true">&#10003;</span>
                 </div>
-                <div class="star-goal">
-                    <span class="star-tier">⭐⭐</span>
-                    <span class="star-requirement" id="card-star2-req">≤5 crashes, 40% orbs</span>
+                <div class="star-goal" data-tier="2">
+                    <span class="star-tier"></span>
+                    <span class="star-requirement" id="card-star2-req">&le;5 crashes, 40% orbs</span>
+                    <span class="star-check" aria-hidden="true">&#10003;</span>
                 </div>
-                <div class="star-goal">
-                    <span class="star-tier">⭐⭐⭐</span>
-                    <span class="star-requirement" id="card-star3-req">≤2 crashes, 60% orbs</span>
+                <div class="star-goal" data-tier="3">
+                    <span class="star-tier"></span>
+                    <span class="star-requirement" id="card-star3-req">&le;2 crashes, 60% orbs</span>
+                    <span class="star-check" aria-hidden="true">&#10003;</span>
                 </div>
             </div>
             <div class="stage-info-buttons">
@@ -298,35 +304,50 @@
 
     <!-- Results Screen (Stage Mode) -->
     <div class="overlay" id="results-overlay" aria-hidden="true">
-        <div class="overlay-panel results-panel">
+        <div class="rs-bg" aria-hidden="true"><div class="rs-skyline"></div></div>
+        <div class="overlay-panel results-panel" role="dialog" aria-labelledby="results-message">
             <div class="results-header">
+                <div class="rs-eyebrow" id="results-stage-name">Stage 1</div>
                 <div class="results-message" id="results-message">STAGE COMPLETE!</div>
                 <div class="results-stars" id="results-stars">
                     <!-- Stars rendered by JavaScript -->
                 </div>
+                <div class="rs-badge" id="results-badge" hidden>NEW BEST!</div>
             </div>
             <div class="results-stats">
                 <div class="results-stat">
-                    <span class="stat-label">Orbs Collected</span>
-                    <span class="stat-value" id="results-orbs">0/0 (0%)</span>
+                    <span class="stat-label">Orbs</span>
+                    <span class="stat-value" id="results-orbs">0/0</span>
+                    <span class="stat-sub" id="results-orbs-pct">0%</span>
+                    <span class="rs-meter" id="results-orb-meter" aria-hidden="true">
+                        <span class="rs-meter__fill" id="results-orb-fill"></span>
+                        <span class="rs-meter__tick" id="results-tick2"><i>2&#9733;</i></span>
+                        <span class="rs-meter__tick" id="results-tick3"><i>3&#9733;</i></span>
+                    </span>
                 </div>
                 <div class="results-stat">
                     <span class="stat-label">Crashes</span>
                     <span class="stat-value" id="results-crashes">0</span>
+                    <span class="stat-sub" id="results-crashes-sub"></span>
                 </div>
             </div>
             <div class="results-tip" id="results-tip"></div>
             <div class="results-progress">
-                <span class="progress-label">Total Stars</span>
-                <div class="progress-bar results-progress-bar">
-                    <div class="progress-fill" id="results-progress-fill"></div>
+                <div class="results-progress-head">
+                    <span class="progress-label">Total Stars</span>
+                    <span class="rs-gain" id="results-progress-gain" hidden>+1</span>
+                    <span class="progress-text" id="results-progress-text">0/45</span>
                 </div>
-                <span class="progress-text" id="results-progress-text">⭐ 0/45</span>
+                <div class="rs-bar">
+                    <div class="rs-bar__fill" id="results-progress-fill"></div>
+                </div>
             </div>
-            <div class="results-buttons">
-                <button class="btn btn-secondary" id="results-menu-btn">MENU</button>
-                <button class="btn btn-secondary" id="results-replay-btn">REPLAY</button>
+            <div class="results-buttons" id="results-buttons">
                 <button class="btn" id="results-next-btn">NEXT STAGE</button>
+                <div class="results-secondary">
+                    <button class="btn btn-secondary" id="results-replay-btn">REPLAY</button>
+                    <button class="btn btn-secondary" id="results-menu-btn">MENU</button>
+                </div>
             </div>
         </div>
     </div>
