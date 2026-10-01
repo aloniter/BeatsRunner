@@ -19,6 +19,11 @@ const ResultsScreenUI = {
     init() {
         this.overlay = document.getElementById('results-overlay');
 
+        // Distant skyline art shared by the results screen and the stage info card
+        document.querySelectorAll('.rs-skyline').forEach(el => {
+            el.innerHTML = NeonDistrictMap.skyline(560, 190);
+        });
+
         // Menu button
         document.getElementById('results-menu-btn').addEventListener('click', () => {
             this.goToMenu();
@@ -40,8 +45,9 @@ const ResultsScreenUI = {
      * @param {number} stars - Stars earned (1-3)
      * @param {object|null} newReward - Newly unlocked reward (if any)
      * @param {boolean} unlockedNext - True if this run unlocked the next stage
+     * @param {{completed: boolean, bestStars: number}|null} previousBest - Best before this run
      */
-    show(stars, newReward = null, unlockedNext = false) {
+    show(stars, newReward = null, unlockedNext = false, previousBest = null) {
         this.starsEarned = stars;
         this.unlockedNext = unlockedNext;
         this.currentStageId = GameState.currentStage ? GameState.currentStage.id : null;
@@ -55,21 +61,33 @@ const ResultsScreenUI = {
         const orbPercent = stage.totalOrbs > 0
             ? Math.round((GameState.orbsCollected / stage.totalOrbs) * 100)
             : 0;
+        const crashes = GameState.crashes;
 
-        // Message based on stars
-        const message = this.getStarMessage(stars);
-        document.getElementById('results-message').textContent = message;
-
-        // Render stars
+        // Header: stage name, message, stars, badge
+        document.getElementById('results-stage-name').textContent =
+            `Stage ${stage.order} \u00b7 ${stage.name}`;
+        document.getElementById('results-message').textContent = this.getStarMessage(stars);
         document.getElementById('results-stars').innerHTML = this.renderStars(stars);
+
+        const badge = document.getElementById('results-badge');
+        const prev = previousBest || { completed: true, bestStars: stars };
+        let badgeText = '';
+        if (!prev.completed) badgeText = 'FIRST CLEAR!';
+        else if (stars > prev.bestStars) badgeText = 'NEW BEST!';
+        badge.textContent = badgeText;
+        badge.hidden = !badgeText;
 
         // Stats
         document.getElementById('results-orbs').textContent =
-            `${GameState.orbsCollected}/${stage.totalOrbs} (${orbPercent}%)`;
-        document.getElementById('results-crashes').textContent = GameState.crashes;
+            `${GameState.orbsCollected}/${stage.totalOrbs}`;
+        document.getElementById('results-orbs-pct').textContent = `${orbPercent}%`;
+        this.renderOrbMeter(orbPercent, stage);
+        document.getElementById('results-crashes').textContent = crashes;
+        document.getElementById('results-crashes-sub').textContent =
+            crashes === 0 ? 'No hits!' : (stars < 3 ? `max ${stage.stars.star3.crashes} for \u2605\u2605\u2605` : '');
 
         // Improvement tip
-        const tip = this.getImprovementTip(stars, GameState.crashes, orbPercent, stage);
+        const tip = this.getImprovementTip(stars, crashes, orbPercent, stage);
         const tipEl = document.getElementById('results-tip');
         if (tip) {
             tipEl.textContent = tip;
@@ -78,18 +96,29 @@ const ResultsScreenUI = {
             tipEl.classList.remove('is-visible');
         }
 
-        // Total progress
+        // Total progress: bar fills from where it was before this run
         const summary = getProgressSummary();
-        const progressPercent = (summary.totalStars / summary.maxStars) * 100;
-        document.getElementById('results-progress-fill').style.width = `${progressPercent}%`;
+        const gain = prev.completed ? Math.max(0, stars - prev.bestStars) : stars;
+        const beforePct = Math.max(0, ((summary.totalStars - gain) / summary.maxStars) * 100);
+        const afterPct = (summary.totalStars / summary.maxStars) * 100;
+        const fill = document.getElementById('results-progress-fill');
+        fill.style.transition = 'none';
+        fill.style.width = `${beforePct}%`;
+        void fill.offsetWidth;
+        fill.style.transition = '';
+        requestAnimationFrame(() => { fill.style.width = `${afterPct}%`; });
         document.getElementById('results-progress-text').textContent =
-            `⭐ ${summary.totalStars}/${summary.maxStars}`;
+            `${summary.totalStars}/${summary.maxStars}`;
+        const gainEl = document.getElementById('results-progress-gain');
+        gainEl.textContent = `+${gain}`;
+        gainEl.hidden = gain <= 0;
 
-        // Next button visibility
+        // Next button visibility (last stage: REPLAY becomes the main action)
         const nextStage = getNextStage(stage.id);
         const nextBtn = document.getElementById('results-next-btn');
+        document.getElementById('results-buttons').classList.toggle('is-last', !nextStage);
         if (nextStage) {
-            nextBtn.style.display = 'inline-block';
+            nextBtn.style.display = '';
             nextBtn.textContent = 'NEXT STAGE';
         } else {
             nextBtn.style.display = 'none'; // Last stage
@@ -128,7 +157,7 @@ const ResultsScreenUI = {
     },
 
     /**
-     * Get improvement tip based on performance
+     * Say exactly what is missing for the next star
      * @param {number} stars - Stars earned
      * @param {number} crashes - Crash count
      * @param {number} orbPercent - Orb collection percentage
@@ -138,22 +167,48 @@ const ResultsScreenUI = {
     getImprovementTip(stars, crashes, orbPercent, stage) {
         if (stars >= 3) return null;
 
-        const starReqs = stage.stars;
+        const target = stars <= 1 ? stage.stars.star2 : stage.stars.star3;
+        const glyphs = stars <= 1 ? '\u2605\u2605' : '\u2605\u2605\u2605';
+        const parts = [];
 
-        // Check what's holding back 3 stars
-        if (crashes > starReqs.star3.crashes && orbPercent < starReqs.star3.orbs) {
-            return 'Avoid obstacles and collect more orbs for 3 stars!';
-        } else if (crashes > starReqs.star3.crashes) {
-            return `Reduce crashes to ${starReqs.star3.crashes} or less for 3 stars!`;
-        } else if (orbPercent < starReqs.star3.orbs) {
-            return `Collect at least ${starReqs.star3.orbs}% of orbs for 3 stars!`;
+        const needOrbs = Math.ceil((target.orbs / 100) * stage.totalOrbs) - GameState.orbsCollected;
+        if (needOrbs > 0) {
+            parts.push(`collect ${needOrbs} more orb${needOrbs === 1 ? '' : 's'}`);
         }
-
-        return 'Keep practicing to improve your score!';
+        if (crashes > target.crashes) {
+            parts.push(target.crashes === 0
+                ? 'finish without crashing'
+                : `crash ${target.crashes} time${target.crashes === 1 ? '' : 's'} or less`);
+        }
+        return parts.length
+            ? `For ${glyphs}: ${parts.join(' and ')}`
+            : 'Keep practicing to improve your score!';
     },
 
     /**
-     * Render star display
+     * Orb meter with the 2-star / 3-star thresholds marked
+     */
+    renderOrbMeter(orbPercent, stage) {
+        const pct = Math.max(0, Math.min(100, orbPercent));
+        const fill = document.getElementById('results-orb-fill');
+        fill.style.transition = 'none';
+        fill.style.width = '0%';
+        void fill.offsetWidth;
+        fill.style.transition = '';
+        requestAnimationFrame(() => { fill.style.width = `${pct}%`; });
+
+        const t2 = stage.stars.star2.orbs;
+        const t3 = stage.stars.star3.orbs;
+        const tick2 = document.getElementById('results-tick2');
+        const tick3 = document.getElementById('results-tick3');
+        tick2.style.left = `${t2}%`;
+        tick3.style.left = `${t3}%`;
+        tick2.classList.toggle('is-met', orbPercent >= t2);
+        tick3.classList.toggle('is-met', orbPercent >= t3);
+    },
+
+    /**
+     * Render star display (three big SVG stars, earned ones filled)
      * @param {number} count - Stars earned (1-3)
      * @returns {string} HTML string
      */
@@ -161,7 +216,7 @@ const ResultsScreenUI = {
         let html = '';
         for (let i = 1; i <= 3; i++) {
             const filled = i <= count;
-            html += `<span class="result-star ${filled ? 'filled' : 'empty'}" style="--i:${i - 1}">${filled ? '⭐' : '☆'}</span>`;
+            html += `<span class="result-star ${filled ? 'filled' : 'empty'}" style="--i:${i - 1}">${starIconSvg()}</span>`;
         }
         return html;
     },
@@ -256,12 +311,35 @@ const ResultsScreenUI = {
 };
 
 /**
+ * One star as inline SVG (colour comes from CSS: .is-on / .is-off or the parent)
+ * @returns {string} SVG markup
+ */
+function starIconSvg() {
+    return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2.4l2.95 6.1 6.7.95-4.85 4.7 1.15 6.65L12 17.45 6.05 20.6 7.2 13.95 2.35 9.25l6.7-.95z" stroke-linejoin="round"/></svg>';
+}
+
+/**
+ * A row of small stars, `count` of `max` filled
+ * @param {number} count - Filled stars
+ * @param {number} max - Total stars shown
+ * @returns {string} HTML string
+ */
+function starIconsHtml(count, max = 3) {
+    let html = '<span class="star-icons" aria-label="' + count + ' of ' + max + ' stars">';
+    for (let i = 0; i < max; i++) {
+        html += '<span class="star-icon ' + (i < count ? 'is-on' : 'is-off') + '">' + starIconSvg() + '</span>';
+    }
+    return html + '</span>';
+}
+
+/**
  * Global function called by finish-line.js
  * This bridges the gap between Week 2 code and Week 3 UI
  * @param {number} stars - Stars earned (1-3)
  * @param {object|null} newReward - Newly unlocked reward (if any)
  * @param {boolean} unlockedNext - True if this run unlocked the next stage
+ * @param {{completed: boolean, bestStars: number}|null} previousBest - Best before this run
  */
-function showStageResults(stars, newReward, unlockedNext) {
-    ResultsScreenUI.show(stars, newReward, unlockedNext);
+function showStageResults(stars, newReward, unlockedNext, previousBest) {
+    ResultsScreenUI.show(stars, newReward, unlockedNext, previousBest);
 }

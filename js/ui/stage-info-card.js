@@ -49,11 +49,20 @@ const StageInfoCardUI = {
         document.getElementById('card-distance').textContent = `${stage.distance}m`;
 
         // Best performance
+        const best = stageData && stageData.completed ? stageData.bestStars : 0;
+        const bestEl = document.getElementById('card-best-stars');
         if (stageData && stageData.completed) {
-            document.getElementById('card-best-stars').textContent = '⭐'.repeat(stageData.bestStars);
+            bestEl.innerHTML = starIconsHtml(best, 3);
         } else {
-            document.getElementById('card-best-stars').textContent = '--';
+            bestEl.textContent = '--';
         }
+
+        // Star goals: icons per tier, ticked when already reached
+        this.overlay.querySelectorAll('.star-goal').forEach(row => {
+            const tier = Number(row.dataset.tier);
+            row.querySelector('.star-tier').innerHTML = starIconsHtml(tier, tier);
+            row.classList.toggle('is-done', best >= tier);
+        });
 
         // Star requirements
         const stars = stage.stars;
